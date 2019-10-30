@@ -9,7 +9,7 @@ import (
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"gotest.tools/assert"
 	corev1 "k8s.io/api/core/v1"
-	operator "nuodb/nuodb-operator/pkg/apis/nuodb/v1alpha1"
+	operator "nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
 	testutil "nuodb/nuodb-operator/test/e2e/util"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -17,7 +17,7 @@ import (
 
 
 func verifyLoadBalancer(t *testing.T, f *framework.Framework, namespaceName string,balancerName string) {
-	var service *corev1.Service = &corev1.Service{}
+	var service = &corev1.Service{}
 	err := f.Client.Get(goctx.TODO(), client.ObjectKey{Namespace: namespaceName, Name: balancerName}, service)
 	if err!=nil{
 		t.Fatalf("Couldn't get service %+v", err)
@@ -39,7 +39,7 @@ func verifyKillProcess(t *testing.T, f *framework.Framework, namespaceName strin
 
 func verifyAdminService(t *testing.T, f *framework.Framework, namespaceName string, podName string) {
 	serviceName := "domain"
-	var service *corev1.Service = &corev1.Service{}
+	var service = &corev1.Service{}
 	err := f.Client.Get(goctx.TODO(), client.ObjectKey{Namespace: namespaceName, Name: serviceName}, service)
 	if err!=nil{
 		t.Fatalf("Couldn't get service %+v", err)

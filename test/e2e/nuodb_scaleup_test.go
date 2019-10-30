@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
-	operator "nuodb/nuodb-operator/pkg/apis/nuodb/v1alpha1"
+	operator "nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
 	testutil "nuodb/nuodb-operator/test/e2e/util"
 
 	"k8s.io/apimachinery/pkg/types"

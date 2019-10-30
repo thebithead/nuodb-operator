@@ -9,7 +9,7 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
 	corev1 "k8s.io/api/core/v1"
 	"nuodb/nuodb-operator/pkg/apis"
-	nuodb "nuodb/nuodb-operator/pkg/apis/nuodb/v1alpha1"
+	nuodb "nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
 
 	"bytes"
 	"fmt"
@@ -50,7 +50,7 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 	clusterList := &nuodb.Nuodb{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Nuodb",
-			APIVersion: "nuodb.com/v1alpha1",
+			APIVersion: "nuodb.com/v2alpha1",
 		},
 	}
 	err := framework.AddToFrameworkScheme(apis.AddToScheme, clusterList)

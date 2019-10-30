@@ -8,7 +8,7 @@ import (
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"gotest.tools/assert"
 	corev1 "k8s.io/api/core/v1"
-	operator "nuodb/nuodb-operator/pkg/apis/nuodb/v1alpha1"
+	operator "nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
 	testutil "nuodb/nuodb-operator/test/e2e/util"
 
 	"k8s.io/apimachinery/pkg/types"
