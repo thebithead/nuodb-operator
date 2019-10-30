@@ -1104,18 +1104,6 @@ spec:
 	}
 }
 
-func Test_getReplicationController(t *testing.T){
-	var replicationController = &corev1.ReplicationController{}
-	replicationController, err := utils.GetReplicationController(cl, namespace,"")
-	if err != nil{
-		t.Fatalf("Get replicationController error : (%v)", err)
-	}
-
-	if replicationController.ObjectMeta.Name != "ycsb-load"{
-		t.Errorf("replicationController  name (%v) is not as expected ", replicationController.ObjectMeta.Name)
-	}
-}
-
 func Test_createNuodbReplicationController(t *testing.T){
 	instance, err := getnuodbv2alpha1NuodbInstance(r, req)
 	if err != nil {
@@ -1162,69 +1150,6 @@ spec:
 			var replicationController = &corev1.ReplicationController{}
 			err := cl.Get(context.TODO(), types.NamespacedName{Name: tt.in.name, Namespace: "nuodb"}, replicationController)
 			if err != nil {
-				sErr, ok := err.(*apierrors.StatusError)
-				if ok && sErr.Status().Reason == "NotFound" {
-					return
-				}
-				t.Fatalf("Test replicationController not found : (%v)", err)
-			}
-
-			if !reflect.DeepEqual(replicationController.ObjectMeta.Name,tt.out) {
-				t.Errorf("Created replicationController doesnt has same name (%v)", replicationController.Name)
-			}
-		})
-	}
-
-}
-
-func Test_reconcileNuodbReplicationController(t *testing.T){
-	instance, err := getnuodbv2alpha1NuodbInstance(r, req)
-	if err != nil {
-		t.Fatalf("Error while getting instance : (%v)", err)
-	}
-	template :=`apiVersion: v1
-kind: ReplicationController
-metadata:
-  name: test-replicationcontroller
-spec:
-  replicas: 3
-  selector:
-    app: nginx
-  template:
-    metadata:
-      name: nginx
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - name: nginx
-        image: nginx
-        ports:
-        - containerPort: 80`
-
-	var tests = []struct {
-		name string
-		in  NuoResource
-		out string
-	}{
-		{"Test With new replicationcontroller",NuoResource{
-			template: template,
-			name: "test-replicationcontroller",
-		},"test-replicationcontroller"},
-		{"Existing-replicationcontroller",NuoResource{
-			template: template,
-			name: "ycsb-load",
-		},"ycsb-load"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_,_, err = reconcileNuodbReplicationController(cl, s, req, instance, tt.in, namespace)
-			var replicationController = &corev1.ReplicationController{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: tt.in.name, Namespace: "nuodb"}, replicationController)
-			if err != nil {
-				//Case where the given Deployment is not found by the get funciton
-				//and new Deployment cannot be created
 				sErr, ok := err.(*apierrors.StatusError)
 				if ok && sErr.Status().Reason == "NotFound" {
 					return

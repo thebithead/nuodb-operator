@@ -16,7 +16,7 @@ spec:
       containers:
         - name: nuodb-operator
           # Replace this with the built image name
-          image: quay.io/nuodb/nuodb-golang-operator-dev:latest
+          image: REPLACE_IMAGE
           command:
           - nuodb-operator
           imagePullPolicy: Always

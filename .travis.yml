@@ -1,0 +1,35 @@
+language: go
+
+dist: xenial
+os: linux
+
+sudo: required
+
+go:
+  - 1.12.x
+go_import_path: github.com/nuodb/nuodb-golang-operator
+
+env:
+  global:
+    - CHANGE_MINIKUBE_NONE_USER=true
+    - MINIKUBE_WANTUPDATENOTIFICATION=false
+    - MINIKUBE_WANTREPORTERRORPROMPT=false
+    - MINIKUBE_HOME=$HOME
+    - CHANGE_MINIKUBE_NONE_USER=true
+    - KUBECONFIG=$HOME/.kube/config
+    - NUODB_OP_IMAGE=$DOCKER_SERVER/$REPO_NAME:v$TRAVIS_BUILD_NUMBER
+    - HOME_DIR=$TRAVIS_BUILD_DIR
+    - GO111MODULE=on
+
+before_install:
+  - go test -v ./pkg/...
+  - chmod +x scripts/ci/install-deps.sh
+  - chmod +x scripts/ci/build_operator.sh
+  - chmod +x scripts/ci/test_operator.sh
+
+install:
+  - scripts/ci/install-deps.sh
+
+script:
+- scripts/ci/build_operator.sh
+- scripts/ci/test_operator.sh
