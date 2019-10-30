@@ -25,9 +25,9 @@ kubectl create -n $OPERATOR_NAMESPACE -f role.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f service_account.yaml
 kubectl patch serviceaccount nuodb-operator -p '{"imagePullSecrets": [{"name": "regcred"}]}' -n $OPERATOR_NAMESPACE
-kubectl create -f crds/nuodb_v1alpha1_nuodb_crd.yaml
-kubectl create -f crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
-kubectl create -f crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
+kubectl create -f crds/nuodb_v2alpha1_nuodb_crd.yaml
+kubectl create -f crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
+kubectl create -f crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
 
 sed -i "s|REPLACE_IMAGE|$NUODB_OP_IMAGE|" operator.yaml
 kubectl create  -n $OPERATOR_NAMESPACE -f operator.yaml

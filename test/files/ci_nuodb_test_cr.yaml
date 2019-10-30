@@ -1,4 +1,4 @@
-apiVersion: nuodb.com/v1alpha1
+apiVersion: nuodb.com/v2alpha1
 kind: Nuodb
 metadata:
   name: nuodb-test1
