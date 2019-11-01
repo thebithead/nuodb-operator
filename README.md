@@ -1,5 +1,5 @@
 # The NuoDB Operator
-A Kubernetes Operator automates the packaging, provisioning, and managing of operational tasks for Kubernetes containerized applications. By default the NuoDB Kubernetes Operator deploys the NuoDB with Community Edition (CE) capability in the following tested and verified Kubernetes distributions:
+A Kubernetes Operator written in Golang that automates the packaging, provisioning, and managing of operational tasks for Kubernetes containerized applications. By default the NuoDB Kubernetes Operator deploys the NuoDB with Community Edition (CE) capability in the following tested and verified Kubernetes distributions:
 
 * Red Hat OpenShift 3.11 or 4.x
 * Google Cloud Platform (GCP) - GCE nodes running GKE managed Kubernetes
@@ -57,7 +57,7 @@ _**Note:** The instructions on this page use the Kubernetes&ensp;`kubectl` comma
 ```
 export OPERATOR_NAMESPACE=nuodb
 export STORAGE_NODE=yourStorageNodeDNSName
-export NUODB_OPERATOR_VERSION=0.0.5           --confirm you set the correction NuoDB Operator version here.
+export NUODB_OPERATOR_VERSION=2.0.1           --confirm you set the correction NuoDB Operator version here.
 ```
 ### 2. Clone a copy of the NuoDB Operator from Github
 In your home or working directory, run:
@@ -220,15 +220,21 @@ error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSo
 
 #### Deploy the NuoDB Operator
 ```
-cd nuodb-operator/deploy
-kubectl create -f catalogSource.yaml 
-kubectl create -f cluster_role_binding.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f operatorGroup.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f cluster_role.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f role.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f role_binding.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f service_account.yaml 
-kubectl create -f olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb.crd.yaml 
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role_binding.yaml
+
+## for Red Hat OpenShift only
+oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:nuodb-operator
+oc adm policy add-scc-to-user privileged system:serviceaccount:elastic-system:elastic-operator
+oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:insights-server-release-logstash
+
+## add NuoDB, Insights, and ycsb sample SQL app CRDs
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodb_crd.yaml
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
 
 sed "s/placeholder/$OPERATOR_NAMESPACE/" olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb.v$NUODB_OPERATOR_VERSION.clusterserviceversion.yaml > nuodb-csv.yaml
 
@@ -242,21 +248,56 @@ sed "s/placeholder/$OPERATOR_NAMESPACE/" olm-catalog/nuodb-operator/$NUODB_OPERA
 
 # If appliable, copy your new nuodb-csv-xxx.yaml file to nuodb-csv.yaml and run,
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
- ```
-Once you have completed these steps, verify the NuoDB Operator is running in your Kubernetes project/namespace using either the Kubernetes WebUI or CLI. 
-```
-kubectl get pods -n $OPERATOR_NAMESPACE
-```
 
+# Check deployment rollout status every 5 seconds (max 10 minutes) until complete.
+ATTEMPTS=0
+ROLLOUT_STATUS_CMD="kubectl rollout status deployment/nuodb-operator -n $OPERATOR_NAMESPACE"
+until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
+  $ROLLOUT_STATUS_CMD
+  ATTEMPTS=$((attempts + 1))
+  echo ""
+  kubectl get pods -n nuodb
+  sleep 5
+done
+```
 
 ## Deploy the NuoDB Database
-To deploy the NuoDB database into your Kubernetes cluster, make a copy of the nuodb-operator/deploy/cr.yaml file. In your new file,  review the configuration parameter values, make any configuration changes you require, and run the following command to create your NuoDB database. To configure a sample SQL workload review and set the YCSB parameters. 
+
+Below is a sample of how to deploy a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
+```
+# To deploy the NuoDB database into your Kubernetes cluster, first make a local copy of the NuoDB cr yaml files
+cp nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
+cp nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
+cp nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
+
+# Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
+kubectl create -f nuodb-cr.yaml
+kubectl create -f nuodb-insights-cr.yaml
+kubectl create -f nuodb-ycsb-cr.yaml
+
+#Wait for nuodb to be logstash instance to be ready
+# Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
+ATTEMPTS=0
+ROLLOUT_STATUS_CMD="kubectl rollout status sts/insights-server-release-logstash -n $OPERATOR_NAMESPACE"
+until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
+  $ROLLOUT_STATUS_CMD
+  ATTEMPTS=$((attempts + 1))
+  echo ""
+  kubectl get pods -n $OPERATOR_NAMESPACE
+  sleep 5
+done
+
+# create the Insights client
+kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
+
+echo ""
+echo "Open Networking/Route panel in your Kubernetes dashboard to obtain your NuoDB Insight's dashboard URL."
+echo ""
+echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
 
  ```
-kubectl create -n $OPERATOR_NAMESPACE -f cr.yaml
- ```
 
-### Sample cr.yaml deployment files
+### Sample nuodb-cr.yaml deployment files
 
 The nuodb-operator/deploy directory includes sample Custom Resources to deploy NuoDB:
 
@@ -264,7 +305,7 @@ The nuodb-operator/deploy directory includes sample Custom Resources to deploy N
 
 &ensp; `cr-persistent-insights-enabled.yaml` deploys NuoDB CE domain using persistent storage and has NuoDB Insights enabled.
 
-Optionally, you can add any of these parameter values to your own `cr.yaml` to customize your database. Each are described in the Optional Database Parameter section.
+Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the Optional Database Parameter section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
 ```
 spec:
   replicaCount: 1
@@ -285,7 +326,14 @@ spec:
   teCount: 1
   teMemory: 4
   teCpu: 2
-  ycsbLoadName: ycsb-load
+  container: nuodb/nuodb-ce:latest
+```
+
+**Note:** We recommend replacing the database password `dbPassword` value 'secret' wtih one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
+
+### Sample nuodb-ycsb-cr.yaml deployment files
+```
+ycsbLoadName: ycsb-load
   ycsbWorkload: b
   ycsbLbPolicy: ""
   ycsbNoOfProcesses: 5
@@ -295,10 +343,7 @@ spec:
   ycsbMaxDelay: 240000
   ycsbDbSchema: User1
   ycsbContainer: nuodb/ycsb:latest
-  container: nuodb/nuodb-ce:latest
 ```
-
-**Note:** We recommend replacing the database password `dbPassword` value 'secret' wtih one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
 
 
 ### Deploy the NuoDB Insights Visual Monitor
@@ -324,10 +369,16 @@ Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. I
       *insightsEnabled* to "Opt In" and enable NuoDB Insights. Any other value than "true"
       results in Opting out. Insights can also be enabled at a later time if you choose.
 
-After deploying your NuoDB database, if you optionally chose to install NuoDB Insights, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod, go to the Logs tab, and find the line that indicates your Subscriber ID
+After deploying your NuoDB database, if you optionally chose to install NuoDB Insights, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod, go to the Logs tab, and find the line that indicates your Subscriber ID. 
 ```
 Insights Subscriber ID: yourSubID#
 ```
+
+**NOTE:** Obtaining your Subscriber ID is only required if you are using the NuoDB hosted Insights portal. If you are deploying on-cluster NuoDB Insights then your URL to access your locally deployed Insight's Web UI can be obtained by running,
+```
+https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s
+```
+
 **Usage note when using open source Kubernetes only:** A current Kubernetes Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the K8s open source WebUI by reviewing the container log, instead run
 ```
 kubectl logs nuodb-insights -n nuodb -c insights
@@ -346,7 +397,7 @@ If you enabled NuoDB Insights (highly recommended) you can confirm it's run stat
 
 The NuoDB Operator includes a sample SQL appplication that will allow you to get started quickly running SQL statements against your NuoDB database. The sample workload uses YCSB (the Yahoo Cloud Servicing Benchmark). The cr.yaml includes YCSB parameters that will allow you to configure the SQL workload to your preferences.
 
-To start a SQL Workload, locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
+To start a SQL Workload (if your nuodb-ycsb-cr.yaml isn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
 
 ## Sample NuoDB Features and Benefits Evaluation Steps
 
@@ -364,19 +415,22 @@ The following videos provide a walk-thru of each feature area mentioned above. T
 
 
 ## Delete the NuoDB database
-Run the following command
-```
-kubectl delete nuodb nuodb
-```
+
+kubectl delete -n $OPERATOR_NAMESPACE nuodb nuodb
 Next, delete the nuodb database finalizer by running this command, remove the finalizer line under "Finalizer:", and run the final nuodb delete commmand
 ```
 kubectl edit nuodb nuodb
 kubectl delete nuodb nuodb
-```
+
+kubectl delete pod/insights-client
+kubectl delete nuodbinsightsservers/insightsserver
+kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
+kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
+
 Delete the NuoDB persistent storage volumes claims
-```
 kubectl delete -n $OPERATOR_NAMESPACE pvc --all 
 ```
+
 If the local-disk storage class was used, then delete the NuoDB Storage Manager(SM) disk storage and storage class
 ```
 ssh -i ~/Documents/cluster.pem $JUMP_HOST
@@ -384,7 +438,6 @@ ssh -i ~/.ssh/cluster.pem core@ip-n-n-n-n.ec2.internal  'rm -rf /mnt/local-stora
 
 kubectl delete -f local-disk-class.yaml
 ```
-
 
 ## Delete the NuoDB Operator
 
@@ -394,33 +447,46 @@ From the OpenShift WebUI, locate the OperatorHub under the Catalog left-bar sele
 ### Red Hat OpenShift v3.11 --or-- Open source / GKE / EKS Kubernetes
 
 Run the following commands
-
 ```
 kubectl delete -n $OPERATOR_NAMESPACE configmap nuodb-lic-configmap
 
-cd nuodb-operator/deploy
-kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
-kubectl delete -f service_account.yaml
-kubectl delete -f role_binding.yaml
-kubectl delete -f role.yaml
-kubectl delete -f cluster_role_binding.yaml
-kubectl delete -f cluster_role.yaml
-kubectl delete -f operatorGroup.yaml
-kubectl delete -f catalogSource.yaml
+kubectl delete pod/insights-client
+kubectl delete nuodbinsightsservers/insightsserver
+kubectl delete nuodbs/nuodb-db
+kubectl delete nuodbycsbwls/nuodbycsbwl
+kubectl delete pvc --all 
+kubectl delete pv --all
+
+kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
+kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
+kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
+
+kubectl delete -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role.yaml
+kubectl delete -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role_binding.yaml
+
+kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodb_crd.yaml
+kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
+kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
 
 -- For OPENSHIFT only, delete the thp security context constraint
 kubectl delete scc thp-scc
 
-kubectl delete -f olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb.crd.yaml
-```
-Next, delete the crd finalizer by running this command, remove the finalizer line after "Finalizer:", and run the final crd delete commmand
-```
-kubectl edit crd nuodbs.nuodb.com
-kubectl delete crd nuodbs.nuodb.com
-```
 Delete the NuoDB project/namespace
 ```
 kubectl delete namespace $OPERATOR_NAMESPACE
+```
+
+Verify cleanup
+```
+kubectl get grafanas
+kubectl get grafanadatasources
+kubectl get grafanadashboards
+kubectl get kibanas
+kubectl get elasticsearches
+kubectl get sa/grafana-operator
+kubectl get secrets | grep grafana-operator 
+kubectl get rolebindings/grafana-operator
+kubectl get role/grafana-operator
 ```
 
 
