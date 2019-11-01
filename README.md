@@ -416,8 +416,9 @@ The following videos provide a walk-thru of each feature area mentioned above. T
 
 ## Delete the NuoDB database
 ```
-kubectl delete -n $OPERATOR_NAMESPACE nuodb nuodb
+kubectl delete -n $OPERATOR_NAMESPACE configmap nuodb-lic-configmap
 
+kubectl delete -n $OPERATOR_NAMESPACE nuodb nuodb
 # Next, delete the nuodb database finalizer by running the edit command, remove the finalizer line under "Finalizer:", and run the final nuodb delete commmand
 kubectl edit nuodb nuodb
 kubectl delete nuodb nuodb
@@ -448,8 +449,6 @@ From the OpenShift WebUI, locate the OperatorHub under the Catalog left-bar sele
 
 Run the following commands
 ```
-kubectl delete -n $OPERATOR_NAMESPACE configmap nuodb-lic-configmap
-
 kubectl delete pod/insights-client
 kubectl delete nuodbinsightsservers/insightsserver
 kubectl delete nuodbs/nuodb-db
