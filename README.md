@@ -459,15 +459,17 @@ kubectl delete pv --all
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
-
-kubectl delete -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role.yaml
-kubectl delete -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role_binding.yaml
+kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operator-dev.yaml
+kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
+kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role_binding.yaml
 
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodb_crd.yaml
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
 
--- For OPENSHIFT only, delete the thp security context constraint
+kubectl delete clusterrolebinding nuodb-op-admin
+
+# For OPENSHIFT only, delete the thp security context constraint
 kubectl delete scc thp-scc
 
 kubectl delete namespace $OPERATOR_NAMESPACE
