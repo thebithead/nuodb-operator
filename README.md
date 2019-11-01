@@ -256,7 +256,7 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
   $ROLLOUT_STATUS_CMD
   ATTEMPTS=$((attempts + 1))
   echo ""
-  kubectl get pods -n nuodb
+  kubectl get pods -n $OPERATOR_NAMESPACE
   sleep 5
 done
 ```
