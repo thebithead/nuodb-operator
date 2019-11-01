@@ -232,11 +232,11 @@ oc adm policy add-scc-to-user privileged system:serviceaccount:elastic-system:el
 oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:insights-server-release-logstash
 
 ## add NuoDB, Insights, and ycsb sample SQL app CRDs
-kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodb_crd.yaml
-kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
-kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_crd.yaml
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
 
-sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb.v$NUODB_OPERATOR_VERSION.clusterserviceversion.yaml > nuodb-csv.yaml
+sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb-operator.v$NUODB_OPERATOR_VERSION.clusterserviceversion.yaml > nuodb-csv.yaml
 
 # To replace quay.io as the default location to pull the NuoDB Operator image, follow these examples
 # To pull from the Red Hat Container Catalog, run
