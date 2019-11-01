@@ -424,8 +424,8 @@ kubectl delete nuodb nuodb
 
 kubectl delete pod/insights-client
 kubectl delete nuodbinsightsservers/insightsserver
-kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
-kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
 
 Delete the NuoDB persistent storage volumes claims
 kubectl delete -n $OPERATOR_NAMESPACE pvc --all 
@@ -464,9 +464,9 @@ kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.y
 kubectl delete -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role_binding.yaml
 
-kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodb_crd.yaml
-kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
-kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodb_crd.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
 
 -- For OPENSHIFT only, delete the thp security context constraint
 kubectl delete scc thp-scc
