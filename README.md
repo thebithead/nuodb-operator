@@ -471,8 +471,6 @@ kubectl delete -f nuodb-golang-operator/deploy/crds/nuodb_v1alpha1_nuodbinsights
 -- For OPENSHIFT only, delete the thp security context constraint
 kubectl delete scc thp-scc
 
-Delete the NuoDB project/namespace
-```
 kubectl delete namespace $OPERATOR_NAMESPACE
 ```
 
