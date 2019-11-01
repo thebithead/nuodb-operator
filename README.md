@@ -415,10 +415,10 @@ The following videos provide a walk-thru of each feature area mentioned above. T
 
 
 ## Delete the NuoDB database
-
-kubectl delete -n $OPERATOR_NAMESPACE nuodb nuodb
-Next, delete the nuodb database finalizer by running this command, remove the finalizer line under "Finalizer:", and run the final nuodb delete commmand
 ```
+kubectl delete -n $OPERATOR_NAMESPACE nuodb nuodb
+
+# Next, delete the nuodb database finalizer by running the edit command, remove the finalizer line under "Finalizer:", and run the final nuodb delete commmand
 kubectl edit nuodb nuodb
 kubectl delete nuodb nuodb
 
