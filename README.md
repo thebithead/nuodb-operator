@@ -236,13 +236,13 @@ kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodb_crd.yaml
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
 
-sed "s/placeholder/$OPERATOR_NAMESPACE/" olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb.v$NUODB_OPERATOR_VERSION.clusterserviceversion.yaml > nuodb-csv.yaml
+sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb.v$NUODB_OPERATOR_VERSION.clusterserviceversion.yaml > nuodb-csv.yaml
 
 # To replace quay.io as the default location to pull the NuoDB Operator image, follow these examples
 # To pull from the Red Hat Container Catalog, run
-   sed "s/quay.io/registry.connect.redhat.com/" nuodb-csv.yaml > nuodb-csv-rhcc.yaml
+#   sed "s/quay.io/registry.connect.redhat.com/" nuodb-csv.yaml > nuodb-csv-rhcc.yaml
 # To pull from the Google Marketplace, run
-   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
+#   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
 # To pull from the AWS Marketplace, 
 # replace in the nuodb-csv.yaml file the two image references wtih 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/quay.io/nuodb/nuodb-operator:0.0.5-latest
 
