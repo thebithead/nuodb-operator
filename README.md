@@ -223,8 +223,8 @@ error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSo
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f https://raw.githubusercontent.com/nuodb/nuodb-operator/master/deploy/cluster_role_binding.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role_binding.yaml
 
 ## for Red Hat OpenShift only
 oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:nuodb-operator
