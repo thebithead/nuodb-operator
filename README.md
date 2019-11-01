@@ -427,7 +427,7 @@ kubectl delete nuodbinsightsservers/insightsserver
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_crd.yaml
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_crd.yaml
 
-Delete the NuoDB persistent storage volumes claims
+# Delete the NuoDB persistent storage volumes claims
 kubectl delete -n $OPERATOR_NAMESPACE pvc --all 
 ```
 
