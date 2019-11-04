@@ -174,7 +174,7 @@ kubectl  create secret docker-registry pull-secret \
 
 #### Disable Linux Transparent Huge Pages (THP). Run the following required command to create a security context constraint which will allow the Operator to disable THP during Operator deployment.
 ```
-kubectl create -n $OPERATOR_NAMESPACE -f thp-scc.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/thp-scc.yaml
 ```
 
 ## Install the NuoDB Operator
@@ -220,6 +220,7 @@ error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSo
 
 #### Deploy the NuoDB Operator
 ```
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/catalogSource.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
