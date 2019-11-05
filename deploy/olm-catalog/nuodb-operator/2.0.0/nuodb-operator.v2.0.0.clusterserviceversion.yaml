@@ -39,6 +39,8 @@ metadata:
             "name": "nuodbycsbwl"
          },
          "spec": {
+            "dbName": "test1",
+            "ycsbWorkloadCount": 1,
             "ycsbLoadName": "ycsb-load",
             "ycsbWorkload": "b",
             "ycsbLbPolicy": "",
@@ -47,7 +49,8 @@ metadata:
             "ycsbNoOfIterations": 0,
             "ycsbOpsPerIteration": 10000,
             "ycsbMaxDelay": 240000,
-            "ycsbDbSchema": "User1"
+            "ycsbDbSchema": "User1",
+            "ycsbContainer": "nuodb/ycsb:latest"
          }
       },
       {
@@ -57,10 +60,10 @@ metadata:
             "name": "insightsserver"
          },
          "spec": {
-            "elasticVersion": "ycsb-load",
-            "elasticNodeCount": "b",
-            "kibanaVersion": "",
-            "kibanaNodeCount": 2,
+            "elasticVersion": "7.3.0",
+            "elasticNodeCount": 1,
+            "kibanaVersion": "7.3.0",
+            "kibanaNodeCount": 1
          }
       }]
     categories: "Database,OpenShift Optional"
@@ -71,7 +74,7 @@ metadata:
     description: This Operator will deploy the Community Edition of NuoDB
     repository: https://github.com/nuodb/nuodb-operator
     support: NuoDB, Inc.
-  name: nuodb-operator.v0.1.0
+  name: nuodb-operator.v2.0.0
   namespace: "nuodb"
 spec:
   apiservicedefinitions: {}
@@ -100,6 +103,9 @@ spec:
           - kind: ConfigMap
             name: ""
             version: v1
+          - kind: nuodbs
+            name: ""
+            version: v2alpha1
         specDescriptors:
           - description: The desired number of member pods for the deployment
             displayName: Size
@@ -167,6 +173,21 @@ spec:
             displayName: TeMemory
             path: teMemory
         statusDescriptors:
+          - description: AdminHealth of the NuoDB Domain
+            displayName: Admin Health
+            path: adminHealth
+          - description: TeHealth of the NuoDB Domain
+            displayName: Te Health
+            path: teHealth
+          - description: SmHealth of the NuoDB Domain
+            displayName: Sm Health
+            path: smHealth
+          - description: ControllerVersion of the NuoDB Domain
+            displayName: Controller Version
+            path: controllerVersion
+          - description: DomainHealth of the NuoDB Domain
+            displayName: Domain Health
+            path: domainHealth
           - description: The current status of the application.
             displayName: Status
             path: phase
@@ -401,4 +422,5 @@ spec:
   maturity: alpha
   provider:
     name: NuoDB, Inc.
-  version: 0.1.0
+  version: 2.0.0
+  replaces: nuodb-operator.v0.0.5

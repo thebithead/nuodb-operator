@@ -14,6 +14,8 @@ rules:
   - events
   - configmaps
   - secrets
+  - replicationcontrollers
+  - bindings/finalizers
   verbs:
   - '*'
 - apiGroups:
@@ -58,5 +60,11 @@ rules:
   - '*'
   - nuodbycsbwls
   - nuodbinsightsservers
+  verbs:
+  - '*'
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes
   verbs:
   - '*'
