@@ -220,13 +220,13 @@ error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSo
 
 #### Deploy the NuoDB Operator
 ```
-kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/catalogSource.yaml
+kubectl create -f nuodb-operator/deploy/catalogSource.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
+kubectl create -f nuodb-operator/deploy/cluster_role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role_binding.yaml
 
 ## for Red Hat OpenShift only
 oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:nuodb-operator
@@ -235,8 +235,8 @@ oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:insights-se
 
 ## add NuoDB, Insights, and ycsb sample SQL app CRDs
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_crd.yaml
-kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
 
 sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb-operator.v$NUODB_OPERATOR_VERSION.clusterserviceversion.yaml > nuodb-csv.yaml
 
@@ -409,7 +409,7 @@ Once your NuoDB database is running, here are a few steps to try out to quickly 
 * Demonstrate Continuous Availability
 * Demonstrate Visual Monitoring Using NuoDB Insights
 
-The following videos provide a walk-thru of each feature area mentioned above. These videos show NuoDB running in Red Hat OpenShift, but the sample steps can be performed in any NuoDB supported Kubernetes environment.
+The following videos provide a walk-thru of each feature area mentioned above. These videos show NuoDB running in Red Hat OpenShift, but the sample steps can be performed in any NuoDB supported Kubernetes managed environment.
 
    [NuoDB in OpenShift v3.11 video](https://www.youtube.com/playlist?list=PLQJ_WGDxAYCG340ODaOACaG9KIG6IQBYL)
 
@@ -458,16 +458,19 @@ kubectl delete nuodbycsbwls/nuodbycsbwl
 kubectl delete pvc --all 
 kubectl delete pv --all
 
+kubectl delete -f nuodb-operator/deploy/catalogSource.yaml
+kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
+kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
+kubectl delete -f nuodb-operator/deploy/cluster_role_binding.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
-kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
-kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
-kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role_binding.yaml
 
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_crd.yaml
-kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
+
+kubectl delete -f nuodb-csv.yaml
 
 kubectl delete clusterrolebinding nuodb-op-admin
 
