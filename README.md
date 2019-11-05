@@ -422,8 +422,6 @@ kubectl delete -n $OPERATOR_NAMESPACE configmap nuodb-lic-configmap
 kubectl delete -n $OPERATOR_NAMESPACE nuodb nuodb
 kubectl delete pod/insights-client
 kubectl delete nuodbinsightsservers/insightsserver
-kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
-kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
 
 # Delete the NuoDB persistent storage volumes claims
 kubectl delete -n $OPERATOR_NAMESPACE pvc --all 
