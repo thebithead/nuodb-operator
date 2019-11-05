@@ -224,6 +224,7 @@ kubectl create -f nuodb-operator/deploy/catalogSource.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
 kubectl create -f nuodb-operator/deploy/cluster_role_binding.yaml
+kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
@@ -457,6 +458,7 @@ kubectl delete -f nuodb-operator/deploy/catalogSource.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
 kubectl delete -f nuodb-operator/deploy/cluster_role_binding.yaml
+kubectl delete -f nuodb-operator/deploy/cluster-op-admin.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
