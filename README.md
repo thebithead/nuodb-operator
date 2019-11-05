@@ -419,9 +419,11 @@ The following videos provide a walk-thru of each feature area mentioned above. T
 ## Delete the NuoDB database
 ```
 kubectl delete -n $OPERATOR_NAMESPACE configmap nuodb-lic-configmap
-kubectl delete -n $OPERATOR_NAMESPACE nuodb nuodb
+
 kubectl delete pod/insights-client
-kubectl delete nuodbinsightsservers/insightsserver
+kubectl delete -f nuodb-cr.yaml
+kubectl delete -f nuodb-insights-cr.yaml
+kubectl delete -f nuodb-ycsb-cr.yaml
 
 # Delete the NuoDB persistent storage volumes claims
 kubectl delete -n $OPERATOR_NAMESPACE pvc --all 
