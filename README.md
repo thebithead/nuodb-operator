@@ -320,13 +320,13 @@ spec:
   dbUser: dba
   dbPassword: secret
   smCount: 1
-  smMemory: 4
+  smMemory: 4Gi
   smCpu: 2
   smStorageSize: 20G
   smStorageClass: local-disk
   engineOptions: ""
   teCount: 1
-  teMemory: 4
+  teMemory: 4Gi
   teCpu: 2
   container: nuodb/nuodb-ce:latest
 ```
@@ -533,7 +533,7 @@ kubectl get role/grafana-operator
 
 **smMemory** - SM memory (in GB)
 
-&ensp; `smMemory: 2`
+&ensp; `smMemory: 2Gi`
 
 
 **smCpu** - SM CPU cores to request
@@ -563,7 +563,7 @@ kubectl get role/grafana-operator
 
 **teMemory** - TE memory (in GB)
 
-&ensp; `teMemory: 2`
+&ensp; `teMemory: 2Gi`
 
 
 **teCpu** - TE CPU cores to request
