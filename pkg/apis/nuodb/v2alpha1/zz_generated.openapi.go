@@ -11,19 +11,19 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.Nuodb":                     schema_pkg_apis_nuodb_v1alpha1_Nuodb(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServer":       schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServer(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec":   schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServerSpec(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus": schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServerStatus(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec":                 schema_pkg_apis_nuodb_v1alpha1_NuodbSpec(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus":               schema_pkg_apis_nuodb_v1alpha1_NuodbStatus(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWl":               schema_pkg_apis_nuodb_v1alpha1_NuodbYcsbWl(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlSpec":           schema_pkg_apis_nuodb_v1alpha1_NuodbYcsbWlSpec(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlStatus":         schema_pkg_apis_nuodb_v1alpha1_NuodbYcsbWlStatus(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.Nuodb":                     schema_pkg_apis_nuodb_v2alpha1_Nuodb(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServer":       schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServer(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec":   schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerSpec(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus": schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerStatus(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec":                 schema_pkg_apis_nuodb_v2alpha1_NuodbSpec(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus":               schema_pkg_apis_nuodb_v2alpha1_NuodbStatus(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWl":               schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWl(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlSpec":           schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWlSpec(ref),
+		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlStatus":         schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWlStatus(ref),
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_Nuodb(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_Nuodb(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -66,7 +66,7 @@ func schema_pkg_apis_nuodb_v1alpha1_Nuodb(ref common.ReferenceCallback) common.O
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServer(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServer(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -109,7 +109,7 @@ func schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServer(ref common.ReferenceCall
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServerSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -148,7 +148,7 @@ func schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServerSpec(ref common.Reference
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServerStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -160,7 +160,7 @@ func schema_pkg_apis_nuodb_v1alpha1_NuodbInsightsServerStatus(ref common.Referen
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_NuodbSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_NuodbSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -314,19 +314,83 @@ func schema_pkg_apis_nuodb_v1alpha1_NuodbSpec(ref common.ReferenceCallback) comm
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_NuodbStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_NuodbStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "NuodbStatus defines the observed state of Nuodb",
-				Properties:  map[string]spec.Schema{},
+				Description: "type NuodbReadyCounts struct {\n\t// Admin Node Ready Count\n\tAdminReadyCount int32 `json:\"adminReadyCount,omitempty\"`\n\t// SM Node Ready Count\n\tSmReadyCount int32 `json:\"smReadyCount,omitempty\"`\n\t// TE Node Ready Count\n\tTeReadyCount int32 `json:\"teReadyCount,omitempty\"`\n}\n\nNuodbStatus defines the observed state of Nuodb",
+				Properties: map[string]spec.Schema{
+					"adminReadyCount": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Admin Node Ready Count",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"smReadyCount": {
+						SchemaProps: spec.SchemaProps{
+							Description: "SM Node Ready Count",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"teReadyCount": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TE Node Ready Count",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"adminHealth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "AdminHealth of the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"smHealth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "SM Health of the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"teHealth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TE Health of the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"domainHealth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "DomainHealth of the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Orchestration phase of the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"controllerVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ControllerVersion is the version of the controller that last updated the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
 			},
 		},
 		Dependencies: []string{},
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_NuodbYcsbWl(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWl(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -369,7 +433,7 @@ func schema_pkg_apis_nuodb_v1alpha1_NuodbYcsbWl(ref common.ReferenceCallback) co
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_NuodbYcsbWlSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWlSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -458,7 +522,7 @@ func schema_pkg_apis_nuodb_v1alpha1_NuodbYcsbWlSpec(ref common.ReferenceCallback
 	}
 }
 
-func schema_pkg_apis_nuodb_v1alpha1_NuodbYcsbWlStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWlStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{

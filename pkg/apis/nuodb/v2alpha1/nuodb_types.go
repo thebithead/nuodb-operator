@@ -140,19 +140,88 @@ type NuodbSpec struct {
 	TeMemory string `json:"teMemory"`
 }
 
+// NuodbHealth is the health of the NuoDB Domain as returned by the health API.
+type NuodbHealth string
+
+// Possible "traffic light" states NuoDB health can have.
+const (
+	NuodbUnknownHealth   NuodbHealth = "Unknown"
+	NuodbRedHealth       NuodbHealth = "Red"
+	NuodbYellowHealth    NuodbHealth = "Yellow"
+	NuodbGreenHealth     NuodbHealth = "Green"
+)
+
+var nuodbHealthOrder = map[NuodbHealth]int{
+	NuodbUnknownHealth:  0,
+	NuodbRedHealth:      1,
+	NuodbYellowHealth:   2,
+	NuodbGreenHealth:    3,
+}
+
+// Less for NuodbHealth means green > yellow > red > unknown
+func (h NuodbHealth) Less(other NuodbHealth) bool {
+	l := nuodbHealthOrder[h]
+	r := nuodbHealthOrder[other]
+	// 0 is not found/unknown and less is not defined for that
+	return l != 0 && r != 0 && l < r
+}
+
+// NuodbOrchestrationPhase is the phase NuoDB Domain is in from the controller point of view.
+type NuodbOrchestrationPhase string
+
+const (
+	// NuodbOperationalPhase is operating at the desired spec.
+	NuodbOperationalPhase NuodbOrchestrationPhase = "Operational"
+	// NuodbPendingPhase controller is working towards a desired state, NuoDB Domain may be unavailable.
+	NuodbPendingPhase NuodbOrchestrationPhase = "Pending"
+	// NuodbMigratingDataPhase Elasticsearch is currently migrating data to another node.
+	NuodbMigratingDataPhase NuodbOrchestrationPhase = "MigratingData"
+	// NuodbResourceInvalid is marking a resource as invalid
+	NuodbResourceInvalid NuodbOrchestrationPhase = "Invalid"
+)
+
+// IsDegraded returns true if the current status is worse than the previous.
+func (nuodbStatus NuodbStatus) IsDegraded(prev NuodbStatus) bool {
+	return nuodbStatus.DomainHealth.Less(prev.DomainHealth)
+}
+
 // NuodbStatus defines the observed state of Nuodb
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type NuodbStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	// Admin Node Ready Count
+	AdminReadyCount int32 `json:"adminReadyCount,omitempty"`
+	// SM Node Ready Count
+	SmReadyCount int32 `json:"smReadyCount,omitempty"`
+	// TE Node Ready Count
+	TeReadyCount int32 `json:"teReadyCount,omitempty"`
+	// AdminHealth of the NuoDB Domain
+	AdminHealth NuodbHealth `json:"adminHealth,omitempty"`
+	// SM Health of the NuoDB Domain
+	SmHealth NuodbHealth `json:"smHealth,omitempty"`
+	// TE Health of the NuoDB Domain
+	TeHealth NuodbHealth `json:"teHealth,omitempty"`
+	// DomainHealth of the NuoDB Domain
+	DomainHealth NuodbHealth `json:"domainHealth,omitempty"`
+	// Orchestration phase of the NuoDB Domain
+	Phase           NuodbOrchestrationPhase `json:"phase,omitempty"`
+	// ControllerVersion is the version of the controller that last updated the NuoDB Domain
+	ControllerVersion string `json:"controllerVersion,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Nuodb is the Schema for the nuodbs API
 // +k8s:openapi-gen=true
-// +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=nuodb
+// +kubebuilder:categories=nuodb
+// +kubebuilder:printcolumn:name="Admin",type="string",JSONPath=".status.adminHealth"
+// +kubebuilder:printcolumn:name="SM",type="string",JSONPath=".status.smHealth"
+// +kubebuilder:printcolumn:name="TE",type="string",JSONPath=".status.teHealth"
+// +kubebuilder:printcolumn:name="Domain",type="string",JSONPath=".status.domainHealth"
+// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="ControllerVersion",type="string",JSONPath=".status.controllerVersion"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Nuodb struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

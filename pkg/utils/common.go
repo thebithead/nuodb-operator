@@ -55,6 +55,7 @@ import (
 )
 
 const (
+	NuodbOperatorVersion = "v2.0.0"
 	// Default path to the Operator "etc" directory when
 	// running the Operator "inside" of a K8s cluster.
 	DefaultOperatorEtcDir = "/usr/local/etc/nuodb-operator"

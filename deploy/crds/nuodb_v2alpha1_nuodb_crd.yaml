@@ -3,15 +3,39 @@ kind: CustomResourceDefinition
 metadata:
   name: nuodbs.nuodb.com
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.adminHealth
+    name: Admin
+    type: string
+  - JSONPath: .status.smHealth
+    name: SM
+    type: string
+  - JSONPath: .status.teHealth
+    name: TE
+    type: string
+  - JSONPath: .status.domainHealth
+    name: Domain
+    type: string
+  - JSONPath: .status.phase
+    name: Phase
+    type: string
+  - JSONPath: .status.controllerVersion
+    name: ControllerVersion
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: nuodb.com
   names:
+    categories:
+    - nuodb
     kind: Nuodb
     listKind: NuodbList
     plural: nuodbs
+    shortNames:
+    - nuodb
     singular: nuodb
   scope: Namespaced
-  subresources:
-    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -143,6 +167,38 @@ spec:
           - teMemory
           type: object
         status:
+          properties:
+            adminHealth:
+              description: AdminHealth of the NuoDB Domain
+              type: string
+            adminReadyCount:
+              description: Admin Node Ready Count
+              format: int32
+              type: integer
+            controllerVersion:
+              description: ControllerVersion is the version of the controller that
+                last updated the NuoDB Domain
+              type: string
+            domainHealth:
+              description: DomainHealth of the NuoDB Domain
+              type: string
+            phase:
+              description: Orchestration phase of the NuoDB Domain
+              type: string
+            smHealth:
+              description: SM Health of the NuoDB Domain
+              type: string
+            smReadyCount:
+              description: SM Node Ready Count
+              format: int32
+              type: integer
+            teHealth:
+              description: TE Health of the NuoDB Domain
+              type: string
+            teReadyCount:
+              description: TE Node Ready Count
+              format: int32
+              type: integer
           type: object
   version: v2alpha1
   versions:

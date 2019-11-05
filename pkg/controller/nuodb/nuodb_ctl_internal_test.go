@@ -77,7 +77,19 @@ func init() {
 			ApiServer:         apiServer,
 			Container:         container,
 		},
+		Status: nuodbv2alpha1.NuodbStatus{
+		ControllerVersion: utils.NuodbOperatorVersion,
+		Phase:             nuodbv2alpha1.NuodbPendingPhase,
+		AdminReadyCount:   0,
+		SmReadyCount:      0,
+		TeReadyCount:      0,
+		AdminHealth:       nuodbv2alpha1.NuodbUnknownHealth,
+		SmHealth:          nuodbv2alpha1.NuodbUnknownHealth,
+		TeHealth:          nuodbv2alpha1.NuodbUnknownHealth,
+		DomainHealth:      nuodbv2alpha1.NuodbUnknownHealth,
+	},
 	}
+
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		nuodb,

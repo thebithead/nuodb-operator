@@ -126,11 +126,16 @@ func processNuodbTemplates(chartDir string, spec nuodbv2alpha1.NuodbSpec) (NuoRe
 	return nuoResources, err
 }
 
-func getnuodbv2alpha1NuodbInstance(r *ReconcileNuodb, request reconcile.Request) (*nuodbv2alpha1.Nuodb, error) {
+func getnuodbv2alpha1NuodbInstanceUsingClient(thisClient client.Client, request reconcile.Request) (*nuodbv2alpha1.Nuodb, error) {
 	// Fetch the Nuodb instance
 	nuodbv2alpha1NuodbInstance := &nuodbv2alpha1.Nuodb{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, nuodbv2alpha1NuodbInstance)
+	err := thisClient.Get(context.TODO(), request.NamespacedName, nuodbv2alpha1NuodbInstance)
 	return nuodbv2alpha1NuodbInstance, err
+}
+
+func getnuodbv2alpha1NuodbInstance(r *ReconcileNuodb, request reconcile.Request) (*nuodbv2alpha1.Nuodb, error) {
+	// Fetch the Nuodb instance
+	return getnuodbv2alpha1NuodbInstanceUsingClient(r.client, request)
 }
 
 func createNuodbPod(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
@@ -311,6 +316,7 @@ func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Sche
 		}
 	} else {
 		if nuoResource.name == "te" {
+			updateTeReadyCount(thisClient, request, deployment.Status.ReadyReplicas)
 			if *deployment.Spec.Replicas != instance.Spec.TeCount {
 				*deployment.Spec.Replicas = instance.Spec.TeCount
 				err = thisClient.Update(context.TODO(), deployment)
@@ -339,6 +345,7 @@ func reconcileNuodbDeploymentConfig(thisClient client.Client, thisScheme *runtim
 		}
 	} else {
 		if nuoResource.name == "te" {
+			updateTeReadyCount(thisClient, request, deploymentConfig.Status.ReadyReplicas)
 			if deploymentConfig.Spec.Replicas != instance.Spec.TeCount {
 				deploymentConfig.Spec.Replicas = instance.Spec.TeCount
 				err = thisClient.Update(context.TODO(), deploymentConfig)
@@ -367,6 +374,7 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 		}
 	} else {
 		if nuoResource.name == "admin" {
+			updateAdminReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
 			if *statefulSet.Spec.Replicas != instance.Spec.AdminCount {
 				*statefulSet.Spec.Replicas = instance.Spec.AdminCount
 				err = thisClient.Update(context.TODO(), statefulSet)
@@ -376,6 +384,7 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 				}
 			}
 		} else if nuoResource.name == "sm" {
+			updateSmReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
 			if *statefulSet.Spec.Replicas != instance.Spec.SmCount {
 				*statefulSet.Spec.Replicas = instance.Spec.SmCount
 				err = thisClient.Update(context.TODO(), statefulSet)
@@ -437,6 +446,143 @@ func processNuoResources(nuoResources *NuoResources) error {
 	return nil
 }
 
+func updateStatus(thisClient client.Client, request reconcile.Request, status nuodbv2alpha1.NuodbStatus) (*nuodbv2alpha1.Nuodb, bool, error) {
+	// Fetch the Nuodb instance
+	currentInstance, err := getnuodbv2alpha1NuodbInstanceUsingClient(thisClient, request)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			return nil, false, nil
+		}
+		// Error reading the object - requeue the request.
+		return nil, false, err
+	}
+	// Update Admin Health
+	if status.AdminReadyCount >= currentInstance.Spec.AdminCount {
+		status.AdminHealth = nuodbv2alpha1.NuodbGreenHealth
+	} else if status.AdminReadyCount == 0 {
+		status.AdminHealth = nuodbv2alpha1.NuodbRedHealth
+	} else {
+		status.AdminHealth = nuodbv2alpha1.NuodbYellowHealth
+	}
+
+	// Update SM Health
+	if status.SmReadyCount >= currentInstance.Spec.SmCount {
+		status.SmHealth = nuodbv2alpha1.NuodbGreenHealth
+	} else if status.SmReadyCount == 0 {
+		status.SmHealth = nuodbv2alpha1.NuodbRedHealth
+	} else {
+		status.SmHealth = nuodbv2alpha1.NuodbYellowHealth
+	}
+
+	// Update TE Health
+	if status.TeReadyCount >= currentInstance.Spec.TeCount {
+		status.TeHealth = nuodbv2alpha1.NuodbGreenHealth
+	} else if status.TeReadyCount == 0 {
+		status.TeHealth = nuodbv2alpha1.NuodbRedHealth
+	} else {
+		status.TeHealth = nuodbv2alpha1.NuodbYellowHealth
+	}
+
+	// Derive Domain Health from Admin/SM/TE Health
+	if ((status.TeHealth == nuodbv2alpha1.NuodbGreenHealth) &&
+		(status.SmHealth == nuodbv2alpha1.NuodbGreenHealth) &&
+		(status.AdminHealth == nuodbv2alpha1.NuodbGreenHealth)) {
+		status.DomainHealth = nuodbv2alpha1.NuodbGreenHealth
+		status.Phase = 	nuodbv2alpha1.NuodbOperationalPhase
+	} else if ((status.TeHealth == nuodbv2alpha1.NuodbRedHealth) ||
+		(status.SmHealth == nuodbv2alpha1.NuodbRedHealth) ||
+		(status.AdminHealth == nuodbv2alpha1.NuodbRedHealth)) {
+		status.DomainHealth = nuodbv2alpha1.NuodbRedHealth
+		status.Phase = 	nuodbv2alpha1.NuodbPendingPhase
+	} else {
+		status.DomainHealth = nuodbv2alpha1.NuodbYellowHealth
+		status.Phase = 	nuodbv2alpha1.NuodbOperationalPhase
+	}
+
+	if !reflect.DeepEqual(currentInstance.Status, status) {
+		status.DeepCopyInto(&currentInstance.Status)
+		err = thisClient.Update(context.TODO(), currentInstance)
+		if err != nil {
+			return nil, false, err
+		}
+		return currentInstance, true, err
+	}
+	return currentInstance, false, err
+}
+
+func updateAdminReadyCount(thisClient client.Client, request reconcile.Request,
+	adminReadyCount int32) (*nuodbv2alpha1.Nuodb, bool, error) {
+	// Fetch the Nuodb instance
+	currentInstance, err := getnuodbv2alpha1NuodbInstanceUsingClient(thisClient, request)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			return nil, false, nil
+		}
+		// Error reading the object - requeue the request.
+		return nil, false, err
+	}
+	if currentInstance.Status.AdminReadyCount == adminReadyCount {
+		return currentInstance, false, nil
+	}
+	newStatus := nuodbv2alpha1.NuodbStatus{}
+	currentInstance.Status.DeepCopyInto(&newStatus)
+	newStatus.AdminReadyCount = adminReadyCount
+	return updateStatus(thisClient, request, newStatus)
+}
+
+func updateSmReadyCount(thisClient client.Client, request reconcile.Request,
+	smReadyCount int32) (*nuodbv2alpha1.Nuodb, bool, error) {
+	// Fetch the Nuodb instance
+	currentInstance, err := getnuodbv2alpha1NuodbInstanceUsingClient(thisClient, request)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			return nil, false, nil
+		}
+		// Error reading the object - requeue the request.
+		return nil, false, err
+	}
+	if currentInstance.Status.SmReadyCount == smReadyCount {
+		return currentInstance, false, nil
+	}
+	newStatus := nuodbv2alpha1.NuodbStatus{}
+	currentInstance.Status.DeepCopyInto(&newStatus)
+	newStatus.SmReadyCount = smReadyCount
+	return updateStatus(thisClient, request, newStatus)
+}
+
+func updateTeReadyCount(thisClient client.Client, request reconcile.Request,
+	teReadyCount int32) (*nuodbv2alpha1.Nuodb, bool, error) {
+	// Fetch the Nuodb instance
+	currentInstance, err := getnuodbv2alpha1NuodbInstanceUsingClient(thisClient, request)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			return nil, false, nil
+		}
+		// Error reading the object - requeue the request.
+		return nil, false, err
+	}
+	if currentInstance.Status.TeReadyCount == teReadyCount {
+		return currentInstance, false, nil
+	}
+	newStatus := nuodbv2alpha1.NuodbStatus{}
+	currentInstance.Status.DeepCopyInto(&newStatus)
+	newStatus.TeReadyCount = teReadyCount
+	return updateStatus(thisClient, request, newStatus)
+}
+
+
 func reconcileNuodbInternal(r *ReconcileNuodb, request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling Nuodb")
@@ -452,6 +598,23 @@ func reconcileNuodbInternal(r *ReconcileNuodb, request reconcile.Request) (recon
 		}
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
+	}
+
+	nuodbStatus := nuodbv2alpha1.NuodbStatus{
+		ControllerVersion: utils.NuodbOperatorVersion,
+		Phase:             nuodbv2alpha1.NuodbPendingPhase,
+		AdminReadyCount:   0,
+		SmReadyCount:      0,
+		TeReadyCount:      0,
+		AdminHealth:       nuodbv2alpha1.NuodbUnknownHealth,
+		SmHealth:          nuodbv2alpha1.NuodbUnknownHealth,
+		TeHealth:          nuodbv2alpha1.NuodbUnknownHealth,
+		DomainHealth:      nuodbv2alpha1.NuodbUnknownHealth,
+	}
+
+	if instance.Status.ControllerVersion == "" {
+		_, _, err = updateStatus(r.client, request, nuodbStatus)
+		return reconcile.Result{Requeue:true}, err
 	}
 
 	nuoResources, err := nuoResourcesInit(instance)
@@ -523,5 +686,5 @@ func reconcileNuodbInternal(r *ReconcileNuodb, request reconcile.Request) (recon
 			}
 		}
 	}
-	return reconcile.Result{}, nil
+	return reconcile.Result{RequeueAfter:time.Duration(10) * time.Second}, nil
 }
