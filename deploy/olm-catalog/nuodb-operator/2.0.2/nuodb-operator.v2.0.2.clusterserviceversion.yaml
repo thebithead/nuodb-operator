@@ -74,7 +74,7 @@ metadata:
     description: This Operator will deploy the Community Edition of NuoDB
     repository: https://github.com/nuodb/nuodb-operator
     support: NuoDB, Inc.
-  name: nuodb-operator.v2.0.0
+  name: nuodb-operator.v2.0.2
   namespace: "placeholder"
 spec:
   apiservicedefinitions: {}
@@ -422,5 +422,5 @@ spec:
   maturity: alpha
   provider:
     name: NuoDB, Inc.
-  version: 2.0.0
+  version: 2.0.2
   replaces: nuodb-operator.v0.0.5
