@@ -1,4 +1,7 @@
 # The NuoDB Operator
+
+[![Build Status](https://travis-ci.org/nuodb/nuodb-operator.svg?branch=master)](https://travis-ci.org/nuodb/nuodb-operator)
+
 A Kubernetes Operator written in Golang that automates the packaging, provisioning, and managing of operational tasks for Kubernetes containerized applications. By default the NuoDB Kubernetes Operator deploys the NuoDB with Community Edition (CE) capability in the following tested and verified Kubernetes distributions:
 
 * Red Hat OpenShift 3.11 or 4.x
