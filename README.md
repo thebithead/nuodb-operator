@@ -57,7 +57,7 @@ _**Note:** The instructions on this page use the Kubernetes&ensp;`kubectl` comma
 ```
 export OPERATOR_NAMESPACE=nuodb
 export STORAGE_NODE=yourStorageNodeDNSName
-export NUODB_OPERATOR_VERSION=2.0.1           --confirm you set the correction NuoDB Operator version here.
+export NUODB_OPERATOR_VERSION=2.0.2           --confirm you set the correction NuoDB Operator version here.
 ```
 ### 2. Clone a copy of the NuoDB Operator from Github
 In your home or working directory, run:
