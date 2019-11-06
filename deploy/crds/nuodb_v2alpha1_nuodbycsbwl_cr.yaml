@@ -1,0 +1,17 @@
+apiVersion: nuodb.com/v2alpha1
+kind: NuodbYcsbWl
+metadata:
+  name: nuodbycsbwl
+spec:
+  dbName: test1
+  ycsbWorkloadCount: 1
+  ycsbLoadName: ycsb-load
+  ycsbWorkload: b
+  ycsbLbPolicy: ""
+  ycsbNoOfProcesses: 2
+  ycsbNoOfRows: 10000
+  ycsbNoOfIterations: 0
+  ycsbOpsPerIteration: 10000
+  ycsbMaxDelay: 240000
+  ycsbDbSchema: User1
+  ycsbContainer: nuodb/ycsb:latest

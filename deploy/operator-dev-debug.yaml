@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nuodb-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: nuodb-operator
+  template:
+    metadata:
+      labels:
+        name: nuodb-operator
+    spec:
+      serviceAccountName: nuodb-operator
+      containers:
+        - name: nuodb-operator
+          # Replace this with the built image name
+          image: quay.io/nuodb/nuodb-golang-operator-dev-debug:latest
+#          command:
+#            - nuodb-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "nuodb-operator"
+          securityContext:
+            capabilities:
+              add:
+                - SYS_PTRACE
+          ports:
+            - name: debug
+              containerPort: 40000
+              protocol: TCP
+      imagePullSecrets:
+        - name: regcred

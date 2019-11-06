@@ -1,0 +1,9 @@
+apiVersion: nuodb.com/v2alpha1
+kind: NuodbInsightsServer
+metadata:
+  name: insightsserver
+spec:
+  elasticVersion: 7.3.0
+  elasticNodeCount: 1
+  kibanaVersion: 7.3.0
+  kibanaNodeCount: 1

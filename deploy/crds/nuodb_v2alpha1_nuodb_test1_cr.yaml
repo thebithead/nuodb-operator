@@ -1,0 +1,27 @@
+apiVersion: nuodb.com/v2alpha1
+kind: Nuodb
+metadata:
+  name: nuodb-test1
+spec:
+  dbAvailability: manual
+  storageMode: ephemeral
+  insightsEnabled: false
+  adminCount: 1
+  adminStorageSize: 5G
+  adminStorageClass: local-disk
+  dbName: test1
+  dbUser: dba
+  dbPassword: secret
+  smMemory: 2Gi
+  smCount: 1
+  smCpu: "1"
+  smStorageSize: 20G
+  smStorageClass: local-disk
+  engineOptions: ""
+  teCount: 1
+  teMemory: 2Gi
+  teCpu: "1"
+  apiServer: https://domain:8888
+  container: nuodb/nuodb-ce:latest
+
+

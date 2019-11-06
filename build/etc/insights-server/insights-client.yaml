@@ -1,0 +1,41 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: insights-client
+  labels:
+    app: insights
+    group: nuodb
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: nuodb.com/zone
+                operator: Exists
+  containers:
+  - name: insights
+    image: 'nuodb/nuodb-ce:latest'
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: NUOCMD_API_SERVER
+        value: 'https://domain:8888'
+      - name: PYTHONWARNINGS
+        value: "ignore:Unverified HTTPS request"
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log/nuodb
+    - name: config-insights
+      mountPath: /etc/nuodb/nuoca.local.yml
+      subPath: nuoca.local.yml
+    command: ["/opt/nuodb/etc/python/x86_64-linux/bin/python2.7"]
+    args: ["/opt/nuodb/etc/nuoca/src/nuoca.py", "--collection-interval", "10", "-o", "sub_id=INSIGHTS", "/etc/nuodb/nuoca.local.yml"]
+  volumes:
+    - name: log-volume
+      emptyDir: {}
+    - name: config-insights
+      configMap:
+        name: insights-configmap
+    - name: nuoinsights
+      configMap:
+        name: insights-configmap

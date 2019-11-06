@@ -1,0 +1,19 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1alpha1
+kind: Elasticsearch
+metadata:
+  name: insights-escluster
+spec:
+  version: 7.3.0
+  # LoadBalancer is required for running the Operator "outside" of the K8s Cluster
+  # so that the Operator can use a ES Client to set the ES Templates and ES Pipelines.
+  # We can comment this block out if running "In Cluster".
+  http:
+    service:
+      spec:
+        type: LoadBalancer
+  nodes:
+  - nodeCount: 1
+    config:
+      node.master: true
+      node.data: true
+      node.ingest: true

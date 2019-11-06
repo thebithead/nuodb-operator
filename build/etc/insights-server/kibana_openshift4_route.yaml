@@ -1,0 +1,29 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: kibana
+  labels:
+    common.k8s.elastic.co/type: kibana
+    kibana.k8s.elastic.co/name: kibana
+spec:
+  host: kibana-elastic-elastic.apps.nuodb-op-test17.openshift.nuodb.io
+  subdomain: ''
+  to:
+    kind: Service
+    name: kibana-kb-http
+    weight: 100
+  port:
+    targetPort: 5601
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+status:
+  ingress:
+    - host: kibana-elastic-elastic.apps.nuodb-op-test17.openshift.nuodb.io
+      routerName: default
+      conditions:
+        - type: Admitted
+          status: 'True'
+#      wildcardPolicy: None
+#      routerCanonicalHostname: apps.nuodb-op-test17.openshift.nuodb.io

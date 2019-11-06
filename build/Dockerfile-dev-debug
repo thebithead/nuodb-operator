@@ -1,0 +1,26 @@
+#FROM registry.access.redhat.com/ubi7/ubi:latest
+FROM markeijsermans/debug:kitchen-sink
+
+ENV OPERATOR=/usr/local/bin/nuodb-operator \
+    USER_UID=1001 \
+    USER_NAME=nuodb-operator
+
+# install operator binary
+COPY build/_output/bin/nuodb-golang-operator ${OPERATOR}
+
+COPY build/etc /usr/local/etc/nuodb-operator
+
+# COPY build/bin /usr/local/bin
+COPY build/bin/user_setup /usr/local/bin/user_setup
+RUN  /usr/local/bin/user_setup
+
+ENTRYPOINT ["/usr/local/bin/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "exec", "/usr/local/bin/nuodb-operator-dev-debug"]
+
+USER ${USER_UID}
+
+ADD tmp/_output/bin/nuodb-operator-dev-debug /usr/local/bin
+ADD tmp/_output/bin/dlv /usr/local/bin
+
+# Delve Port for remote debugging.
+EXPOSE 40000
+

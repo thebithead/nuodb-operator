@@ -1,0 +1,48 @@
+{
+    "index_patterns": "ic_zbx-*",
+    "order": 5,
+    "settings" : {
+        "index" : {
+          "analysis": {
+            "analyzer": {
+              "default": {
+                "type": "whitespace",
+                "tokenizer": "whitespace"
+              }
+            }
+          }
+        }
+    },
+    "mappings" : {
+        "properties" : {
+          "timestamp" : {
+              "type": "date",
+              "format": "strict_date_optional_time||epoch_millis"
+          },
+          "sub_id": {
+              "type": "keyword"
+          },
+          "NuoCA.plugin_name": {
+              "type": "keyword"
+          },
+          "NuoCA.Hostname": {
+              "type": "keyword"
+          },
+          "ZBX.system.hostname": {
+              "type": "keyword"
+          },
+          "ZBX.system.localtime": {
+              "type": "date",
+              "format": "strict_date_optional_time||epoch_second"
+          },
+          "ZBX.system.boottime": {
+              "type": "date",
+              "format": "strict_date_optional_time||epoch_second"
+          },
+          "ZBX.collect_timestamp": {
+              "type": "date",
+              "format": "strict_date_optional_time||epoch_millis"
+          }
+        }
+    }
+}

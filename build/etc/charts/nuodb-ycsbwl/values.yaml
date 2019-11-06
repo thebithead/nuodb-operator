@@ -1,0 +1,49 @@
+# ycsbLoadName
+# YCSB workload pod name
+ycsbLoadName: ycsb-load
+
+# ycsbWorkload
+# YCSB workload.  Valid values are a-f. Each letter determines a different
+# mix of read and update workload percentage generated. a= 50/50, b=95/5,
+# c=100 read. Refer to YCSB documentation for more detail
+ycsbWorkload: b
+
+# ycsbLbPolicy
+# YCSB load-balancer policy. Name of an existing load-balancer policy, that
+# has already been created using the 'nuocmd set load-balancer' command.
+ycsbLbPolicy: ""
+
+# ycsbNoOfProcesses
+# Number of YCSB processes. Number of concurrent YCSB processes that will
+# be started in each YCSB pod. Each YCSB process makes a connection to the
+# database.
+ycsbNoOfProcesses: 2
+
+# ycsbNoOfRows: 10000
+# YCSB number of initial rows in table
+ycsbNoOfRows: 10000
+
+# ycsbNoOfIterations
+# YCSB number of iterations
+ycsbNoOfIterations: 0
+
+# ycsbOpsPerIteration
+# Number of YCSB SQL operations to perform in each iteration.
+# This value controls the number of SQL operations performed in each benchmark
+# iteration. Increasing this value increases the run-time of each iteration,
+# and also reduces the frequency at which new connections are made during the
+# sample workload run period.
+ycsbOpsPerIteration: 10000
+
+# ycsbMaxDelay
+# YCSB maximum workload delay in milliseconds (Default is 4 minutes)
+ycsbMaxDelay: 240000
+
+# ycsbDbSchema
+# YCSB Database schema.  Default schema to use to resolve tables, views, etc
+ycsbDbSchema: User1
+
+# ycsbContainer
+# YCSB fully qualified image name (FQIN) for the Docker image to use
+ycsbContainer: nuodb/ycsb:latest
+
