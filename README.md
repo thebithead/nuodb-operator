@@ -188,6 +188,12 @@ To install the NuoDB Operator into your Kubernetes cluster, follow the steps ind
 
 In OpenShift 4.x, the NuoDB Operator is available to install directly from the OpenShift OperatorHub, an integrated service catalog, accessible from within the OpenShift 4 Web UI which creates a seamless - single click experience - that allows users to install the NuoDB Operator from catalog-to-cluster in seconds.
 
+Pre-requisite: 
+Run the following yaml in your OpenShift cluster to authorize the NuoDB Operator service account before installing the NuoDB Operator.
+```
+kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
+```
+Steps:
 1. Select &ensp;`Projects` from the OpenShift 4 left toolbar and click the &ensp;`NuoDB` project to make
    it your current project.
 2. Select the &ensp;`OperatorHub` under the &ensp;`Catalog` section in the OCP 4 left toolbar.
@@ -272,9 +278,9 @@ done
 Below is a sample of how to deploy a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
 ```
 # To deploy the NuoDB database into your Kubernetes cluster, first make a local copy of the NuoDB cr yaml files
-cp nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
-cp nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
-cp nuodb-operator/deploy/crds/nuodb_v1alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
+cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
+cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
+cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
 
 # Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
 kubectl create -f nuodb-cr.yaml
