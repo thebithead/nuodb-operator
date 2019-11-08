@@ -5,23 +5,20 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"github.com/elastic/go-elasticsearch/v7"
+	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"golang.org/x/net/context"
+	"gotest.tools/assert"
+	is "gotest.tools/assert/cmp"
 	corev1 "k8s.io/api/core/v1"
-	"log"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"net"
 	"net/http"
+	operator "nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
+	testutil "nuodb/nuodb-operator/test/e2e/util"
 	"strings"
 	"testing"
 	"time"
-
-	framework "github.com/operator-framework/operator-sdk/pkg/test"
-	"gotest.tools/assert"
-	is "gotest.tools/assert/cmp"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	operator "nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
-	testutil "nuodb/nuodb-operator/test/e2e/util"
-
-	"k8s.io/apimachinery/pkg/types"
 )
 
 const (
@@ -63,7 +60,6 @@ func verifyYcsbContainer(t *testing.T, f *framework.Framework, namespace string)
 	assert.NilError(t, err)
 	repSize := replicationController.Spec.Replicas
 	assert.Assert(t,*repSize > 0,)
-
 }
 
 func verifyGrafanaDashboards(t *testing.T, f *framework.Framework,namespace string) {
@@ -90,7 +86,7 @@ func verifyGrafanaDashboards(t *testing.T, f *framework.Framework,namespace stri
 }
 
 func verifyElasticData(t *testing.T, f *framework.Framework,namespace string) {
-	esClient, err := GetESClient(f,namespace)
+	esClient, err := GetESClient(t,f,namespace)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -134,14 +130,14 @@ func TestNuodbInsights(t *testing.T) {
 		dbName                  = "test1"
 		dbUser                  = "dba"
 		dbPassword              = "secret"
-		smMemory          	    = "1"
+		smMemory          	    = "500m"
 		smCount           int32 = 1
 		smCpu             		= "100m"
 		smStorageSize           = "20G"
 		smStorageClass          = "local-disk"
 		engineOptions           = ""
 		teCount           int32 = 1
-		teMemory          		= "1"
+		teMemory          		= "500m"
 		teCpu              		= "100m"
 		apiServer               = "https://domain:8888"
 		container               = "nuodb/nuodb-ce:latest"
@@ -208,9 +204,8 @@ func TestNuodbInsights(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	insightClientPod := testutil.GetInsightsClientPod()
-
-	_, err = f.KubeClient.CoreV1().Pods(namespace).Create(insightClientPod)
+	insightClientPod := testutil.GetInsightsClientPod(namespace)
+	err = testutil.CreateInsightsPods(t,ctx,insightClientPod)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,6 +227,7 @@ func TestNuodbInsights(t *testing.T) {
 		YcsbOpsPerIteration: 10000,
 		YcsbMaxDelay: 240000,
 		YcsbDbSchema: "User1",
+		YcsbContainer: "nuodb/ycsb:latest",
 	}
 
 	exampleNuodbYcsbw := testutil.NewNuodbYcsbwCluster(namespace, ycsbwSpec)
@@ -253,16 +249,16 @@ func TestNuodbInsights(t *testing.T) {
 	t.Run("verifyAllExpectedPodsExists", func(t *testing.T) { verifyAllExpectedPodsExists(t, f, "nuodb")})
 }
 
-func GetESClient(f *framework.Framework, namespace string) (*elasticsearch.Client, error){
+func GetESClient(t *testing.T, f *framework.Framework, namespace string) (*elasticsearch.Client, error){
 	var esClient *elasticsearch.Client
 	esClient = nil
 	host, err := f.KubeClient.CoreV1().Services(namespace).Get(ESClusterServiceHttp, metav1.GetOptions{})
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	secret, err := f.KubeClient.CoreV1().Secrets(namespace).Get(ESClusterUserSecret, metav1.GetOptions{})
 	if err != nil{
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	var esPassword string
 	secretData := secret.Data
@@ -274,7 +270,7 @@ func GetESClient(f *framework.Framework, namespace string) (*elasticsearch.Clien
 
 	certSecret, err := f.KubeClient.CoreV1().Secrets(namespace).Get(ESClusterHttpCertsPublic, metav1.GetOptions{})
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	tlsCrt := certSecret.Data["tls.crt"]

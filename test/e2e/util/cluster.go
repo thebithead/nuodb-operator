@@ -30,9 +30,6 @@ const (
 	CleanupTimeout       = time.Second * 15
 )
 
-
-// NewStorageOSCluster returns a StorageOSCluster object, created using a given
-// cluster spec.
 func NewNuodbCluster(namespace string, clusterSpec nuodb.NuodbSpec) *nuodb.Nuodb {
 
 	name := "nuodb"
@@ -87,7 +84,7 @@ func DeployNuodb(t *testing.T, ctx *framework.TestCtx, nuodb *nuodb.Nuodb) error
 		return err
 	}
 
-	err = WaitForStatefulSet(t, f.KubeClient, nuodb.Namespace, "admin",1, RetryInterval, Timeout*2)
+	err = WaitForStatefulSet(t, f.KubeClient, nuodb.Namespace, "admin", 1, RetryInterval, Timeout*2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +103,7 @@ func NewNuodbInsightsCluster(namespace string, insightsSpec nuodb.NuodbInsightsS
 	}
 }
 
-func DeployInsightsServer(t *testing.T, ctx *framework.TestCtx, nuodbInsights *nuodb.NuodbInsightsServer) error{
+func DeployInsightsServer(t *testing.T, ctx *framework.TestCtx, nuodbInsights *nuodb.NuodbInsightsServer) error {
 	f := framework.Global
 
 	err := f.Client.Create(goctx.TODO(), nuodbInsights, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
@@ -114,7 +111,7 @@ func DeployInsightsServer(t *testing.T, ctx *framework.TestCtx, nuodbInsights *n
 		return err
 	}
 
-	err = WaitForStatefulSet(t, f.KubeClient, nuodbInsights.Namespace, "insights-server-release-logstash",1, RetryInterval, Timeout*6)
+	err = WaitForStatefulSet(t, f.KubeClient, nuodbInsights.Namespace, "insights-server-release-logstash", 1, RetryInterval, Timeout*6)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,20 +130,36 @@ func NewNuodbYcsbwCluster(namespace string, ycsbwSpec nuodb.NuodbYcsbWlSpec) *nu
 	}
 }
 
-func DeployYcsbw(t *testing.T, ctx *framework.TestCtx, nuodbYcsbw *nuodb.NuodbYcsbWl) error{
+func DeployYcsbw(t *testing.T, ctx *framework.TestCtx, nuodbYcsbw *nuodb.NuodbYcsbWl) error {
 	f := framework.Global
 
 	err := f.Client.Create(goctx.TODO(), nuodbYcsbw, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
 	if err != nil {
 		return err
 	}
+
+	WaitForRC(t, f, nuodbYcsbw.Namespace)
 	t.Log("YCSBW Created")
 	return nil
+
 }
 
+func WaitForRC(t *testing.T, f *framework.Framework, namespace string) {
+	rcClient := f.KubeClient.CoreV1().ReplicationControllers(namespace)
+	var err1 error
+	if err := wait.PollImmediate(RetryInterval, Timeout, func() (bool, error) {
+		newRC, err1 := rcClient.Get("ycsb-load", metav1.GetOptions{})
+		if err1 != nil {
+			return false, nil
+		}
+		return newRC.Status.Replicas == 1, nil
+	}); err != nil {
+		t.Fatalf("Failed to verify .Status.Replicas is equal to .Spec.Replicas for rc %s: %v", "ycsb-load", err1)
+	}
+}
 
 // WaitForStatefulSet checks and waits for a given statefulset to be in ready.
-func WaitForStatefulSet(t *testing.T, kubeclient kubernetes.Interface, namespace, name string, replicas int, retryInterval, timeout time.Duration) error {
+func WaitForStatefulSet(t *testing.T, kubeclient kubernetes.Interface, namespace string, name string, replicas int, retryInterval, timeout time.Duration) error {
 	err := wait.Poll(retryInterval, timeout, func() (done bool, err error) {
 		statefulset, err := kubeclient.AppsV1().StatefulSets(namespace).Get(name, metav1.GetOptions{IncludeUninitialized: true})
 		if err != nil {
@@ -171,10 +184,11 @@ func WaitForStatefulSet(t *testing.T, kubeclient kubernetes.Interface, namespace
 	return nil
 }
 
-func GetInsightsClientPod() *corev1.Pod {
+func GetInsightsClientPod(namespace string) *corev1.Pod {
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "insights-client",
+			Namespace: namespace,
 			Labels: map[string]string{
 				"app":   "demo",
 				"group": "nuodb",
@@ -203,50 +217,57 @@ func GetInsightsClientPod() *corev1.Pod {
 					EmptyDir: &corev1.EmptyDirVolumeSource{},
 				},},
 				{"config-insights", corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-				LocalObjectReference: corev1.LocalObjectReference{Name:"insights-configmap"},
-			},
-			}},
-			{"nuoinsights", corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-				LocalObjectReference: corev1.LocalObjectReference{Name:"insights-configmap"},
-			},},
-			},
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{Name: "insights-configmap"},
+					},
+				}},
+				{"nuoinsights", corev1.VolumeSource{
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{Name: "insights-configmap"},
+					},},
+				},
 			},
 			Containers: []corev1.Container{
-			{
-				Name:            "insights",
-				Image:           "nuodb/nuodb-ce:latest",
-				ImagePullPolicy: corev1.PullIfNotPresent,
-				Command: []string{
-				"/opt/nuodb/etc/python/x86_64-linux/bin/python2.7",
-			},
-				Args: []string{
-				"/opt/nuodb/etc/nuoca/src/nuoca.py",
-				"--collection-interval",
-				"10",
-				"-o",
-				"sub_id=INSIGHTS",
-				"/etc/nuodb/nuoca.local.yml",
-			},
-				Env: []corev1.EnvVar{
-			{Name: "NUOCMD_API_SERVER", Value: "https://domain:8888", ValueFrom: nil},
-			{Name: "PYTHONWARNINGS", Value: "ignore:Unverified HTTPS request", ValueFrom: nil},
-			},
-				VolumeMounts: []corev1.VolumeMount{
-			{Name: "log-volume", MountPath: "/var/log/nuodb"},
-			{Name: "config-insights", MountPath: "/etc/nuodb/nuoca.local.yml", SubPath: "nuoca.local.yml"},
-			},
-			},
+				{
+					Name:            "insights",
+					Image:           "nuodb/nuodb-ce:latest",
+					ImagePullPolicy: corev1.PullIfNotPresent,
+					Command: []string{
+						"/opt/nuodb/etc/python/x86_64-linux/bin/python2.7",
+					},
+					Args: []string{
+						"/opt/nuodb/etc/nuoca/src/nuoca.py",
+						"--collection-interval",
+						"10",
+						"-o",
+						"sub_id=INSIGHTS",
+						"/etc/nuodb/nuoca.local.yml",
+					},
+					Env: []corev1.EnvVar{
+						{Name: "NUOCMD_API_SERVER", Value: "https://domain:8888", ValueFrom: nil},
+						{Name: "PYTHONWARNINGS", Value: "ignore:Unverified HTTPS request", ValueFrom: nil},
+					},
+					VolumeMounts: []corev1.VolumeMount{
+						{Name: "log-volume", MountPath: "/var/log/nuodb"},
+						{Name: "config-insights", MountPath: "/etc/nuodb/nuoca.local.yml", SubPath: "nuoca.local.yml"},
+					},
+				},
 			},
 			},
 		}
 	}
 
-
+func CreateInsightsPods(t *testing.T, ctx *framework.TestCtx, insightsPod *corev1.Pod) error{
+	f := framework.Global
+	err := f.Client.Create(goctx.TODO(), insightsPod, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 //ExecCommand executes arbitrary command inside the pod
-func  ExecCommand(f *framework.Framework, namespace string, podName string, containerName string,  command []string) (string, error) {
+func ExecCommand(f *framework.Framework, namespace string, podName string, containerName string, command []string) (string, error) {
 
 	var (
 		execOut bytes.Buffer
@@ -280,7 +301,7 @@ func  ExecCommand(f *framework.Framework, namespace string, podName string, cont
 	}, scheme.ParameterCodec)
 
 	config1 := f.KubeConfig
-	exec, err := remotecommand.NewSPDYExecutor(config1 , "POST", req.URL())
+	exec, err := remotecommand.NewSPDYExecutor(config1, "POST", req.URL())
 	if err != nil {
 		return "", fmt.Errorf("failed to init executor: %v", err)
 	}

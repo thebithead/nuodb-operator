@@ -22,14 +22,14 @@ var (
 	dbName                  = "test1"
 	dbUser                  = "dba"
 	dbPassword              = "secret"
-	smMemory           = "1"
+	smMemory           = "500m"
 	smCount           int32 = 1
 	smCpu              = "100m"
 	smStorageSize           = "20G"
 	smStorageClass          = "local-disk"
 	engineOptions           = ""
 	teCount           int32 = 1
-	teMemory           = "1"
+	teMemory           = "100m"
 	teCpu              = "100m"
 	apiServer               = "https://domain:8888"
 	container               = "nuodb/nuodb-ce:latest"
