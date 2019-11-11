@@ -305,8 +305,10 @@ kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
 echo ""
 echo "Open Networking/Route panel in your Kubernetes dashboard to obtain your NuoDB Insight's dashboard URL."
 echo ""
-echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
-
+# if Red Hat OpenShift
+   echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
+# if managed Kubernetes / open source Kubernetes
+   echo "https://$(kubectl get ingress grafana-ingress --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
  ```
 
 ### Sample nuodb-cr.yaml deployment file
