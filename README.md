@@ -396,9 +396,9 @@ If Red Hat OpenShift,
 echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
 ```
 If managed or opens source Kubernetes,
+run the following command where xxxx is the pod tag for your grafana deployment pod. 
+It's recommended to run this command in the background in a logging terminal shell.
 ```
-# run the following command where xxxx is the pod tag for your grafana deployment pod. 
-# It's recommended to run this command in the background in a logging terminal shell.
    kubectl port-forward grafana-deployment-xxxx 3000 &
 ```
 Your local Insights URL is&ensp;`localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s`
