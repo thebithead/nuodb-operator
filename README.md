@@ -416,8 +416,7 @@ To connect to NuoDB Insights, open a Web browser using the following URL
 
 https://insights.nuodb.com/yourSubID#
 
-#### Check the status of NuoDB Insights visual monitoring tool
-If you enabled NuoDB Insights, you can confirm its status by running:
+To check the status of hosted NuoDB Insights visual monitoring tool, run
 
 &ensp; `oc exec -it nuodb-insights -c insights -- nuoca check insights`
 
