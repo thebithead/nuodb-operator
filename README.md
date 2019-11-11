@@ -400,7 +400,7 @@ kubectl port-forward grapha-deployment-xxxxx 3000
 https://$(kubectl get ingress grafana-ingress --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s
 ```
 
-**Usage note when using open source Kubernetes only:** A current Kubernetes Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the K8s open source WebUI by reviewing the container log, instead run
+**Usage note when using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-inisghts log file. Instead run,
 ```
 kubectl logs nuodb-insights -n nuodb -c insights
 ```
