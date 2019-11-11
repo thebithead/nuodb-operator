@@ -400,7 +400,7 @@ To connect to NuoDB Insights, open a Web browser using the following URL
 
 https://insights.nuodb.com/yourSubID#
 
-### Check the status of NuoDB Insights visual monitoring tool
+#### Check the status of NuoDB Insights visual monitoring tool
 If you enabled NuoDB Insights, you can confirm its status by running:
 
 &ensp; `oc exec -it nuodb-insights -c insights -- nuoca check insights`
@@ -418,7 +418,7 @@ If managed or opens source Kubernetes,
 # It's recommended to run this command in the background in a logging terminal shell.
    kubectl port-forward grafana-deployment-xxxx 3000 &
 ```
-Your local Insights URL is [localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s
+Your local Insights URL is&ensp; `localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s`
 
 
 ## Launch a Sample SQL Workload
