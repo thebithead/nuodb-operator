@@ -322,7 +322,7 @@ The nuodb-operator/deploy directory includes sample Custom Resources to deploy N
 
 &ensp; `cr-persistent-insights-enabled.yaml` deploys NuoDB CE domain using persistent storage and has NuoDB Insights enabled.
 
-Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
+Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
 ```
 spec:
   replicaCount: 1
