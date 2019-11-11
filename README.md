@@ -418,7 +418,7 @@ If managed or opens source Kubernetes,
 # It's recommended to run this command in the background in a logging terminal shell.
    kubectl port-forward grafana-deployment-xxxx 3000 &
 ```
-Your local Insights URL is&ensp; `localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s`
+Your local Insights URL is&ensp;`localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s`
 
 
 ## Launch a Sample SQL Workload
