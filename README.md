@@ -302,16 +302,14 @@ done
 # create the Insights client
 kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
 
-echo "
-
 # if Red Hat OpenShift,
-# open Networking/Route panel in your Kubernetes dashboard to obtain your NuoDB Insight's dashboard URL.
+# open your Kubernetes dashboard Networking/Route panel to obtain your NuoDB Insight's dashboard URL.
 # Also, displayed using the following command,
    echo "on-cluster Insights URL: https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
 
 # if managed Kubernetes / open source Kubernetes, 
-# run the following command where xxxx is the pod tag for your grafana deployment pod. It's recommended to run this
-# command in the background in a logging terminal shell.
+# run the following command where xxxx is the pod tag for your grafana deployment pod. 
+# It's recommended to run this command in the background in a logging terminal shell.
    kubectl port-forward grafana-deployment-xxxx 3000 &
    echo "on-cluster Insights URL: localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s"
  ```
@@ -368,7 +366,7 @@ ycsbLoadName: ycsb-load
 ### Deploy the NuoDB Insights Visual Monitor
 
 Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
-        
+
 > Insights is also part of NuoDB Services and Support in order to service our customers better and more efficently and is
       subject to our Terms of Use and Privacy Policy.
       [Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy)
@@ -388,7 +386,7 @@ Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. I
       *insightsEnabled* to "Opt In" and enable NuoDB Insights. Any other value than "true"
       results in Opting out. Insights can also be enabled at a later time if you choose.
 
-After deploying your NuoDB database, if you optionally chose to install NuoDB Insights by setting "insightsEnabled: true" in your nuodb-cr.yaml file, then you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod, go to the Logs tab, and find the line that indicates your Subscriber ID. 
+After deploying your NuoDB database, if you optionally chose to install NuoDB Insights by setting "insightsEnabled: true" in your nuodb-cr.yaml file, then you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod in your Kubernetes dashboard, go to the Logs tab, and find the line that indicates your Subscriber ID. 
 ```
 Insights Subscriber ID: yourSubID#
 ```
@@ -403,7 +401,7 @@ To connect to NuoDB Insights, open a Web browser using the following URL
 https://insights.nuodb.com/yourSubID#
 
 ### Check the status of NuoDB Insights visual monitoring tool
-If you enabled NuoDB Insights (highly recommended). Confirm run status by running:
+If you enabled NuoDB Insights, you can confirm its status by running:
 
 &ensp; `oc exec -it nuodb-insights -c insights -- nuoca check insights`
 
@@ -419,7 +417,7 @@ If managed or opens source Kubernetes,
 # It's recommended to run this command in the background in a logging terminal shell.
    kubectl port-forward grafana-deployment-xxxx 3000 &
 ```
-Your local Insights URL is [localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s](localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s)
+Your local Insights URL is [localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s]
 
 
 ## Launch a Sample SQL Workload
