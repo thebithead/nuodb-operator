@@ -346,7 +346,7 @@ spec:
   container: nuodb/nuodb-ce:latest
 ```
 
-**Note:** We recommend replacing the database password `dbPassword` value 'secret' wtih one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
+**Note:** We recommend replacing the database password `dbPassword` value 'secret' wtih one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
 
 ### Sample nuodb-ycsb-cr.yaml deployment file
 ```
