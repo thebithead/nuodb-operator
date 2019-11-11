@@ -390,7 +390,7 @@ After deploying your NuoDB database, if you optionally chose to install NuoDB In
 ```
 Insights Subscriber ID: yourSubID#
 ```
-**NOTE:** Obtaining your Subscriber ID is only required if you are using the NuoDB hosted Insights portal service. With this option your performance data is sent to NuoDB and you can accesss your performance data via your Insights Subscriber ID.
+Obtaining your Subscriber ID is only required if you are using the NuoDB hosted Insights portal service. With this option your performance data is sent to NuoDB and you can accesss your performance data via your Insights Subscriber ID.
 
 **Note:** When using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-inisghts log file. Instead run,
 ```
@@ -405,7 +405,8 @@ If you enabled NuoDB Insights, you can confirm its status by running:
 
 &ensp; `oc exec -it nuodb-insights -c insights -- nuoca check insights`
 
-#### If you are deploying on-cluster NuoDB Insights -- where all performance data is stored and managed locally on your cluster -- then your URL to access your locally deployed Insight's Web UI can be obtained by running,
+#### Deploying on-cluster NuoDB Insights
+With this option, all performance data is stored and managed locally on your cluster -- this is the default when setting "insightsEnabled: true" -- then your URL to access your locally deployed Insight's Web UI dashboard can be obtained by running,
 
 If Red Hat OpenShift,
 ```
@@ -417,7 +418,7 @@ If managed or opens source Kubernetes,
 # It's recommended to run this command in the background in a logging terminal shell.
    kubectl port-forward grafana-deployment-xxxx 3000 &
 ```
-Your local Insights URL is [localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s]
+Your local Insights URL is [localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s
 
 
 ## Launch a Sample SQL Workload
