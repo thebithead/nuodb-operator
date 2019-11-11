@@ -388,9 +388,16 @@ After deploying your NuoDB database, if you optionally chose to install NuoDB In
 Insights Subscriber ID: yourSubID#
 ```
 
-**NOTE:** Obtaining your Subscriber ID is only required if you are using the NuoDB hosted Insights portal. If you are deploying on-cluster NuoDB Insights then your URL to access your locally deployed Insight's Web UI can be obtained by running,
+**NOTE:** Obtaining your Subscriber ID is only required if you are using the NuoDB hosted Insights portal service. If you are deploying on-cluster NuoDB Insights then your URL to access your locally deployed Insight's Web UI can be obtained by running,
+
+If Red Hat OpenShift
 ```
 https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s
+```
+If managed or opens source Kubernetes
+```
+kubectl port-forward grapha-deployment-xxxxx 3000
+https://$(kubectl get ingress grafana-ingress --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s
 ```
 
 **Usage note when using open source Kubernetes only:** A current Kubernetes Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the K8s open source WebUI by reviewing the container log, instead run
