@@ -386,27 +386,10 @@ Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. I
       *insightsEnabled* to "Opt In" and enable NuoDB Insights. Any other value than "true"
       results in Opting out. Insights can also be enabled at a later time if you choose.
 
-After deploying your NuoDB database, if you optionally chose to install NuoDB Insights by setting "insightsEnabled: true" in your nuodb-cr.yaml file, then you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod in your Kubernetes dashboard, go to the Logs tab, and find the line that indicates your Subscriber ID. 
-```
-Insights Subscriber ID: yourSubID#
-```
-Obtaining your Subscriber ID is only required if you are using the NuoDB hosted Insights portal service. With this option your performance data is sent to NuoDB and you can accesss your performance data via your Insights Subscriber ID.
-
-**Note:** When using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-inisghts log file. Instead run,
-```
-kubectl logs nuodb-insights -n nuodb -c insights
-```
-To connect to NuoDB Insights, open a Web browser using the following URL
-
-https://insights.nuodb.com/yourSubID#
-
-#### Check the status of NuoDB Insights visual monitoring tool
-If you enabled NuoDB Insights, you can confirm its status by running:
-
-&ensp; `oc exec -it nuodb-insights -c insights -- nuoca check insights`
+After deploying your NuoDB database, if you optionally chose to install NuoDB Insights by setting "insightsEnabled: true" in your nuodb-cr.yaml file, then the default is to install "on-cluster" Insights. With this option, all performance data is privately stored and managed locally on your cluster.
 
 #### Deploying on-cluster NuoDB Insights
-With this option, all performance data is stored and managed locally on your cluster -- this is the default when setting "insightsEnabled: true" -- then your URL to access your locally deployed Insight's Web UI dashboard can be obtained by running,
+Your URL to access your locally deployed Insight's Web UI dashboard can be obtained by running,
 
 If Red Hat OpenShift,
 ```
@@ -419,6 +402,24 @@ If managed or opens source Kubernetes,
    kubectl port-forward grafana-deployment-xxxx 3000 &
 ```
 Your local Insights URL is&ensp;`localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s`
+
+#### Deploying hosted NuoDB Insights
+Optionally, you can choose to send your performance data to the NuoDB publicly hosted Insights portal. Your performance data remains private and is only accessible by using your private Subscriber ID. With this option, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod in your Kubernetes dashboard, go to the Logs tab, and find the line that indicates your Subscriber ID. 
+```
+Insights Subscriber ID: yourSubID#
+```
+**Note:** When using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-inisghts log file. Instead run,
+```
+kubectl logs nuodb-insights -n nuodb -c insights
+```
+To connect to NuoDB Insights, open a Web browser using the following URL
+
+https://insights.nuodb.com/yourSubID#
+
+#### Check the status of NuoDB Insights visual monitoring tool
+If you enabled NuoDB Insights, you can confirm its status by running:
+
+&ensp; `oc exec -it nuodb-insights -c insights -- nuoca check insights`
 
 
 ## Launch a Sample SQL Workload
