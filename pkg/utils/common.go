@@ -71,7 +71,7 @@ const (
 	GrafanaOperatorRelPath = "grafana-operator_v2.0.0"
 	KibanaYamlFileRelPath = "insights-server/kibana.yaml"
 	LogstashChartRelPath = "charts/insights-server/logstash"
-	NuodbChartRelPath = "charts/nuodb-helm-latest"
+	NuodbChartRelPath = "charts/nuodb-helm"
 	NuodbYcsbChartRelPath = "charts/nuodb-ycsbwl"
 
 	// paths relative to GrafanaOperatorRelPath
