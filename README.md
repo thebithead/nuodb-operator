@@ -308,7 +308,7 @@ kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
    echo "on-cluster Insights URL: https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
 
 # if managed Kubernetes / open source Kubernetes, 
-   echo "on-cluster Insights URL: https://$(kubectl get ingress grafana-ingress --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
+   echo "on-cluster Insights URL: https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
  ```
 
 ### Sample nuodb-cr.yaml deployment file
@@ -394,7 +394,7 @@ echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})/
 ```
 If managed or opens source Kubernetes,
 ```
-echo "https://$(kubectl get ingress grafana-ingress --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
+echo "https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
 ```
 
 #### Deploying hosted NuoDB Insights
