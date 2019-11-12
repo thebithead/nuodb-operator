@@ -308,10 +308,7 @@ kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
    echo "on-cluster Insights URL: https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
 
 # if managed Kubernetes / open source Kubernetes, 
-# run the following command where xxxx is the pod tag for your grafana deployment pod. 
-# It's recommended to run this command in the background in a logging terminal shell.
-   kubectl port-forward grafana-deployment-xxxx 3000 &
-   echo "on-cluster Insights URL: localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s"
+   echo "on-cluster Insights URL: https://$(kubectl get ingress grafana-ingress --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
  ```
 
 ### Sample nuodb-cr.yaml deployment file
@@ -396,12 +393,9 @@ If Red Hat OpenShift,
 echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
 ```
 If managed or opens source Kubernetes,
-run the following command where xxxx is the pod tag for your grafana deployment pod. 
-It's recommended to run this command in the background in a logging terminal shell.
 ```
-   kubectl port-forward grafana-deployment-xxxx 3000 &
+echo "https://$(kubectl get ingress grafana-ingress --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
 ```
-Your local Insights URL is&ensp;`localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s`
 
 #### Deploying hosted NuoDB Insights
 Optionally, you can choose to send your performance data to the NuoDB publicly hosted Insights portal. Your performance data remains private and is only accessible by using your private Subscriber ID. With this option, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod in your Kubernetes dashboard, go to the Logs tab, and find the line that indicates your Subscriber ID. 
