@@ -9,6 +9,12 @@ spec:
       app: grafana
     annotations:
       app: grafana
+  service:
+    labels:
+      app: grafana
+    annotations:
+      app: grafana
+    type: LoadBalancer
   config:
     log:
       mode: "console"

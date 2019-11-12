@@ -55,7 +55,7 @@ import (
 )
 
 const (
-	NuodbOperatorVersion = "v2.0.2"
+	NuodbOperatorVersion = "v2.0.3"
 	// Default path to the Operator "etc" directory when
 	// running the Operator "inside" of a K8s cluster.
 	DefaultOperatorEtcDir = "/usr/local/etc/nuodb-operator"
@@ -282,7 +282,18 @@ func GetESHost(namespace string) (string, error) {
 			err = fmt.Errorf("cannot find ES host Status.LoadBalancer.Ingress")
 			return "", err
 		}
-		return host.Status.LoadBalancer.Ingress[0].Hostname, err
+		if len(host.Status.LoadBalancer.Ingress) < 1 {
+			err = fmt.Errorf("cannot find ES host Status.LoadBalancer.Ingress")
+			return "", err
+		}
+		if host.Status.LoadBalancer.Ingress[0].Hostname != "" {
+			return host.Status.LoadBalancer.Ingress[0].Hostname, err
+		} else if host.Status.LoadBalancer.Ingress[0].IP != "" {
+			return host.Status.LoadBalancer.Ingress[0].IP, err
+		} else {
+			err = fmt.Errorf("cannot find ES host Status.LoadBalancer.Ingress")
+			return "", err
+		}
 	}
 }
 
