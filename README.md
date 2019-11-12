@@ -392,7 +392,7 @@ If Red Hat OpenShift,
 ```
 echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
 ```
-If managed or opens source Kubernetes,
+If managed or open source Kubernetes,
 ```
 echo "https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
 ```
