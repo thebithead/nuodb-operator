@@ -386,7 +386,7 @@ Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. I
       *insightsEnabled* to "Opt In" and enable NuoDB Insights. Any other value than "true"
       results in Opting out. Insights can also be enabled at a later time if you choose.
 
-After deploying your NuoDB database, if you optionally chose to install NuoDB Insights by setting "insightsEnabled: true" in your nuodb-cr.yaml file, then the default is to install "on-cluster" Insights. With this option, all performance data is privately stored and managed locally on your cluster.
+After deploying your NuoDB database, if you optionally chose to install NuoDB Insights by setting "insightsEnabled: true" in your nuodb-cr.yaml file and applying the &ensp;`nuodbinsightsserver_crd.yaml` and &ensp;`nuodbinsightsserver_cr.yaml`, then the default is to install "on-cluster" NuoDB Insights. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights monitoring solution.
 
 #### Deploying on-cluster NuoDB Insights
 Your URL to access your locally deployed Insight's Web UI dashboard can be obtained by running,
