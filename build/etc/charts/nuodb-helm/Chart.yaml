@@ -1,7 +1,7 @@
 name: nuodb-ce-helm
 version: 0.1.0
-appVersion: 4.0.0
-description: NuoDB
+appVersion: 3.3.0
+description: NuoDB Community Edition
   system.
 keywords:
 - nuodb

@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       labels:
-        dns: domain
+        dns: domain 
         app: admin
         affinity: admin
     spec:
@@ -33,6 +33,17 @@ spec:
                 values: [ "admin" ]
             topologyKey: "kubernetes.io/hostname"
       terminationGracePeriodSeconds: 15
+{{- if eq .Values.storageMode "persistent" }}
+      initContainers:
+        # when disk is created and mounted only root can access.  We don't
+        # want to run container as root, so allow gid root to access.
+      - name: init-disk
+        image: busybox:1.28
+        command: ['chmod' , '770', '/var/opt/nuodb' ]
+        volumeMounts:
+        - name: raftlog
+          mountPath: /var/opt/nuodb
+{{- end }}
       containers:
       - name: admin
         image: {{ .Values.container }}
@@ -75,27 +86,31 @@ spec:
           periodSeconds: 15
           exec:
             command: [ "nuodocker", "check", "servers" ]
-{{if eq .Values.storageMode "persistent"}}
-          volumeMounts:
-          - name: raftlog
-            mountPath: /var/opt/nuodb
-          - name: log-volume
-            mountPath: /var/log/nuodb
-        volumes:
-          - name: log-volume
-            emptyDir: {}
-    volumeClaimTemplates:
-    - metadata:
-        name: raftlog
-        labels:
-          group: nuodb
-      spec:
-        labels:
-          app: nuodb
-          group: nuodb
-        accessModes: [ "ReadWriteOnce" ]
-        storageClassName: {{ .Values.adminStorageClass}}
-        resources:
-          requests:
-            storage: {{ .Values.adminStorageSize }}
-{{end}}
+{{- if eq .Values.storageMode "persistent" }}
+        volumeMounts:
+        - name: nuodb-lic-vol
+          mountPath: /etc/nuodb/nuodb.lic
+          subPath: nuodb.lic
+        - name: raftlog
+          mountPath: /var/opt/nuodb
+        - name: log-volume
+          mountPath: /var/log/nuodb
+      volumes:
+        - name: nuodb-lic-vol
+          configMap:
+            name: nuodb-lic-configmap
+        - name: log-volume
+          emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: raftlog
+      labels:
+        app: nuodb
+        group: nuodb
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.adminStorageClass | quote }}
+      resources:
+        requests:
+          storage: {{ .Values.adminStorageSize | quote }}
+{{- end }}
