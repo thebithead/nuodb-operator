@@ -60,7 +60,7 @@ _**Note:** The instructions on this page use the Kubernetes&ensp;`kubectl` comma
 ```
 export OPERATOR_NAMESPACE=nuodb
 export STORAGE_NODE=yourStorageNodeDNSName
-export NUODB_OPERATOR_VERSION=2.0.2           --confirm you set the correction NuoDB Operator version here.
+export NUODB_OPERATOR_VERSION=2.0.3           --confirm you set the correction NuoDB Operator version here.
 ```
 ### 2. Clone a copy of the NuoDB Operator from Github
 In your home or working directory, run:
@@ -284,7 +284,7 @@ sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb
 # To pull from the Google Marketplace, run
 #   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
 # To pull from the AWS Marketplace, 
-# replace in the nuodb-csv.yaml file the two image references with 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/quay.io/nuodb/nuodb-operator:0.0.5-latest
+# replace in the nuodb-csv.yaml file the two image references with 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
 
 # If appliable, copy your new nuodb-csv-xxx.yaml file to nuodb-csv.yaml and run,
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
@@ -653,7 +653,7 @@ Below are examples that pull the NuoDB container image from Red Hat (RHCC), Goog
 ```
 container: registry.connect.redhat.com/nuodb/nuodb-ce:latest
 container: marketplace.gcr.io/nuodb/nuodb:latest
-container: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/nuodb-ce:0.0.5-latest
+container: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
 container: nuodb/nuodb-ce:latest
 ```
 
@@ -661,5 +661,5 @@ container: nuodb/nuodb-ce:latest
 
 ```
 ycsbContainer: nuodb/ycsb:latest
-ycsbContainer: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/ycsb:0.0.5-latest
+ycsbContainer: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/ycsb:$NUODB_OPERATOR_VERSION-latest
 ```
