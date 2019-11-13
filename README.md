@@ -32,11 +32,11 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Installation Prerequisites](#Installation-Prerequisites)
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Configure NuoDB Insights Visual Monitor](#Configure-NuoDB-Insights-Visual-Monitor)
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Install the NuoDB Operator](#Install-the-NuoDB-Operator)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Database](#Deploy-the-NuoDB-Database)
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Insights Visual Monitor](#Deploy-the-NuoDB-Insights-Visual-Monitor)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Launch a Sample SQL Workload](#Launch-a-Sample-SQL-Workload)
 
@@ -52,7 +52,7 @@ This page is organized in the following sections:
 
 ## Installation Prerequisites
 
-_**Note:** The instructions on this page use the Kubernetes&ensp;`kubectl` command (for portability reasons across Kubernetes environments). For enviornments, the&ensp;`kubectl` command is an alias that points to the OpenShift client program&ensp;`oc`._
+_**Note:** The instructions on this page use the Kubernetes&ensp;`kubectl` command (for portability reasons across Kubernetes environments). For environments, the&ensp;`kubectl` command is an alias that points to the OpenShift client program&ensp;`oc`._
 
 
 ### 1. Create environment variables
@@ -60,7 +60,7 @@ _**Note:** The instructions on this page use the Kubernetes&ensp;`kubectl` comma
 ```
 export OPERATOR_NAMESPACE=nuodb
 export STORAGE_NODE=yourStorageNodeDNSName
-export NUODB_OPERATOR_VERSION=2.0.2           --confirm you set the correction NuoDB Operator version here.
+export NUODB_OPERATOR_VERSION=2.0.3           --confirm you set the correction NuoDB Operator version here.
 ```
 ### 2. Clone a copy of the NuoDB Operator from Github
 In your home or working directory, run:
@@ -79,7 +79,7 @@ In your home or working directory, run:
 
 &ensp; `kubectl project $OPERATOR_NAMESPACE`
 
-### 6. Set container storage pre-requisites
+### 6. Set container storage prerequisites
 
 Amazon EBS storage (storageclass gp2) is the default storage class for both NuoDB Admin and Storage Manager (SM) pods. 
 If you would like to change the default, please see below: 
@@ -132,11 +132,11 @@ Label the cluster nodes you want to run NuoDB pods.
 
 _**Note:** The label value, in this example "nuodb", can be any value._
 
-Next, label one of these nodes as your storage node. This is the node that will host your NouDB Storage Manager (SM) pod and is where you database persistent storage will reside. Ensure there is sufficient disk space. To create this label run:
+Next, label one of these nodes as your storage node. This is the node that will host your NuoDB Storage Manager (SM) pod and is where you database persistent storage will reside. Ensure there is sufficient disk space. To create this label run:
 
 &ensp; `kubectl  label node $STORAGE_NODE nuodb.com/node-type=storage`
 
-Once your cluster nodes are labeled for NuoDB use, run the following&ensp; `kubectl get nodes` command to confirm nodes are labeled prperly. The display output should look similar to the below
+Once your cluster nodes are labeled for NuoDB use, run the following&ensp; `kubectl get nodes` command to confirm nodes are labeled properly. The display output should look similar to the below
 ```
 kubectl get nodes -l nuodb.com/zone -L nuodb.com/zone,nuodb.com/node-type
 NAME                           STATUS   ROLES    AGE   VERSION             ZONE    NODE-TYPE
@@ -151,11 +151,11 @@ ip-10-0-206-8.ec2.internal     Ready    worker   15d   v1.13.4+cb455d664   nuodb
 
 Each time a NuoDB Admin pod starts it will load a Kubernetes configmap that contains the current NuoDB license level information and places its contents in the /etc/nuodb/nuodb.lic file. When a request is made to either start a NuoDB Transaction Engine (TE) or Storage Manager (SM) process, the NuoDB Admin will check the license file contents to ensure the process request is authorized.
 
-To apply a NuoDB Communnity Edtion (CE) license file, run
+To apply a NuoDB Communiity Edition (CE) license file, run
 
 &ensp; `kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-literal=nuodb.lic=""`
 
-To apply a NuoDB Enterprise Edtion (EE) license file, obtain your license file from your NuoDB Sales or Support representative and copy the file to&ensp;`nuodb.lic`, then run
+To apply a NuoDB Enterprise Edition (EE) license file, obtain your license file from your NuoDB Sales or Support representative and copy the file to&ensp;`nuodb.lic`, then run
 
 &ensp; `kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-file=nuodb.lic`
 
@@ -180,6 +180,34 @@ kubectl  create secret docker-registry pull-secret \
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/thp-scc.yaml
 ```
 
+## Configure NuoDB Insights Visual Monitor
+
+Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
+
+> Insights is also part of NuoDB Services and Support in order to service our customers better and more efficiently and is
+      subject to our Terms of Use and Privacy Policy.
+      [Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy)
+      Insights collects anonymized data about your NuoDB implementation, and use,
+      including system information, configuration, response times, load averages,
+      usage statistics, and user activity logs ("Usage Information").  Usage
+      Information does not include any personally identifiable information ("PII"),
+      but may include some aggregated and anonymized information derived from data
+      that may be considered PII in some contexts (e.g., user locations or IP
+      addresses).
+      NuoDB uses Usage Information to monitor, analyze and improve the performance
+      and reliability of our Services, and to contribute to analytical models used by
+      NuoDB.  Usage Information is not shared with any third parties.  Insights also
+      includes a user dashboard that allows administrators to view the performance of
+      your NuoDB implementation.
+      If you agree to these terms, following the below instructions to enable NuoDB Insights.
+      Insights can also be enabled at a later time if you choose.
+
+Before deploying  NuoDB, to enable NuoDB Insights you can 
+1. deploy Insights locally on your Kubernetes cluster. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring solution. To enable this option: 
+   * the &ensp;`nuodbinsightsserver_crd.yaml` during Operator deployment and &ensp;`nuodbinsightsserver_cr.yaml` during database deployment.
+2. stream your performance data to the NuoDB Insights hosted public cloud portal and access your secure performance data via a private Subscriber ID. To enable this option: 
+   * Set "insightsEnabled: true" in your nuodb-cr.yaml file.
+
 ## Install the NuoDB Operator
 
 To install the NuoDB Operator into your Kubernetes cluster, follow the steps indicated for the appropriate Kubernetes Distribtion you are using.
@@ -188,7 +216,7 @@ To install the NuoDB Operator into your Kubernetes cluster, follow the steps ind
 
 In OpenShift 4.x, the NuoDB Operator is available to install directly from the OpenShift OperatorHub, an integrated service catalog, accessible from within the OpenShift 4 Web UI which creates a seamless - single click experience - that allows users to install the NuoDB Operator from catalog-to-cluster in seconds.
 
-Pre-requisite: 
+Prerequisite: 
 Run the following yaml in your OpenShift cluster to authorize the NuoDB Operator service account before installing the NuoDB Operator.
 ```
 kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
@@ -208,7 +236,7 @@ Steps:
    toolbar. The STATUS column should show "Install Succeeded".
 8. Select &ensp;`Status` under the &ensp;`Projects` on the left toolbar to view your running Operator.
 
-### Red Hat OpenShift v3.11 --or-- Open soure / GKE / EKS Kubernetes
+### Red Hat OpenShift v3.11 --or-- Open source / GKE / EKS Kubernetes
 
 #### If not already installed, then install the Operator Lifecycle Manager (OLM)
 ```
@@ -227,7 +255,7 @@ Note: If you experience the following error when running the catalogSource.yaml 
 error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSource" in version "operators.coreos.com/v1"
 ```
 
-#### Deploy the NuoDB Operator
+#### NuoDB Operator Install Script
 ```
 kubectl create -f nuodb-operator/deploy/catalogSource.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
@@ -256,7 +284,7 @@ sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb
 # To pull from the Google Marketplace, run
 #   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
 # To pull from the AWS Marketplace, 
-# replace in the nuodb-csv.yaml file the two image references wtih 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/quay.io/nuodb/nuodb-operator:0.0.5-latest
+# replace in the nuodb-csv.yaml file the two image references with 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
 
 # If appliable, copy your new nuodb-csv-xxx.yaml file to nuodb-csv.yaml and run,
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
@@ -275,54 +303,20 @@ done
 
 ## Deploy the NuoDB Database
 
-Below is a sample of how to deploy a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
-```
-# To deploy the NuoDB database into your Kubernetes cluster, first make a local copy of the NuoDB cr yaml files
-cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
-cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
-cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
-
-# Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
-kubectl create -f nuodb-cr.yaml
-kubectl create -f nuodb-insights-cr.yaml
-kubectl create -f nuodb-ycsb-cr.yaml
-
-#Wait for nuodb to be logstash instance to be ready
-# Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
-ATTEMPTS=0
-ROLLOUT_STATUS_CMD="kubectl rollout status sts/insights-server-release-logstash -n $OPERATOR_NAMESPACE"
-until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
-  $ROLLOUT_STATUS_CMD
-  ATTEMPTS=$((attempts + 1))
-  echo ""
-  kubectl get pods -n $OPERATOR_NAMESPACE
-  sleep 5
-done
-
-# create the Insights client
-kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
-
-echo ""
-echo "Open Networking/Route panel in your Kubernetes dashboard to obtain your NuoDB Insight's dashboard URL."
-echo ""
-echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
-
- ```
-
 ### Sample nuodb-cr.yaml deployment file
 
-The nuodb-operator/deploy directory includes sample Custom Resources to deploy NuoDB:
+The nuodb-operator/deploy directory includes sample Custom Resources to deploy the NuoDB database:
 
 &ensp; `cr-ephemeral.yaml` deploys NuoDB CE domain without a persistent storage volume by setting storageMode to "ephemeral".
 
 &ensp; `cr-persistent-insights-enabled.yaml` deploys NuoDB CE domain using persistent storage and has NuoDB Insights enabled.
 
-Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
+Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
 ```
 spec:
   replicaCount: 1
   storageMode: persistent
-  insightsEnabled: true
+  insightsEnabled: false
   adminCount: 3
   adminStorageSize: 2G
   adminStorageClass: local-disk
@@ -341,9 +335,9 @@ spec:
   container: nuodb/nuodb-ce:latest
 ```
 
-**Note:** We recommend replacing the database password `dbPassword` value 'secret' wtih one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
+**Note:** We recommend replacing the database password `dbPassword` value 'secret' with one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
 
-### Sample nuodb-ycsb-cr.yaml deployment file
+### Sample SQL application using the nuodb-ycsb-cr.yaml deployment file
 ```
 ycsbLoadName: ycsb-load
   ycsbWorkload: b
@@ -357,41 +351,62 @@ ycsbLoadName: ycsb-load
   ycsbContainer: nuodb/ycsb:latest
 ```
 
+### Sample NuoDB database deployment scripts
 
-### Deploy the NuoDB Insights Visual Monitor
+This sample deploys a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
+```
+# To deploy the NuoDB database into your Kubernetes cluster, first make a local copy of the NuoDB cr yaml files
+cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
+cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
+cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
 
-Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
-        
-> Insights is also part of NuoDB Services and Support in order to service our customers better and more efficently and is
-      subject to our Terms of Use and Privacy Policy.
-      [Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy)
-      Insights collects anonymized data about your NuoDB implementation, and use,
-      including system information, configuration, response times, load averages,
-      usage statistics, and user activity logs ("Usage Information").  Usage
-      Information does not include any personally identifiable information ("PII"),
-      but may include some aggregated and anonymized information derived from data
-      that may be considered PII in some contexts (e.g., user locations or IP
-      addresses).
-      NuoDB uses Usage Information to monitor, analyze and improve the performance
-      and reliability of our Services, and to contribute to analytical models used by
-      NuoDB.  Usage Information is not shared with any third parties.  Insights also
-      includes a user dashboard that allows administrators to view the performance of
-      your NuoDB implementation.
-      If you agree to these terms, type "true" in your cr.yaml file for the field
-      *insightsEnabled* to "Opt In" and enable NuoDB Insights. Any other value than "true"
-      results in Opting out. Insights can also be enabled at a later time if you choose.
+# Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-insights-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-ycsb-cr.yaml
 
-After deploying your NuoDB database, if you optionally chose to install NuoDB Insights, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod, go to the Logs tab, and find the line that indicates your Subscriber ID. 
+#Wait for nuodb to be logstash instance to be ready
+# Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
+ATTEMPTS=0
+ROLLOUT_STATUS_CMD="kubectl rollout status sts/insights-server-release-logstash -n $OPERATOR_NAMESPACE"
+until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
+  $ROLLOUT_STATUS_CMD
+  ATTEMPTS=$((attempts + 1))
+  echo ""
+  kubectl get pods -n $OPERATOR_NAMESPACE
+  sleep 5
+done
+
+# create the Insights client
+kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
+
+# if Red Hat OpenShift,
+# open your Kubernetes dashboard Networking/Route panel to obtain your NuoDB Insight's dashboard URL.
+# Also, displayed using the following command,
+   echo "on-cluster Insights URL: https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
+
+# if managed Kubernetes / open source Kubernetes, 
+   echo "on-cluster Insights URL: https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
+ ```
+
+#### If deploying on-cluster NuoDB Insights
+Your URL to access your locally deployed Insight's Web UI dashboard can be obtained by running,
+
+If Red Hat OpenShift,
+```
+echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
+```
+If managed or open source Kubernetes,
+```
+echo "https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
+```
+
+#### If deploying hosted NuoDB Insights
+Optionally, you can choose to send your performance data to the NuoDB publicly hosted Insights portal. Your performance data remains private and is only accessible by using your private Subscriber ID. With this option, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod in your Kubernetes dashboard, go to the Logs tab, and find the line that indicates your Subscriber ID. 
 ```
 Insights Subscriber ID: yourSubID#
 ```
-
-**NOTE:** Obtaining your Subscriber ID is only required if you are using the NuoDB hosted Insights portal. If you are deploying on-cluster NuoDB Insights then your URL to access your locally deployed Insight's Web UI can be obtained by running,
-```
-https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s
-```
-
-**Usage note when using open source Kubernetes only:** A current Kubernetes Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the K8s open source WebUI by reviewing the container log, instead run
+**Note:** When using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-inisghts log file. Instead run,
 ```
 kubectl logs nuodb-insights -n nuodb -c insights
 ```
@@ -399,15 +414,14 @@ To connect to NuoDB Insights, open a Web browser using the following URL
 
 https://insights.nuodb.com/yourSubID#
 
-### Check the status of NuoDB Insights visual monitoring tool
-If you enabled NuoDB Insights (highly recommended) you can confirm it's run status by running:
+To check the status of hosted NuoDB Insights visual monitoring tool, run
 
 &ensp; `oc exec -it nuodb-insights -c insights -- nuoca check insights`
 
 
 ## Launch a Sample SQL Workload
 
-The NuoDB Operator includes a sample SQL appplication that will allow you to get started quickly running SQL statements against your NuoDB database. The sample workload uses YCSB (the Yahoo Cloud Servicing Benchmark). The cr.yaml includes YCSB parameters that will allow you to configure the SQL workload to your preferences.
+The NuoDB Operator includes a sample SQL application that will allow you to get started quickly running SQL statements against your NuoDB database. The sample workload uses YCSB (the Yahoo Cloud Servicing Benchmark). The cr.yaml includes YCSB parameters that will allow you to configure the SQL workload to your preferences.
 
 To start a SQL Workload (if your nuodb-ycsb-cr.yaml isn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
 
@@ -639,7 +653,7 @@ Below are examples that pull the NuoDB container image from Red Hat (RHCC), Goog
 ```
 container: registry.connect.redhat.com/nuodb/nuodb-ce:latest
 container: marketplace.gcr.io/nuodb/nuodb:latest
-container: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/nuodb-ce:0.0.5-latest
+container: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
 container: nuodb/nuodb-ce:latest
 ```
 
@@ -647,5 +661,5 @@ container: nuodb/nuodb-ce:latest
 
 ```
 ycsbContainer: nuodb/ycsb:latest
-ycsbContainer: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/ycsb:0.0.5-latest
+ycsbContainer: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/ycsb:$NUODB_OPERATOR_VERSION-latest
 ```
