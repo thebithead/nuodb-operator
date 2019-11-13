@@ -296,18 +296,12 @@ Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. N
       Insights can also be enabled at a later time if you choose.
 
 Before deploying your NuoDB database, to enable NuoDB Insights you can 
-1. deploy Insights locally on your Kubernetes cluster. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring solution.
-2. stream your performance data to the NuoDB Insights hosted public cloud portal and access your secure performance data via a private Subscriber ID.
-
-For option 1
+1. deploy Insights locally on your Kubernetes cluster. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring solution. To enable this option: 
 * Apply the &ensp;`nuodbinsightsserver_crd.yaml` and &ensp;`nuodbinsightsserver_cr.yaml`,
-
-For optoin 2
+2. stream your performance data to the NuoDB Insights hosted public cloud portal and access your secure performance data via a private Subscriber ID. To enable this option: 
 * Set "insightsEnabled: true" in your nuodb-cr.yaml file.
 
-
 ## Deploy the NuoDB Database
-
 
 ### Sample nuodb-cr.yaml deployment file
 
