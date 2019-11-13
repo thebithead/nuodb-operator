@@ -34,7 +34,7 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Install the NuoDB Operator](#Install-the-NuoDB-Operator)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optionally Configure the NuoDB Insights Visual Monitor](#Optionally-Configure-the-NuoDB-Insights-Visual-Monitor)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Configure NuoDB Insights Visual Monitor](#Configure-NuoDB-Insights-Visual-Monitor)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Database](#Deploy-the-NuoDB-Database)
 
@@ -274,7 +274,8 @@ done
 ```
 
 
-### Optionally Configure the NuoDB Insights Visual Monitor
+
+### Configure NuoDB Insights Visual Monitor
 
 Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
 
