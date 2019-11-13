@@ -36,7 +36,7 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Database](#Deploy-the-NuoDB-Database)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Insights Visual Monitor](#Deploy-the-NuoDB-Insights-Visual-Monitor)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optionally Deploy the NuoDB Insights Visual Monitor](#Optionally Deploy-the-NuoDB-Insights-Visual-Monitor)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Launch a Sample SQL Workload](#Launch-a-Sample-SQL-Workload)
 
@@ -273,9 +273,97 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
 done
 ```
 
+### Optionally Deploy the NuoDB Insights Visual Monitor
+
+Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
+
+> Insights is also part of NuoDB Services and Support in order to service our customers better and more efficently and is
+      subject to our Terms of Use and Privacy Policy.
+      [Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy)
+      Insights collects anonymized data about your NuoDB implementation, and use,
+      including system information, configuration, response times, load averages,
+      usage statistics, and user activity logs ("Usage Information").  Usage
+      Information does not include any personally identifiable information ("PII"),
+      but may include some aggregated and anonymized information derived from data
+      that may be considered PII in some contexts (e.g., user locations or IP
+      addresses).
+      NuoDB uses Usage Information to monitor, analyze and improve the performance
+      and reliability of our Services, and to contribute to analytical models used by
+      NuoDB.  Usage Information is not shared with any third parties.  Insights also
+      includes a user dashboard that allows administrators to view the performance of
+      your NuoDB implementation.
+      If you agree to these terms, following the below instructions to enable NuoDB Insights.
+      Insights can also be enabled at a later time if you choose.
+
+Before deploying your NuoDB database, to enable NuoDB Insights you can 
+   (1) deploy Insights locally on your Kubernetes cluster. With this option, all performance data
+       is privately stored and managed locally on your cluster by starting local elasticsearch, 
+       logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring
+       solution.
+   (2) stream your performance data to the NuoDB Insights hosted public cloud portal and access your
+       secure performance data via a private Subscriber ID.
+
+For option (1)
+   Apply the &ensp;`nuodbinsightsserver_crd.yaml` and &ensp;`nuodbinsightsserver_cr.yaml`,
+
+For optoin (2)
+   Set "insightsEnabled: true" in your nuodb-cr.yaml file.
+
+
 ## Deploy the NuoDB Database
 
-Below is a sample of how to deploy a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
+
+### Sample nuodb-cr.yaml deployment file
+
+The nuodb-operator/deploy directory includes sample Custom Resources to deploy the NuoDB database:
+
+&ensp; `cr-ephemeral.yaml` deploys NuoDB CE domain without a persistent storage volume by setting storageMode to "ephemeral".
+
+&ensp; `cr-persistent-insights-enabled.yaml` deploys NuoDB CE domain using persistent storage and has NuoDB Insights enabled.
+
+Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
+```
+spec:
+  replicaCount: 1
+  storageMode: persistent
+  insightsEnabled: false
+  adminCount: 3
+  adminStorageSize: 2G
+  adminStorageClass: local-disk
+  dbName: test
+  dbUser: dba
+  dbPassword: secret
+  smCount: 1
+  smMemory: 4Gi
+  smCpu: 2
+  smStorageSize: 20G
+  smStorageClass: local-disk
+  engineOptions: ""
+  teCount: 1
+  teMemory: 4Gi
+  teCpu: 2
+  container: nuodb/nuodb-ce:latest
+```
+
+**Note:** We recommend replacing the database password `dbPassword` value 'secret' wtih one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
+
+### Sample SQL application using the nuodb-ycsb-cr.yaml deployment file
+```
+ycsbLoadName: ycsb-load
+  ycsbWorkload: b
+  ycsbLbPolicy: ""
+  ycsbNoOfProcesses: 5
+  ycsbNoOfRows: 10000
+  ycsbNoOfIterations: 0
+  ycsbOpsPerIteration: 10000
+  ycsbMaxDelay: 240000
+  ycsbDbSchema: User1
+  ycsbContainer: nuodb/ycsb:latest
+```
+
+### Sample NuoDB database deployment scripts
+
+This sample deploys a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
 ```
 # To deploy the NuoDB database into your Kubernetes cluster, first make a local copy of the NuoDB cr yaml files
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
@@ -283,9 +371,9 @@ cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
 
 # Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
-kubectl create -f nuodb-cr.yaml
-kubectl create -f nuodb-insights-cr.yaml
-kubectl create -f nuodb-ycsb-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-insights-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-ycsb-cr.yaml
 
 #Wait for nuodb to be logstash instance to be ready
 # Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
@@ -311,81 +399,7 @@ kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
    echo "on-cluster Insights URL: https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
  ```
 
-### Sample nuodb-cr.yaml deployment file
-
-The nuodb-operator/deploy directory includes sample Custom Resources to deploy NuoDB:
-
-&ensp; `cr-ephemeral.yaml` deploys NuoDB CE domain without a persistent storage volume by setting storageMode to "ephemeral".
-
-&ensp; `cr-persistent-insights-enabled.yaml` deploys NuoDB CE domain using persistent storage and has NuoDB Insights enabled.
-
-Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
-```
-spec:
-  replicaCount: 1
-  storageMode: persistent
-  insightsEnabled: true
-  adminCount: 3
-  adminStorageSize: 2G
-  adminStorageClass: local-disk
-  dbName: test
-  dbUser: dba
-  dbPassword: secret
-  smCount: 1
-  smMemory: 4Gi
-  smCpu: 2
-  smStorageSize: 20G
-  smStorageClass: local-disk
-  engineOptions: ""
-  teCount: 1
-  teMemory: 4Gi
-  teCpu: 2
-  container: nuodb/nuodb-ce:latest
-```
-
-**Note:** We recommend replacing the database password `dbPassword` value 'secret' wtih one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
-
-### Sample nuodb-ycsb-cr.yaml deployment file
-```
-ycsbLoadName: ycsb-load
-  ycsbWorkload: b
-  ycsbLbPolicy: ""
-  ycsbNoOfProcesses: 5
-  ycsbNoOfRows: 10000
-  ycsbNoOfIterations: 0
-  ycsbOpsPerIteration: 10000
-  ycsbMaxDelay: 240000
-  ycsbDbSchema: User1
-  ycsbContainer: nuodb/ycsb:latest
-```
-
-
-### Deploy the NuoDB Insights Visual Monitor
-
-Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
-
-> Insights is also part of NuoDB Services and Support in order to service our customers better and more efficently and is
-      subject to our Terms of Use and Privacy Policy.
-      [Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy)
-      Insights collects anonymized data about your NuoDB implementation, and use,
-      including system information, configuration, response times, load averages,
-      usage statistics, and user activity logs ("Usage Information").  Usage
-      Information does not include any personally identifiable information ("PII"),
-      but may include some aggregated and anonymized information derived from data
-      that may be considered PII in some contexts (e.g., user locations or IP
-      addresses).
-      NuoDB uses Usage Information to monitor, analyze and improve the performance
-      and reliability of our Services, and to contribute to analytical models used by
-      NuoDB.  Usage Information is not shared with any third parties.  Insights also
-      includes a user dashboard that allows administrators to view the performance of
-      your NuoDB implementation.
-      If you agree to these terms, type "true" in your cr.yaml file for the field
-      *insightsEnabled* to "Opt In" and enable NuoDB Insights. Any other value than "true"
-      results in Opting out. Insights can also be enabled at a later time if you choose.
-
-After deploying your NuoDB database, if you optionally chose to install NuoDB Insights by setting "insightsEnabled: true" in your nuodb-cr.yaml file and applying the &ensp;`nuodbinsightsserver_crd.yaml` and &ensp;`nuodbinsightsserver_cr.yaml`, then the default is to install "on-cluster" NuoDB Insights. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights monitoring solution.
-
-#### Deploying on-cluster NuoDB Insights
+#### If deploying on-cluster NuoDB Insights
 Your URL to access your locally deployed Insight's Web UI dashboard can be obtained by running,
 
 If Red Hat OpenShift,
@@ -397,7 +411,7 @@ If managed or open source Kubernetes,
 echo "https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
 ```
 
-#### Deploying hosted NuoDB Insights
+#### If deploying hosted NuoDB Insights
 Optionally, you can choose to send your performance data to the NuoDB publicly hosted Insights portal. Your performance data remains private and is only accessible by using your private Subscriber ID. With this option, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod in your Kubernetes dashboard, go to the Logs tab, and find the line that indicates your Subscriber ID. 
 ```
 Insights Subscriber ID: yourSubID#
