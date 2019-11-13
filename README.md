@@ -273,9 +273,7 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
 done
 ```
 
-
-
-### Configure NuoDB Insights Visual Monitor
+## Configure NuoDB Insights Visual Monitor
 
 Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
 
