@@ -36,7 +36,7 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Database](#Deploy-the-NuoDB-Database)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optionally Deploy the NuoDB Insights Visual Monitor](#Optionally Deploy-the-NuoDB-Insights-Visual-Monitor)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optionally Deploy the NuoDB Insights Visual Monitor](#Optionally-Deploy-the-NuoDB-Insights-Visual-Monitor)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Launch a Sample SQL Workload](#Launch-a-Sample-SQL-Workload)
 
@@ -227,7 +227,7 @@ Note: If you experience the following error when running the catalogSource.yaml 
 error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSource" in version "operators.coreos.com/v1"
 ```
 
-#### Deploy the NuoDB Operator
+#### NuoDB Operator Install Script
 ```
 kubectl create -f nuodb-operator/deploy/catalogSource.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
