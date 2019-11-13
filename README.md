@@ -32,9 +32,9 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Installation Prerequisites](#Installation-Prerequisites)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Install the NuoDB Operator](#Install-the-NuoDB-Operator)
-
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Configure NuoDB Insights Visual Monitor](#Configure-NuoDB-Insights-Visual-Monitor)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Install the NuoDB Operator](#Install-the-NuoDB-Operator)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Database](#Deploy-the-NuoDB-Database)
 
@@ -180,6 +180,34 @@ kubectl  create secret docker-registry pull-secret \
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/thp-scc.yaml
 ```
 
+## Configure NuoDB Insights Visual Monitor
+
+Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
+
+> Insights is also part of NuoDB Services and Support in order to service our customers better and more efficently and is
+      subject to our Terms of Use and Privacy Policy.
+      [Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy)
+      Insights collects anonymized data about your NuoDB implementation, and use,
+      including system information, configuration, response times, load averages,
+      usage statistics, and user activity logs ("Usage Information").  Usage
+      Information does not include any personally identifiable information ("PII"),
+      but may include some aggregated and anonymized information derived from data
+      that may be considered PII in some contexts (e.g., user locations or IP
+      addresses).
+      NuoDB uses Usage Information to monitor, analyze and improve the performance
+      and reliability of our Services, and to contribute to analytical models used by
+      NuoDB.  Usage Information is not shared with any third parties.  Insights also
+      includes a user dashboard that allows administrators to view the performance of
+      your NuoDB implementation.
+      If you agree to these terms, following the below instructions to enable NuoDB Insights.
+      Insights can also be enabled at a later time if you choose.
+
+Before deploying your NuoDB database, to enable NuoDB Insights you can 
+1. deploy Insights locally on your Kubernetes cluster. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring solution. To enable this option: 
+** Apply the &ensp;`nuodbinsightsserver_crd.yaml` during Operator deployment and &ensp;`nuodbinsightsserver_cr.yaml` during database dpeloyment.
+2. stream your performance data to the NuoDB Insights hosted public cloud portal and access your secure performance data via a private Subscriber ID. To enable this option: 
+** Set "insightsEnabled: true" in your nuodb-cr.yaml file.
+
 ## Install the NuoDB Operator
 
 To install the NuoDB Operator into your Kubernetes cluster, follow the steps indicated for the appropriate Kubernetes Distribtion you are using.
@@ -272,34 +300,6 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
   sleep 5
 done
 ```
-
-## Configure NuoDB Insights Visual Monitor
-
-Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
-
-> Insights is also part of NuoDB Services and Support in order to service our customers better and more efficently and is
-      subject to our Terms of Use and Privacy Policy.
-      [Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy)
-      Insights collects anonymized data about your NuoDB implementation, and use,
-      including system information, configuration, response times, load averages,
-      usage statistics, and user activity logs ("Usage Information").  Usage
-      Information does not include any personally identifiable information ("PII"),
-      but may include some aggregated and anonymized information derived from data
-      that may be considered PII in some contexts (e.g., user locations or IP
-      addresses).
-      NuoDB uses Usage Information to monitor, analyze and improve the performance
-      and reliability of our Services, and to contribute to analytical models used by
-      NuoDB.  Usage Information is not shared with any third parties.  Insights also
-      includes a user dashboard that allows administrators to view the performance of
-      your NuoDB implementation.
-      If you agree to these terms, following the below instructions to enable NuoDB Insights.
-      Insights can also be enabled at a later time if you choose.
-
-Before deploying your NuoDB database, to enable NuoDB Insights you can 
-1. deploy Insights locally on your Kubernetes cluster. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring solution. To enable this option: 
-* Apply the &ensp;`nuodbinsightsserver_crd.yaml` and &ensp;`nuodbinsightsserver_cr.yaml`,
-2. stream your performance data to the NuoDB Insights hosted public cloud portal and access your secure performance data via a private Subscriber ID. To enable this option: 
-* Set "insightsEnabled: true" in your nuodb-cr.yaml file.
 
 ## Deploy the NuoDB Database
 
