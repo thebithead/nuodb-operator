@@ -30,24 +30,28 @@ spec:
         spec:
           properties:
             elasticNodeCount:
+              description: ElasticSearch Node Count
               format: int32
               type: integer
             elasticVersion:
-              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                Important: Run "operator-sdk generate k8s" to regenerate code after
-                modifying this file Add custom validation using kubebuilder tags:
-                https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
+              description: ElasticSearch Version
               type: string
             kibanaNodeCount:
+              description: Kibana Node Count
               format: int32
               type: integer
             kibanaVersion:
+              description: Kibana Version
+              type: string
+            storageClass:
+              description: Persistent Storage Class for internal components.
               type: string
           required:
           - elasticVersion
           - elasticNodeCount
           - kibanaVersion
           - kibanaNodeCount
+          - storageClass
           type: object
         status:
           type: object

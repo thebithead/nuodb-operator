@@ -11,15 +11,15 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.Nuodb":                     schema_pkg_apis_nuodb_v2alpha1_Nuodb(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServer":       schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServer(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec":   schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerSpec(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus": schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerStatus(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec":                 schema_pkg_apis_nuodb_v2alpha1_NuodbSpec(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus":               schema_pkg_apis_nuodb_v2alpha1_NuodbStatus(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWl":               schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWl(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlSpec":           schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWlSpec(ref),
-		"nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlStatus":         schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWlStatus(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.Nuodb":                     schema_pkg_apis_nuodb_v2alpha1_Nuodb(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServer":       schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServer(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec":   schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerSpec(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus": schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerStatus(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec":                 schema_pkg_apis_nuodb_v2alpha1_NuodbSpec(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus":               schema_pkg_apis_nuodb_v2alpha1_NuodbStatus(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWl":               schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWl(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlSpec":           schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWlSpec(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlStatus":         schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWlStatus(ref),
 	}
 }
 
@@ -50,19 +50,19 @@ func schema_pkg_apis_nuodb_v2alpha1_Nuodb(ref common.ReferenceCallback) common.O
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec"),
+							Ref: ref("github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus"),
+							Ref: ref("github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec", "nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus"},
+			"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec", "github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -93,19 +93,19 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServer(ref common.ReferenceCall
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec"),
+							Ref: ref("github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus"),
+							Ref: ref("github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec", "nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus"},
+			"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec", "github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -117,31 +117,41 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerSpec(ref common.Reference
 				Properties: map[string]spec.Schema{
 					"elasticVersion": {
 						SchemaProps: spec.SchemaProps{
-							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
+							Description: "ElasticSearch Version",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"elasticNodeCount": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"integer"},
-							Format: "int32",
+							Description: "ElasticSearch Node Count",
+							Type:        []string{"integer"},
+							Format:      "int32",
 						},
 					},
 					"kibanaVersion": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
+							Description: "Kibana Version",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 					"kibanaNodeCount": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"integer"},
-							Format: "int32",
+							Description: "Kibana Node Count",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"storageClass": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Persistent Storage Class for internal components.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
-				Required: []string{"elasticVersion", "elasticNodeCount", "kibanaVersion", "kibanaNodeCount"},
+				Required: []string{"elasticVersion", "elasticNodeCount", "kibanaVersion", "kibanaNodeCount", "storageClass"},
 			},
 		},
 		Dependencies: []string{},
@@ -318,7 +328,7 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbStatus(ref common.ReferenceCallback) co
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "type NuodbReadyCounts struct {\n\t// Admin Node Ready Count\n\tAdminReadyCount int32 `json:\"adminReadyCount,omitempty\"`\n\t// SM Node Ready Count\n\tSmReadyCount int32 `json:\"smReadyCount,omitempty\"`\n\t// TE Node Ready Count\n\tTeReadyCount int32 `json:\"teReadyCount,omitempty\"`\n}\n\nNuodbStatus defines the observed state of Nuodb",
+				Description: "NuodbStatus defines the observed state of Nuodb",
 				Properties: map[string]spec.Schema{
 					"adminReadyCount": {
 						SchemaProps: spec.SchemaProps{
@@ -417,19 +427,19 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbYcsbWl(ref common.ReferenceCallback) co
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlSpec"),
+							Ref: ref("github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlStatus"),
+							Ref: ref("github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlSpec", "nuodb/nuodb-golang-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlStatus"},
+			"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlSpec", "github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbYcsbWlStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 

@@ -3,7 +3,9 @@ package nuodbinsightsserver
 import (
 	"context"
 	"fmt"
+	commonv1alpha1 "github.com/elastic/cloud-on-k8s/operators/pkg/apis/common/v1alpha1"
 	"github.com/elastic/cloud-on-k8s/operators/pkg/apis/elasticsearch/v1alpha1"
+	esv1alpha1 "github.com/elastic/cloud-on-k8s/operators/pkg/apis/elasticsearch/v1alpha1"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/fatih/structs"
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
@@ -20,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -760,23 +763,65 @@ func reconcileESCluster(r *ReconcileNuodbInsightsServer, request reconcile.Reque
 		if apierrors.IsNotFound(err) {
 			msg := fmt.Sprintf("Creating %s in namespace: %s", esClusterName, request.Namespace)
 			log.Info(msg)
-			runtimeObj, err := utils.GetSingleRuntimeObjectFromYamlFile(esClusterYamlFile)
-			if err != nil {
-				return reconcile.Result{}, err
+			nodeConfig := commonv1alpha1.Config {
+			map[string]interface{}{
+				"node.master": true,
+				"node.data": true,
+				"node.ingest": true,
+				},
+			}
+			esCR := esv1alpha1.Elasticsearch {
+				TypeMeta: metav1.TypeMeta { APIVersion:"elasticsearch.k8s.elastic.co/v1alpha1", Kind:"Elasticsearch"},
+				ObjectMeta: metav1.ObjectMeta { Name:"insights-escluster", Namespace:request.Namespace},
+				Spec: esv1alpha1.ElasticsearchSpec{
+					Version: "7.3.0",
+					HTTP: commonv1alpha1.HTTPConfig{
+						Service: commonv1alpha1.ServiceTemplate{Spec: corev1.ServiceSpec{Type: corev1.ServiceTypeLoadBalancer} },
+						TLS:     commonv1alpha1.TLSOptions{},
+					},
+					Nodes: [] esv1alpha1.NodeSpec{
+						{
+							Config: &nodeConfig,
+							VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+								{
+									ObjectMeta: metav1.ObjectMeta{
+										Name: "elasticsearch-data",
+									},
+									Spec: corev1.PersistentVolumeClaimSpec{
+										AccessModes: []corev1.PersistentVolumeAccessMode{
+											corev1.ReadWriteOnce,
+										},
+										Resources: corev1.ResourceRequirements {
+											Requests: corev1.ResourceList{
+												corev1.ResourceStorage: resource.MustParse("2Gi"),
+											},
+										},
+									},
+								},
+							},
+							NodeCount: 1,
+						},
+					},
+				},
+				Status: esv1alpha1.ElasticsearchStatus {},
+			}
+			if instance.Spec.StorageClass != "" {
+				esCR.Spec.Nodes[0].VolumeClaimTemplates[0].Spec.StorageClassName = &instance.Spec.StorageClass
 			}
 			ownRef, err := getOwnerReference(r, request.NamespacedName)
 			if err != nil {
 				return reconcile.Result{}, trace.Wrap(err)
 			}
 			ownRefs := []metav1.OwnerReference{ownRef}
-			es, err := utils.CreateElasticsearchCR(runtimeObj, request.Namespace, ownRefs, rm)
+			esCR.SetOwnerReferences(ownRefs)
+			err = utils.CreateElasticsearch(r.client, &esCR)
 			if err != nil {
 				msg := fmt.Sprintf("Unable to create CR %s.", esClusterName)
 				log.Error(err, msg)
 				return reconcile.Result{}, trace.Wrap(err)
 			}
 			statusCount := 0
-			es, err = utils.GetElasticsearch(r.client, request.Namespace, utils.ESClusterName)
+			es, err := utils.GetElasticsearch(r.client, request.Namespace, utils.ESClusterName)
 			if err != nil || es == nil {
 				return reconcile.Result{}, err
 			}
@@ -1364,6 +1409,14 @@ func processLogstashTemplates(chartDir string, spec nuodbv2alpha1.NuodbInsightsS
 		log.Error(err,"Failed chartutil.ToRenderValuesCaps().")
 		return logstashResources, err
 	}
+	if spec.StorageClass != "" {
+		x, err := valuesToRender.Table("Values.persistence")
+		if err != nil {
+			log.Error(err,"Failed to get Values table.")
+			return logstashResources, err
+		}
+		x["storageClass"] = spec.StorageClass
+	}
 	e := engine.New()
 
 
@@ -1780,7 +1833,9 @@ func deleteGrafanaDashboard(thisClient client.Client, namespace string, dashboar
 	for {
 		dashboardCr, err := utils.GetGrafanaDashboardCR(dashboardName, namespace, rm)
 		if err != nil {
-			if apierrors.IsNotFound(err) {
+			if _, ok := err.(*meta.NoKindMatchError); ok {
+				return nil
+			} else if apierrors.IsNotFound(err) {
 				return nil
 			} else {
 				log.Error(err, "Unable to get GrafanDashboardCR.",
@@ -1828,14 +1883,16 @@ func deleteGrafanaCluster(thisClient client.Client, namespace string, rm meta.RE
 	if err == nil {
 		err = thisClient.Delete(context.TODO(), datasourceCr)
 		if err != nil {
-			log.Error(err, "Unable to delete GrafanDataSourceCR.",
+			log.Error(err, "Unable to delete GrafanaDataSourceCR.",
 				"GrafanaClusterDataSourceName", utils.GrafanaClusterDataSourceName,
 				"namespace", namespace)
 			return err
 		}
 	} else {
-		if !apierrors.IsNotFound(err) {
-			log.Error(err, "Unable to get GrafanDataSourceCR.",
+		if _, ok := err.(*meta.NoKindMatchError); ok {
+			log.Info("Unable to find Kind: GrafanaDataSource.  Skipping.")
+		} else if !apierrors.IsNotFound(err) {
+			log.Error(err, "Unable to get GrafanaDataSourceCR.",
 				"GrafanaClusterDataSourceName", utils.GrafanaClusterDataSourceName,
 				"namespace", namespace)
 			return err
@@ -1844,7 +1901,9 @@ func deleteGrafanaCluster(thisClient client.Client, namespace string, rm meta.RE
 
 	grafanaCr, err := utils.GetGrafanaCR(utils.GrafanaClusterName, namespace, rm)
 	if err != nil {
-		if !apierrors.IsNotFound(err) {
+		if _, ok := err.(*meta.NoKindMatchError); ok {
+			log.Info("Unable to find Kind: Grafana.  Skipping.")
+		} else if !apierrors.IsNotFound(err) {
 			msg := fmt.Sprintf("Unable to find  %s in namespace: %s", utils.GrafanaClusterName, namespace)
 			log.Error(err, msg)
 			return err

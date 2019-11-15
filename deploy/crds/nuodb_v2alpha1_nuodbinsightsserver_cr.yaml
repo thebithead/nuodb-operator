@@ -7,3 +7,4 @@ spec:
   elasticNodeCount: 1
   kibanaVersion: 7.3.0
   kibanaNodeCount: 1
+  storageClass: ""

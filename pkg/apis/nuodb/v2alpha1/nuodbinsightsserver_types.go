@@ -13,10 +13,21 @@ type NuodbInsightsServerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+
+	// ElasticSearch Version
 	ElasticVersion string `json:"elasticVersion"`
+
+	// ElasticSearch Node Count
 	ElasticNodeCount int32 `json:"elasticNodeCount"`
+
+	// Kibana Version
 	KibanaVersion string `json:"kibanaVersion"`
+
+	// Kibana Node Count
 	KibanaNodeCount int32 `json:"kibanaNodeCount"`
+
+	// Persistent Storage Class for internal components.
+	StorageClass string `json:"storageClass"`
 }
 
 // NuodbInsightsServerStatus defines the observed state of NuodbInsightsServer

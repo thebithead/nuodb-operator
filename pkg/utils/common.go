@@ -1607,6 +1607,11 @@ func CreateGrafanaDashboardCR(cr *grafanav1alpha1.GrafanaDashboard, ns string, o
 	return cr, err
 }
 
+func CreateElasticsearch(thisClient client.Client, es *esv1alpha1.Elasticsearch) error {
+	err := thisClient.Create(context.TODO(), es)
+	return err
+}
+
 func GetElasticsearch(thisClient client.Client, namespace string, name string) (*esv1alpha1.Elasticsearch, error) {
 	var es = &esv1alpha1.Elasticsearch{}
 	err := thisClient.Get(context.TODO(), client.ObjectKey{Namespace: namespace, Name: name}, es)
