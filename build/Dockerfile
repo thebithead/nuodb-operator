@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/ubi7/ubi-minimal:latest
 
 LABEL name="nuodb/nuodb-operator" \
       vendor="NuoDB, Inc." \
-      version="v2.0.2" \
+      version="v2.0.3" \
       release="2" \
       summary="NuoDB" \
       description="NuoDB is an distributed, relational database that is easy to set up and scale."
