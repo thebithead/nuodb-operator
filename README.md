@@ -284,7 +284,8 @@ sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb
 # To pull from the Google Marketplace, run
 #   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
 # To pull from the AWS Marketplace, 
-# replace in the nuodb-csv.yaml file the two image references with 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
+# replace in the nuodb-csv.yaml file the two image references with 
+# 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
 
 # If appliable, copy your new nuodb-csv-xxx.yaml file to nuodb-csv.yaml and run,
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
@@ -293,12 +294,12 @@ kubectl create -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
 ATTEMPTS=0
 ROLLOUT_STATUS_CMD="kubectl rollout status deployment/nuodb-operator -n $OPERATOR_NAMESPACE"
 until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
-  $ROLLOUT_STATUS_CMD
   ATTEMPTS=$((attempts + 1))
   echo ""
   kubectl get pods -n $OPERATOR_NAMESPACE
   sleep 5
 done
+$ROLLOUT_STATUS_CMD
 ```
 
 ## Deploy the NuoDB Database
@@ -370,12 +371,12 @@ kubectl create -n $OPERATOR_NAMESPACE -f nuodb-ycsb-cr.yaml
 ATTEMPTS=0
 ROLLOUT_STATUS_CMD="kubectl rollout status sts/insights-server-release-logstash -n $OPERATOR_NAMESPACE"
 until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
-  $ROLLOUT_STATUS_CMD
   ATTEMPTS=$((attempts + 1))
   echo ""
   kubectl get pods -n $OPERATOR_NAMESPACE
   sleep 5
 done
+$ROLLOUT_STATUS_CMD
 
 # create the Insights client
 kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
@@ -653,7 +654,7 @@ Below are examples that pull the NuoDB container image from Red Hat (RHCC), Goog
 ```
 container: registry.connect.redhat.com/nuodb/nuodb-ce:latest
 container: marketplace.gcr.io/nuodb/nuodb:latest
-container: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
+container: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
 container: nuodb/nuodb-ce:latest
 ```
 
@@ -661,5 +662,5 @@ container: nuodb/nuodb-ce:latest
 
 ```
 ycsbContainer: nuodb/ycsb:latest
-ycsbContainer: 709373726912.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1180980994/docker.io/nuodb/ycsb:$NUODB_OPERATOR_VERSION-latest
+ycsbContainer: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/docker.io/nuodb/ycsb:$NUODB_OPERATOR_VERSION-latest
 ```
