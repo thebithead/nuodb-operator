@@ -17,6 +17,7 @@ COPY licenses /licenses
 COPY build/_output/bin/nuodb-operator ${OPERATOR}
 
 COPY build/etc /usr/local/etc/nuodb-operator
+COPY deploy/crds /usr/local/etc/nuodb-operator/crds
 
 COPY build/bin /usr/local/bin
 RUN  /usr/local/bin/user_setup
