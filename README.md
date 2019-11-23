@@ -596,6 +596,24 @@ kubectl get role/grafana-operator
 
 &ensp; `teCpu: 1`
 
+**apiServer** - Load balancer service URL. hostname:port (or LB address) for nuocmd and nuodocker process to connect to.
+
+&ensp; `apiServer: https://domain:8888`
+
+
+**container** - NuoDB fully qualified image name (FQIN) for the Docker image to use
+
+Below are examples that pull the NuoDB container image from Red Hat (RHCC), Google Cloud Platform Marketplace, AWS Marketplace, and DockerHub.
+
+```
+container: registry.connect.redhat.com/nuodb/nuodb-ce:latest
+container: marketplace.gcr.io/nuodb/nuodb:latest
+container: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
+container: nuodb/nuodb-ce:latest
+```
+
+
+## Optional YCSB Workload Parameters
 
 **ycsbLoadName** - YCSB workload pod name
 
@@ -642,25 +660,32 @@ kubectl get role/grafana-operator
 &ensp; `ycsbDbSchema: User1`
 
 
-**apiServer** - Load balancer service URL. hostname:port (or LB address) for nuocmd and nuodocker process to connect to.
-
-&ensp; `apiServer: https://domain:8888`
-
-
-**container** - NuoDB fully qualified image name (FQIN) for the Docker image to use
-
-Below are examples that pull the NuoDB container image from Red Hat (RHCC), Google Cloud Platform Marketplace, AWS Marketplace, and DockerHub.
-
-```
-container: registry.connect.redhat.com/nuodb/nuodb-ce:latest
-container: marketplace.gcr.io/nuodb/nuodb:latest
-container: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
-container: nuodb/nuodb-ce:latest
-```
-
 **ycsbContainer** - YCSB fully qualified image name (FQIN) for the ycsb docker image to use. See examples below pulling the image from dockerhub and the AWS Marketplace.
 
 ```
 ycsbContainer: nuodb/ycsb:latest
 ycsbContainer: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/docker.io/nuodb/ycsb:$NUODB_OPERATOR_VERSION-latest
 ```
+
+
+## Optional NuoDB Insights-Server Parameters
+
+**elasticVersion** - Version of ElasticSearch
+
+&ensp; `elasticVersion: 7.3.0`
+
+**elasticNodeCount** - Number of nodes in the ElasticSearch Cluster
+
+&ensp; `elasticNodeCount: 1`
+
+**kibanaVersion** - Version of Kibana
+
+&ensp; `kibanaVersion: 7.3.0`
+
+**kibanaNodeCount** - Version of Kibana
+
+&ensp; `kibanaNodeCount: 1`
+
+**storageClass** - Kubernetes Persistent Storage Class
+
+&ensp; `storageClass: ""`
