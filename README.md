@@ -4,11 +4,12 @@
 
 A Kubernetes Operator written in Golang that automates the packaging, provisioning, and managing of operational tasks for Kubernetes containerized applications. By default the NuoDB Kubernetes Operator deploys the NuoDB with Community Edition (CE) capability in the following tested and verified Kubernetes distributions:
 
-* Red Hat OpenShift 3.11 or 4.x
+* Red Hat OpenShift 3.11 or 4.x - On-prem or OpenShift supported public cloud environments
 * Google Cloud Platform (GCP) - GCE nodes running GKE managed Kubernetes
 * Google Cloud Platform (GCP) - GCE nodes running open source Kubernetes
 * Amazon Web Services (AWS)   - EC2 nodes running EKS managed Kubernetes
 * Amazon Web Services (AWS)   - EC2 nodes running open source kubernetes
+* Rancher Kubernetes Management - Rancher RKE and Rancher supported managed Kubernetes (e.g. EKS, AKS)
 
 The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample SQL application (ycsb) to quickly generate a user-configurable SQL workload against the database.
 
@@ -299,7 +300,6 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
   kubectl get pods -n $OPERATOR_NAMESPACE
   sleep 5
 done
-$ROLLOUT_STATUS_CMD
 ```
 
 ## Deploy the NuoDB Database
@@ -376,7 +376,6 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
   kubectl get pods -n $OPERATOR_NAMESPACE
   sleep 5
 done
-$ROLLOUT_STATUS_CMD
 
 # create the Insights client
 kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
@@ -384,10 +383,10 @@ kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
 # if Red Hat OpenShift,
 # open your Kubernetes dashboard Networking/Route panel to obtain your NuoDB Insight's dashboard URL.
 # Also, displayed using the following command,
-   echo "on-cluster Insights URL: https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
+   echo "on-cluster Insights URL: https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})/d/000000002/system-overview?orgId=1&refresh=10s"
 
 # if managed Kubernetes / open source Kubernetes, 
-   echo "on-cluster Insights URL: https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
+   echo "on-cluster Insights URL: http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})/d/000000002/system-overview?orgId=1&refresh=10s"
  ```
 
 #### If deploying on-cluster NuoDB Insights
@@ -395,11 +394,11 @@ Your URL to access your locally deployed Insight's Web UI dashboard can be obtai
 
 If Red Hat OpenShift,
 ```
-echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})//d/000000002/system-overview?orgId=1&refresh=10s"
+echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})/d/000000002/system-overview?orgId=1&refresh=10s"
 ```
 If managed or open source Kubernetes,
 ```
-echo "https://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})//d/000000002/system-overview?orgId=1&refresh=10s"
+echo "http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})/d/000000002/system-overview?orgId=1&refresh=10s"
 ```
 
 #### If deploying hosted NuoDB Insights
