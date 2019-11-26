@@ -286,7 +286,7 @@ sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb
 #   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
 # To pull from the AWS Marketplace, 
 # replace in the nuodb-csv.yaml file the two image references with 
-# 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
+# 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-3874915802/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
 
 # If appliable, copy your new nuodb-csv-xxx.yaml file to nuodb-csv.yaml and run,
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
@@ -607,7 +607,8 @@ Below are examples that pull the NuoDB container image from Red Hat (RHCC), Goog
 ```
 container: registry.connect.redhat.com/nuodb/nuodb-ce:latest
 container: marketplace.gcr.io/nuodb/nuodb:latest
-container: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
+container: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-3874915802/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
+
 container: nuodb/nuodb-ce:latest
 ```
 
@@ -663,7 +664,7 @@ container: nuodb/nuodb-ce:latest
 
 ```
 ycsbContainer: nuodb/ycsb:latest
-ycsbContainer: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-1567108601/docker.io/nuodb/ycsb:$NUODB_OPERATOR_VERSION-latest
+ycsbContainer: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-3874915802/docker.io/nuodb/ycsb:$NUODB_OPERATOR_VERSION-latest
 ```
 
 
