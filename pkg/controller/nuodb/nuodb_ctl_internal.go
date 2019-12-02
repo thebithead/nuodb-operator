@@ -316,12 +316,16 @@ func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Sche
 		}
 	} else {
 		if nuoResource.name == "te" {
-			updateTeReadyCount(thisClient, request, deployment.Status.ReadyReplicas)
+			_, _, err = updateTeReadyCount(thisClient, request, deployment.Status.ReadyReplicas)
+			if err != nil {
+				log.Error(err, "Error: Unable to update TE ready count.")
+				return deployment, reconcile.Result{}, trace.Wrap(err)
+			}
 			if *deployment.Spec.Replicas != instance.Spec.TeCount {
 				*deployment.Spec.Replicas = instance.Spec.TeCount
 				err = thisClient.Update(context.TODO(), deployment)
 				if err != nil {
-					log.Error(err, "Error: Admin statefulSet Update().")
+					log.Error(err, "Error: Unable to update TeCount in TE Deployment.")
 					return deployment, reconcile.Result{}, trace.Wrap(err)
 				}
 			}
@@ -345,12 +349,16 @@ func reconcileNuodbDeploymentConfig(thisClient client.Client, thisScheme *runtim
 		}
 	} else {
 		if nuoResource.name == "te" {
-			updateTeReadyCount(thisClient, request, deploymentConfig.Status.ReadyReplicas)
+			_, _, err = updateTeReadyCount(thisClient, request, deploymentConfig.Status.ReadyReplicas)
+			if err != nil {
+				log.Error(err, "Error: Unable to update TE ready count.")
+				return deploymentConfig, reconcile.Result{}, trace.Wrap(err)
+			}
 			if deploymentConfig.Spec.Replicas != instance.Spec.TeCount {
 				deploymentConfig.Spec.Replicas = instance.Spec.TeCount
 				err = thisClient.Update(context.TODO(), deploymentConfig)
 				if err != nil {
-					log.Error(err, "Error: Admin statefulSet Update().")
+					log.Error(err, "Error: Unable to update TeCount in TE DeploymentConfig.")
 					return deploymentConfig, reconcile.Result{}, trace.Wrap(err)
 				}
 			}
@@ -374,22 +382,30 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 		}
 	} else {
 		if nuoResource.name == "admin" {
-			updateAdminReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
+			_, _, err = updateAdminReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
+			if err != nil {
+				log.Error(err, "Error: Unable to update Admin ready count.")
+				return statefulSet, reconcile.Result{}, trace.Wrap(err)
+			}
 			if *statefulSet.Spec.Replicas != instance.Spec.AdminCount {
 				*statefulSet.Spec.Replicas = instance.Spec.AdminCount
 				err = thisClient.Update(context.TODO(), statefulSet)
 				if err != nil {
-					log.Error(err, "Error: Admin statefulSet Update().")
+					log.Error(err, "Error: Unable to update AdminCount in Admin StatefulSet.")
 					return statefulSet, reconcile.Result{}, trace.Wrap(err)
 				}
 			}
 		} else if nuoResource.name == "sm" {
-			updateSmReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
+			_, _, err = updateSmReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
+			if err != nil {
+				log.Error(err, "Error: Unable to update SM ready count.")
+				return statefulSet, reconcile.Result{}, trace.Wrap(err)
+			}
 			if *statefulSet.Spec.Replicas != instance.Spec.SmCount {
 				*statefulSet.Spec.Replicas = instance.Spec.SmCount
 				err = thisClient.Update(context.TODO(), statefulSet)
 				if err != nil {
-					log.Error(err, "Error: SM statefulSet Update().")
+					log.Error(err, "Error: Unable to update SmCount in SM StatefulSet.")
 					return statefulSet, reconcile.Result{}, trace.Wrap(err)
 				}
 			}
