@@ -27,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes"
 	ptv1beta1 "k8s.io/client-go/kubernetes/typed/policy/v1beta1"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/engine"
@@ -113,7 +112,7 @@ func reconcileNuodbInsightsServerInternal(r *ReconcileNuodbInsightsServer, reque
 		return reconcile.Result{}, nil
 	}
 
-	result, err := reconcileECKAllInOne(r.client, r.scheme, request, instance,
+	result, err := reconcileECKAllInOne(r.client, r.scheme, instance,
 		utils.ECKAllInOneYamlFile, utils.ElasticNamespace)
 	if err != nil {
 		log.Error(err,"Reconcile NuodbInsightsServer failed: Failed reconcileECKAllInOne().",
@@ -121,7 +120,7 @@ func reconcileNuodbInsightsServerInternal(r *ReconcileNuodbInsightsServer, reque
 		return result, err
 	}
 
-	result, err = reconcileESCluster(r, request, instance, utils.ESClusterYamlFile, utils.ESClusterName, rm)
+	result, err = reconcileESCluster(r, request, instance, utils.ESClusterName, rm)
 	if err != nil {
 		log.Error(err,"Reconcile NuodbInsightsServer failed: Failed reconcileESCluster().",
 			"Name", request.Name, "Namespace", request.Namespace)
@@ -423,7 +422,7 @@ func createECKAllInOne(thisClient client.Client, thisScheme *runtime.Scheme, ins
 		"ServiceAccount",
 		"StatefulSet" }
 
-	// First check that processKindOrder has all of the runtiumeObjects kinds.
+	// First check that processKindOrder has all of the runtime Objects kinds.
 	for _, obj := range runtimeObjects {
 		kindObj := obj.GetObjectKind()
 		thisKind := kindObj.GroupVersionKind().Kind
@@ -459,125 +458,8 @@ func createECKAllInOne(thisClient client.Client, thisScheme *runtime.Scheme, ins
 	return reconcile.Result{}, err
 }
 
-// Delete Elastic Cloud on K8s
-func deleteECKAllInOne(allInOneYamlFilename, namespace string) error {
-	runtimeObjects, err := utils.GetMultipleRuntimeObjectFromYamlFile(allInOneYamlFilename)
-	if err != nil {
-		log.Error(err, "Internal Error: unable to process ECK All In One Yaml file.",
-			"allInOneYamlFilename", allInOneYamlFilename)
-		return err
-	}
-
-	// Process K8s Kinds in this order
-	processKindOrder := [] string {
-		"StatefulSet",
-		"ServiceAccount",
-		"ClusterRoleBinding",
-		"ClusterRole",
-		"Secret",
-		"Namespace",
-	}
-
-	// First check that processKindOrder has all of the runtiumeObjects kinds.
-	for _, obj := range runtimeObjects {
-		kindObj := obj.GetObjectKind()
-		thisKind := kindObj.GroupVersionKind().Kind
-		foundKind := false
-		for _, processKind := range processKindOrder {
-			if thisKind == processKind {
-				foundKind = true
-				break
-			}
-		}
-		if foundKind == false {
-			msg := fmt.Sprintf("Unknown kind %s in function deleteECKAllInOne()", thisKind)
-			err = errors.NewBadRequest(msg)
-			log.Error(err, msg)
-			return err
-		}
-	}
-
-	kubeconfig, err := utils.GetDefaultKubeConfig()
-	if err != nil {
-		return err
-	}
-	clientset, err := kubernetes.NewForConfig(kubeconfig)
-	if err != nil {
-		return err
-	}
-
-	// Process all of the runtimeObject in processKindOrder.
-	for _, processKind := range processKindOrder {
-		for _, obj := range runtimeObjects {
-			kindObj := obj.GetObjectKind()
-			thisKind := kindObj.GroupVersionKind().Kind
-			if thisKind == processKind {
-				time.Sleep(time.Second)
-				switch thisKind {
-				case "Namespace":
-					ns := obj.(*corev1.Namespace)
-					name := ns.Name
-					err = clientset.CoreV1().Namespaces().Delete(name, &metav1.DeleteOptions{})
-					if apierrors.IsNotFound(err) {
-						return err
-					}
-				case "Secret":
-					secret := obj.(*corev1.Secret)
-					name := secret.Name
-					err = clientset.CoreV1().Secrets(namespace).Delete(name, &metav1.DeleteOptions{})
-					if apierrors.IsNotFound(err) {
-						return err
-					}
-				case "ClusterRole":
-					cRole := obj.(*rbacv12.ClusterRole)
-					name := cRole.Name
-					err = clientset.RbacV1().ClusterRoles().Delete(name, &metav1.DeleteOptions{})
-					if apierrors.IsNotFound(err) {
-						return err
-					}
-				case "ClusterRoleBinding":
-					cRoleBinding := obj.(*rbacv12.ClusterRoleBinding)
-					name := cRoleBinding.Name
-					err = clientset.RbacV1().ClusterRoleBindings().Delete(name, &metav1.DeleteOptions{})
-					if apierrors.IsNotFound(err) {
-						return err
-					}
-				case "ServiceAccount":
-					sa := obj.(*corev1.ServiceAccount)
-					name := sa.Name
-					err = clientset.CoreV1().ServiceAccounts(namespace).Delete(name, &metav1.DeleteOptions{})
-					if apierrors.IsNotFound(err) {
-						return err
-					}
-				case "StatefulSet":
-					ss := obj.(*appsv1.StatefulSet)
-					name := ss.Name
-					err = clientset.AppsV1().StatefulSets(namespace).Delete(name, &metav1.DeleteOptions{})
-					if apierrors.IsNotFound(err) {
-						return err
-					}
-				default:
-					msg := fmt.Sprintf("Insights-Server invalid resource kind: %s", thisKind)
-					err = apierrors.NewBadRequest(msg)
-					log.Error(err, msg)
-					return err
-				}
-			}
-		}
-	}
-	vwhc := clientset.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations()
-	if vwhc != nil {
-		log.Info("Deleting validating-webhook-configuration")
-		err = vwhc.Delete("validating-webhook-configuration", &metav1.DeleteOptions{})
-		if apierrors.IsNotFound(err) {
-			return err
-		}
-	}
-	return err
-}
-
 // Reconcile Elastic Cloud on K8s
-func reconcileECKAllInOne(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer, allInOneYamlFilename string, namespace string)(reconcile.Result, error) {
+func reconcileECKAllInOne(thisClient client.Client, thisScheme *runtime.Scheme, instance *nuodbv2alpha1.NuodbInsightsServer, allInOneYamlFilename string, namespace string)(reconcile.Result, error) {
 	log.Info("Reconcile ECKAllInOne")
 	//_, err := utils.GetApiResources(utils.ElasticSearchGroupVersion)
 	kc, err := utils.GetK8sClientSet()
@@ -748,7 +630,7 @@ func reconcileESPipelines(request reconcile.Request, esClusterName string, esCli
 }
 
 // Reconcile Elasticsearch Cluster on K8s
-func reconcileESCluster(r *ReconcileNuodbInsightsServer, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer, esClusterYamlFile string,  esClusterName string, rm meta.RESTMapper) (reconcile.Result, error) {
+func reconcileESCluster(r *ReconcileNuodbInsightsServer, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer, esClusterName string, rm meta.RESTMapper) (reconcile.Result, error) {
 	msg := fmt.Sprintf("Reconcile %s in namespace: %s", esClusterName, request.Namespace )
 	log.Info(msg)
 	_, err := utils.GetApiResources(utils.ElasticSearchGroupVersion)
@@ -764,7 +646,7 @@ func reconcileESCluster(r *ReconcileNuodbInsightsServer, request reconcile.Reque
 			msg := fmt.Sprintf("Creating %s in namespace: %s", esClusterName, request.Namespace)
 			log.Info(msg)
 			nodeConfig := commonv1alpha1.Config {
-			map[string]interface{}{
+			Data: map[string]interface{}{
 				"node.master": true,
 				"node.data": true,
 				"node.ingest": true,
@@ -938,8 +820,6 @@ func (r *ReconcileNuodbInsightsServer) deleteExternalResources(instance *nuodbv2
 		return err
 	}
 
-	// TODO: Not needed?
-	//err = deleteECKAllInOne(r.client, r.scheme, request, instance, utils.ECKAllInOneYamlFile, request.Namespace)
 	return nil
 }
 
@@ -1467,13 +1347,6 @@ func createLogstashServiceAccount(thisClient client.Client, thisScheme *runtime.
 	logstashResource LogstashResource) (*corev1.ServiceAccount, error) {
 	serviceAccount, err := utils.CreateServiceAccountFromTemplate(instance, thisClient, thisScheme, logstashResource.template, request.Namespace)
 	return serviceAccount, err
-}
-
-
-func createLogstashSecret(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer,
-	logstashResource LogstashResource) (*corev1.Secret, error) {
-	secret, err := utils.CreateSecretFromTemplate(instance, thisClient, thisScheme, logstashResource.template, request.Namespace)
-	return secret, err
 }
 
 func createLogstashConfigMap(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer,

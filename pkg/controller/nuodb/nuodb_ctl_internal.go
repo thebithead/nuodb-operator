@@ -267,23 +267,6 @@ func reconcileNuodbConfigMap(thisClient client.Client, thisScheme *runtime.Schem
 	return configMap, reconcile.Result{}, err
 }
 
-func reconcileNuodbRoute(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
-	nuoResource NuoResource, namespace string) (*v12.Route, reconcile.Result, error) {
-	var route *v12.Route = nil
-	route, err := utils.GetRoute(thisClient, namespace, nuoResource.name)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			route, err = createNuodbRoute(thisClient, thisScheme, request, instance, nuoResource)
-			if err != nil {
-				return route, reconcile.Result{}, err
-			}
-		} else {
-			return route, reconcile.Result{Requeue: true, RequeueAfter: utils.ReconcileRequeueAfterDefault}, err
-		}
-	}
-	return route, reconcile.Result{}, err
-}
-
 func reconcileNuodbReplicationController(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
 	nuoResource NuoResource, namespace string) (*corev1.ReplicationController, reconcile.Result, error) {
 	var replicationController *corev1.ReplicationController = nil
@@ -332,39 +315,6 @@ func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Sche
 		}
 	}
 	return deployment, reconcile.Result{}, err
-}
-
-func reconcileNuodbDeploymentConfig(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
-	nuoResource NuoResource, namespace string) (*ocpappsv1.DeploymentConfig, reconcile.Result, error) {
-	var deploymentConfig *ocpappsv1.DeploymentConfig = nil
-	deploymentConfig, err := utils.GetDeploymentConfig(thisClient, namespace, nuoResource.name)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			deploymentConfig, err = createNuodbDeploymentConfig(thisClient, thisScheme, request, instance, nuoResource)
-			if err != nil {
-				return deploymentConfig, reconcile.Result{}, err
-			}
-		} else {
-			return deploymentConfig, reconcile.Result{Requeue: true, RequeueAfter: utils.ReconcileRequeueAfterDefault}, err
-		}
-	} else {
-		if nuoResource.name == "te" {
-			_, _, err = updateTeReadyCount(thisClient, request, deploymentConfig.Status.ReadyReplicas)
-			if err != nil {
-				log.Error(err, "Error: Unable to update TE ready count.")
-				return deploymentConfig, reconcile.Result{}, trace.Wrap(err)
-			}
-			if deploymentConfig.Spec.Replicas != instance.Spec.TeCount {
-				deploymentConfig.Spec.Replicas = instance.Spec.TeCount
-				err = thisClient.Update(context.TODO(), deploymentConfig)
-				if err != nil {
-					log.Error(err, "Error: Unable to update TeCount in TE DeploymentConfig.")
-					return deploymentConfig, reconcile.Result{}, trace.Wrap(err)
-				}
-			}
-		}
-	}
-	return deploymentConfig, reconcile.Result{}, err
 }
 
 func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
@@ -462,6 +412,7 @@ func processNuoResources(nuoResources *NuoResources) error {
 	return nil
 }
 
+//noinspection GoRedundantParens
 func updateStatus(thisClient client.Client, request reconcile.Request, status nuodbv2alpha1.NuodbStatus) (*nuodbv2alpha1.Nuodb, bool, error) {
 	// Fetch the Nuodb instance
 	currentInstance, err := getnuodbv2alpha1NuodbInstanceUsingClient(thisClient, request)

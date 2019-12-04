@@ -4,9 +4,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // NuodbSpec defines the desired state of Nuodb
 // +k8s:openapi-gen=true
 type NuodbSpec struct {
@@ -117,7 +114,7 @@ type NuodbSpec struct {
 	// Example: smStorageSize: 20G
 	SmStorageSize string `json:"smStorageSize"`
 
-        // storageMode
+	// storageMode
 	// Run NuoDB using a persistent, local, disk volume "persistent"
 	// or volatile storage "ephemeral".  Must be set to one of those values.
 	// example: storageMode: persistent
@@ -169,6 +166,8 @@ func (h NuodbHealth) Less(other NuodbHealth) bool {
 // NuodbOrchestrationPhase is the phase NuoDB Domain is in from the controller point of view.
 type NuodbOrchestrationPhase string
 
+// NuoDB OrchestrationPhases
+//noinspection GoUnusedConst
 const (
 	// NuodbOperationalPhase is operating at the desired spec.
 	NuodbOperationalPhase NuodbOrchestrationPhase = "Operational"
@@ -181,6 +180,7 @@ const (
 )
 
 // IsDegraded returns true if the current status is worse than the previous.
+//noinspection ALL,GoReceiverNames
 func (nuodbStatus NuodbStatus) IsDegraded(prev NuodbStatus) bool {
 	return nuodbStatus.DomainHealth.Less(prev.DomainHealth)
 }

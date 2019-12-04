@@ -45,7 +45,7 @@ done
 kubectl create configmap nuodb-lic-configmap --from-literal=nuodb.lic="" -n $OPERATOR_NAMESPACE
 
 echo "Create the Custom Resource to deploy NuoDB..."
-kubectl create -n $OPERATOR_NAMESPACE -f ${TESTDIR}/test/files/ci_nuodb_test_cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f ${TESTDIR}/test/deploy/crs/ci_nuodb_test_cr.yaml
 
 echo "status of all pods"
 kubectl get pods -n nuodb
