@@ -85,7 +85,7 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 15
           exec:
-            command: [ "nuodocker", "check", "servers" ]
+            command: [ "nuodocker", "check", "servers", "--check-connected", "--check-active", "--check-leader" ]
 {{- if eq .Values.storageMode "persistent" }}
         volumeMounts:
         - name: nuodb-lic-vol
