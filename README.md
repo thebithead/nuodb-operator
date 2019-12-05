@@ -361,6 +361,9 @@ cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
 
+# add cluster-admin permissions to the nuodb-operator service account                               
+kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
+
 # Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-cr.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-insights-cr.yaml
