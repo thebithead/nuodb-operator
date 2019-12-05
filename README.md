@@ -395,7 +395,7 @@ echo "   localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s"
  ```
 
 #### If deploying on-cluster NuoDB Insights
-Your URL to access your locally deployed NuoDB Insights Web UI dashboard can be obtained by running,
+To obtain your on-cluster NuoDB Insnights URL,
 
 For Red Hat OpenShift, go to URL:
 ```
@@ -405,8 +405,7 @@ For Google GKE, go to URL:
 ```
 echo "   http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})/d/000000002/system-overview?orgId=1&refresh=10s"
 ```
-For EKS or open source K8S,
-Run the following command in a terminal window suitable for logging output commands:
+For EKS or open source K8S, run the following command in a terminal window suitable for logging output commands:
 ```
 $ kubectl port-forward ingress/grafana-ingress 3000 &"
 ```
