@@ -361,6 +361,9 @@ cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
 
+# add cluster-admin permissions to the nuodb-operator service account                               
+kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
+
 # Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-cr.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-insights-cr.yaml
@@ -379,26 +382,39 @@ done
 
 # create the Insights client
 kubectl create -f nuodb-operator/build/etc/insights-server/insights-client.yaml
+ 
+echo "Obtain your NuoDB Insights Dashboard URL:"
+echo "For Red Hat OpenShift, go to URL:"
+echo "   https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})/d/000000002/system-overview?orgId=1&refresh=10s"
 
-# if Red Hat OpenShift,
-# open your Kubernetes dashboard Networking/Route panel to obtain your NuoDB Insight's dashboard URL.
-# Also, displayed using the following command,
-   echo "on-cluster Insights URL: https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})/d/000000002/system-overview?orgId=1&refresh=10s"
+echo "For Google GKE, go to URL:"
+echo "   http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})/d/000000002/system-overview?orgId=1&refresh=10s"
 
-# if managed Kubernetes / open source Kubernetes, 
-   echo "on-cluster Insights URL: http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})/d/000000002/system-overview?orgId=1&refresh=10s"
+echo "For EKS or open source K8S,"
+echo "Run the following command in a terminal window suitable for logging output commands:"
+echo "   $ kubectl port-forward ingress/grafana-ingress 3000 &"
+echo "Go to URL:"
+echo "   localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s"   
  ```
 
 #### If deploying on-cluster NuoDB Insights
-Your URL to access your locally deployed Insight's Web UI dashboard can be obtained by running,
+To obtain your on-cluster NuoDB Insnights URL,
 
-If Red Hat OpenShift,
+For Red Hat OpenShift, go to URL:
 ```
-echo "https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})/d/000000002/system-overview?orgId=1&refresh=10s"
+echo "   https://$(kubectl get route grafana-route --output=jsonpath={.spec.host})/d/000000002/system-overview?orgId=1&refresh=10s"
 ```
-If managed or open source Kubernetes,
+For Google GKE, go to URL:
 ```
-echo "http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})/d/000000002/system-overview?orgId=1&refresh=10s"
+echo "   http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status.loadBalancer.ingress[0].ip})/d/000000002/system-overview?orgId=1&refresh=10s"
+```
+For EKS or open source K8S, run the following command in a terminal window suitable for logging output commands:
+```
+$ kubectl port-forward ingress/grafana-ingress 3000 &"
+```
+Go to URL:
+```
+localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s
 ```
 
 #### If deploying hosted NuoDB Insights
