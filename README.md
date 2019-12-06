@@ -180,7 +180,7 @@ kubectl  create secret docker-registry pull-secret \
 ```
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/thp-scc.yaml
 ```
-#### run following oc admin policy commands,
+#### Run the following oc admin policy commands,
 ```
 oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:nuodb-operator
 oc adm policy add-scc-to-user privileged system:serviceaccount:elastic-system:elastic-operator
