@@ -78,7 +78,7 @@ In your home or working directory, run:
 
 ### 5. Set the project/namespace value
 
-&ensp; `kubectl project $OPERATOR_NAMESPACE`
+&ensp; `kubectl namespace $OPERATOR_NAMESPACE`
 
 ### 6. Set container storage prerequisites
 
