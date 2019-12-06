@@ -398,7 +398,7 @@ echo "   localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s"
  ```
 
 #### If deploying on-cluster NuoDB Insights
-To obtain your on-cluster NuoDB Insnights URL,
+To obtain your on-cluster NuoDB Insights URL,
 
 For Red Hat OpenShift, go to URL:
 ```
@@ -416,6 +416,8 @@ Go to URL:
 ```
 localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s
 ```
+**Note:** It may take several minutes for the NuoDB Insights URL to become available. 
+
 
 #### If deploying hosted NuoDB Insights
 Optionally, you can choose to send your performance data to the NuoDB publicly hosted Insights portal. Your performance data remains private and is only accessible by using your private Subscriber ID. With this option, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod in your Kubernetes dashboard, go to the Logs tab, and find the line that indicates your Subscriber ID. 
