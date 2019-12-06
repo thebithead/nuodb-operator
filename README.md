@@ -182,9 +182,9 @@ kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/thp-scc.yaml
 ```
 #### Run the following oc admin policy commands,
 ```
-oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:nuodb-operator
+oc adm policy add-scc-to-user privileged system:serviceaccount:$OPERATOR_NAMESPACE:nuodb-operator
 oc adm policy add-scc-to-user privileged system:serviceaccount:elastic-system:elastic-operator
-oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:insights-server-release-logstash
+oc adm policy add-scc-to-user privileged system:serviceaccount:$OPERATOR_NAMESPACE:insights-server-release-logstash
 ```
 
 ## Configure NuoDB Insights Visual Monitor
