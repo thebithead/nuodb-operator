@@ -217,7 +217,7 @@ Before deploying  NuoDB, to enable NuoDB Insights you can
 
 ## Install the NuoDB Operator
 
-To install the NuoDB Operator into your Kubernetes cluster, follow the steps indicated for the appropriate Kubernetes Distribtion you are using.
+To install the NuoDB Operator into your Kubernetes cluster, follow the steps indicated for the appropriate Kubernetes Distribution you are using.
 
 ### Red Hat OpenShift v4.x 
 
@@ -425,7 +425,7 @@ Optionally, you can choose to send your performance data to the NuoDB publicly h
 ```
 Insights Subscriber ID: yourSubID#
 ```
-**Note:** When using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-inisghts log file. Instead run,
+**Note:** When using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-insights log file. Instead run,
 ```
 kubectl logs nuodb-insights -n nuodb -c insights
 ```
