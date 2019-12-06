@@ -448,10 +448,10 @@ To start a SQL Workload (if your nuodb-ycsb-cr.yaml isn't configured to start on
 Once your NuoDB database is running, here are a few steps to try out to quickly realize the benefits of running a NuoDB SQL database
 
 * Demonstrate Transactional Scale-out
-To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
-```
-kubectl edit nuodbs.nuodb.com
-```
+** To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
+**```
+**kubectl edit nuodbs.nuodb.com
+**```
 * Demonstrate Continuous Availability
 * Demonstrate Visual Monitoring Using NuoDB Insights
 
