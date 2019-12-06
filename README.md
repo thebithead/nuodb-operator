@@ -76,9 +76,9 @@ In your home or working directory, run:
 
 &ensp; `kubectl create namespace $OPERATOR_NAMESPACE`
 
-### 5. Set the project/namespace value
+### 5. Set the context to your operator namespace
 
-&ensp; `kubectl namespace $OPERATOR_NAMESPACE`
+&ensp; `kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE`
 
 ### 6. Set container storage prerequisites
 
