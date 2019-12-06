@@ -180,6 +180,12 @@ kubectl  create secret docker-registry pull-secret \
 ```
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/thp-scc.yaml
 ```
+#### run following oc admin policy commands,
+```
+oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:nuodb-operator
+oc adm policy add-scc-to-user privileged system:serviceaccount:elastic-system:elastic-operator
+oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:insights-server-release-logstash
+```
 
 ## Configure NuoDB Insights Visual Monitor
 
@@ -351,11 +357,6 @@ ycsbLoadName: ycsb-load
 
 This sample deploys a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
 ```
-## for Red Hat OpenShift only, run the following oc admin policy commands,
-oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:nuodb-operator
-oc adm policy add-scc-to-user privileged system:serviceaccount:elastic-system:elastic-operator
-oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:insights-server-release-logstash
-
 # To deploy the NuoDB database into your Kubernetes cluster, first make a local copy of the NuoDB cr yaml files
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
