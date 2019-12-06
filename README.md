@@ -443,15 +443,14 @@ The NuoDB Operator includes a sample SQL application that will allow you to get 
 
 To start a SQL Workload (if your nuodb-ycsb-cr.yaml isn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
 
-## Sample NuoDB Features and Benefits Evaluation Steps
+## NuoDB Features and Benefits Evaluation Steps
 
 Once your NuoDB database is running, here are a few steps to try out to quickly realize the benefits of running a NuoDB SQL database
 
 * Demonstrate Transactional Scale-out
-** To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
-**```
-**kubectl edit nuodbs.nuodb.com
-**```
+
+To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
+&ensp; `kubectl edit nuodbs.nuodb.com`
 * Demonstrate Continuous Availability
 * Demonstrate Visual Monitoring Using NuoDB Insights
 
