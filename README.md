@@ -450,6 +450,7 @@ Once your NuoDB database is running, here are a few steps to try out to quickly 
 * Demonstrate Transactional Scale-out
 
 To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
+
 &ensp; `kubectl edit nuodbs.nuodb.com`
 * Demonstrate Continuous Availability
 * Demonstrate Visual Monitoring Using NuoDB Insights
