@@ -76,9 +76,9 @@ In your home or working directory, run:
 
 &ensp; `kubectl create namespace $OPERATOR_NAMESPACE`
 
-### 5. Set the project/namespace value
+### 5. Set the context to your operator namespace
 
-&ensp; `kubectl project $OPERATOR_NAMESPACE`
+&ensp; `kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE`
 
 ### 6. Set container storage prerequisites
 
@@ -180,6 +180,12 @@ kubectl  create secret docker-registry pull-secret \
 ```
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/thp-scc.yaml
 ```
+#### Run the following oc admin policy commands,
+```
+oc adm policy add-scc-to-user privileged system:serviceaccount:$OPERATOR_NAMESPACE:nuodb-operator
+oc adm policy add-scc-to-user privileged system:serviceaccount:elastic-system:elastic-operator
+oc adm policy add-scc-to-user privileged system:serviceaccount:$OPERATOR_NAMESPACE:insights-server-release-logstash
+```
 
 ## Configure NuoDB Insights Visual Monitor
 
@@ -211,7 +217,7 @@ Before deploying  NuoDB, to enable NuoDB Insights you can
 
 ## Install the NuoDB Operator
 
-To install the NuoDB Operator into your Kubernetes cluster, follow the steps indicated for the appropriate Kubernetes Distribtion you are using.
+To install the NuoDB Operator into your Kubernetes cluster, follow the steps indicated for the appropriate Kubernetes Distribution you are using.
 
 ### Red Hat OpenShift v4.x 
 
@@ -266,11 +272,6 @@ kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
-
-## for Red Hat OpenShift only
-oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:nuodb-operator
-oc adm policy add-scc-to-user privileged system:serviceaccount:elastic-system:elastic-operator
-oc adm policy add-scc-to-user privileged system:serviceaccount:nuodb:insights-server-release-logstash
 
 ## add NuoDB, Insights, and ycsb sample SQL app CRDs
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_crd.yaml
@@ -398,7 +399,7 @@ echo "   localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s"
  ```
 
 #### If deploying on-cluster NuoDB Insights
-To obtain your on-cluster NuoDB Insnights URL,
+To obtain your on-cluster NuoDB Insights URL,
 
 For Red Hat OpenShift, go to URL:
 ```
@@ -416,13 +417,15 @@ Go to URL:
 ```
 localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s
 ```
+**Note:** It may take several minutes for the NuoDB Insights URL to become available. 
+
 
 #### If deploying hosted NuoDB Insights
 Optionally, you can choose to send your performance data to the NuoDB publicly hosted Insights portal. Your performance data remains private and is only accessible by using your private Subscriber ID. With this option, you can find your NuoDB Insights SubcriberID by locating the "nuodb-insights" pod in your Kubernetes dashboard, go to the Logs tab, and find the line that indicates your Subscriber ID. 
 ```
 Insights Subscriber ID: yourSubID#
 ```
-**Note:** When using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-inisghts log file. Instead run,
+**Note:** When using the open source Kubernetes dashboard:** A current Kubernetes dashboard Web UI issue doesn't allow users to retrieve their Insights Subscription ID using the dashboard to inspect the nuodb-insights log file. Instead run,
 ```
 kubectl logs nuodb-insights -n nuodb -c insights
 ```
@@ -441,11 +444,15 @@ The NuoDB Operator includes a sample SQL application that will allow you to get 
 
 To start a SQL Workload (if your nuodb-ycsb-cr.yaml isn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
 
-## Sample NuoDB Features and Benefits Evaluation Steps
+## NuoDB Features and Benefits Evaluation Steps
 
 Once your NuoDB database is running, here are a few steps to try out to quickly realize the benefits of running a NuoDB SQL database
 
 * Demonstrate Transactional Scale-out
+
+To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
+
+&ensp; `kubectl edit nuodbs.nuodb.com`
 * Demonstrate Continuous Availability
 * Demonstrate Visual Monitoring Using NuoDB Insights
 
