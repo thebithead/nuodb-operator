@@ -97,7 +97,7 @@ sudo chown -R root:root /mnt/local-storage
 ```
 Create the storage class "local-disk" and persistent volume
 
-&ensp; `kubectl create -f nuodb-operator/deploy/local-disk-class.yaml`
+&ensp; `kubectl create -f nuodb-operator/build/etc/charts/nuodb-helm/local-disk-class.yaml`
 
 Set the storage class values in cr.yaml
 
