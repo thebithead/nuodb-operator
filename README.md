@@ -97,7 +97,7 @@ sudo chown -R root:root /mnt/local-storage
 ```
 Create the storage class "local-disk" and persistent volume
 
-&ensp; `kubectl create -f nuodb-operator/deploy/local-disk-class.yaml`
+&ensp; `kubectl create -f nuodb-operator/build/etc/charts/nuodb-helm/local-disk-class.yaml`
 
 Set the storage class values in cr.yaml
 
@@ -393,7 +393,7 @@ echo "   http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status
 
 echo "For EKS or open source K8S,"
 echo "Run the following command in a terminal window suitable for logging output commands:"
-echo "   $ kubectl port-forward ingress/grafana-ingress 3000 &"
+echo "   $ kubectl port-forward service/grafana-service 3000 &"
 echo "Go to URL:"
 echo "   localhost:3000/d/000000002/system-overview?orgId=1&refresh=10s"   
  ```
@@ -411,7 +411,7 @@ echo "   http://$(kubectl get ingress grafana-ingress --output=jsonpath={.status
 ```
 For EKS or open source K8S, run the following command in a terminal window suitable for logging output commands:
 ```
-$ kubectl port-forward ingress/grafana-ingress 3000 &"
+$ kubectl port-forward service/grafana-service 3000 &"
 ```
 Go to URL:
 ```
