@@ -14,7 +14,6 @@ import (
 	"io"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/apps/v1beta2"
 	corev1 "k8s.io/api/core/v1"
 	pv1b1 "k8s.io/api/policy/v1beta1"
 	rbacv12 "k8s.io/api/rbac/v1"
@@ -311,10 +310,10 @@ func reconcileStatefulSet(thisClient client.Client, thisScheme *runtime.Scheme, 
 	if statefulSet.Namespace == "" {
 		statefulSet.Namespace = namespace
 	}
-	_, err = utils.GetStatefulSet(thisClient, statefulSet.Namespace, statefulSet.Name)
+	_, err = utils.GetStatefulSetV1(thisClient, statefulSet.Namespace, statefulSet.Name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			err = utils.CreateStatefulSet(instance, thisClient, thisScheme, statefulSet)
+			err = utils.CreateStatefulSetV1(instance, thisClient, thisScheme, statefulSet)
 		}
 	} else {
 		err = thisClient.Update(context.TODO(), statefulSet)
@@ -467,7 +466,6 @@ func reconcileECKAllInOne(thisClient client.Client, thisScheme *runtime.Scheme, 
 		return reconcile.Result{}, err
 	}
 	_, err = kc.AppsV1().StatefulSets("elastic-system").Get("elastic-operator", metav1.GetOptions{})
-	//_, err := utils.GetStatefulSet(thisClient, "elastic-system", "elastic-operator")
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			log.Info("ECKAllInOne not found, creating...")
@@ -1190,6 +1188,9 @@ func processLogstashResources(logstashResources *LogstashResources) error {
 		if template == "\n" {
 			continue  // skip empty templates
 		}
+		if templateFilename == "logstash/templates/servicemonitor.yaml" {
+			continue  // skip the servicemonitor, which we don't use, and it's K8s type may not be installed.
+		}
 		var logstashResource LogstashResource
 		logstashResource.template = template
 		logstashResource.templateFilename = templateFilename
@@ -1204,15 +1205,20 @@ func processLogstashResources(logstashResources *LogstashResources) error {
 			return utils.ConvertError(err)
 		}
 		logstashResource.templateDecodedMap = m2
-		logstashResource.kind = m2["kind"].(string)
-		var metadata map[string]interface{}
-		if err := mapstructure.Decode(m2["metadata"], &metadata); err != nil {
-			log.Error(err, "Error mapstructure.Decode().")
-			return utils.ConvertError(err)
+
+		if val, ok := m2["kind"]; ok {
+			logstashResource.kind = val.(string)
+			var metadata map[string]interface{}
+			if err := mapstructure.Decode(m2["metadata"], &metadata); err != nil {
+				log.Error(err, "Error mapstructure.Decode().")
+				return utils.ConvertError(err)
+			}
+			logstashResource.name = metadata["name"].(string)
+			logstashResource.templateMetadata = metadata
+			(*logstashResources).logstashResourceList = append((*logstashResources).logstashResourceList, logstashResource)
+		} else {
+			log.Info("Skipping template that we didn't understand.", "template file:", templateFilename)
 		}
-		logstashResource.name = metadata["name"].(string)
-		logstashResource.templateMetadata = metadata
-		(*logstashResources).logstashResourceList = append((*logstashResources).logstashResourceList, logstashResource)
 	}
 	return nil
 }
@@ -1373,9 +1379,9 @@ func createLogstashIngress(thisClient client.Client, thisScheme *runtime.Scheme,
 	return ingress, err
 }
 
-func createLogstashStatefulSetV1beta2(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer,
-	logstashResource LogstashResource) (*v1beta2.StatefulSet, error) {
-	statefulSet, err := utils.CreateStatefulSetV1beta2FromTemplate(instance, thisClient, thisScheme, logstashResource.template, request.Namespace)
+func createLogstashStatefulSetV1(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer,
+	logstashResource LogstashResource) (*appsv1.StatefulSet, error) {
+	statefulSet, err := utils.CreateStatefulSetV1FromTemplate(instance, thisClient, thisScheme, logstashResource.template, request.Namespace)
 	return statefulSet, err
 }
 
@@ -1477,13 +1483,13 @@ func reconcileLogstashIngress(thisClient client.Client, thisScheme *runtime.Sche
 	return ingress, reconcile.Result{}, err
 }
 
-func reconcileLogstashStatefulSet(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer,
-	logstashResource LogstashResource, namespace string) (*v1beta2.StatefulSet, reconcile.Result, error) {
-	var statefulSet *v1beta2.StatefulSet = nil
-	statefulSet, err := utils.GetStatefulSetV1beta2(thisClient, namespace, logstashResource.name)
+func reconcileLogstashStatefulSetV1(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbInsightsServer,
+	logstashResource LogstashResource, namespace string) (*appsv1.StatefulSet, reconcile.Result, error) {
+	var statefulSet *appsv1.StatefulSet = nil
+	statefulSet, err := utils.GetStatefulSetV1(thisClient, namespace, logstashResource.name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			statefulSet, err = createLogstashStatefulSetV1beta2(thisClient, thisScheme, request, instance, logstashResource)
+			statefulSet, err = createLogstashStatefulSetV1(thisClient, thisScheme, request, instance, logstashResource)
 			if err != nil {
 				return statefulSet, reconcile.Result{}, err
 			}
@@ -1559,7 +1565,7 @@ func reconcileLogstashCluster(r *ReconcileNuodbInsightsServer, request reconcile
 						return rr, err
 					}
 				case "StatefulSet":
-					_, rr, err = reconcileLogstashStatefulSet(r.client, r.scheme, request, instance, nuoResource, request.Namespace)
+					_, rr, err = reconcileLogstashStatefulSetV1(r.client, r.scheme, request, instance, nuoResource, request.Namespace)
 					if err != nil || rr.Requeue  {
 						return rr, err
 					}

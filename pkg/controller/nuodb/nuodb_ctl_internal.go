@@ -320,7 +320,7 @@ func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Sche
 func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
 	nuoResource NuoResource, namespace string) (*appsv1.StatefulSet, reconcile.Result, error) {
 	var statefulSet *appsv1.StatefulSet = nil
-	statefulSet, err := utils.GetStatefulSet(thisClient, namespace, nuoResource.name)
+	statefulSet, err := utils.GetStatefulSetV1(thisClient, namespace, nuoResource.name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			statefulSet, err = createNuodbStatefulSet(thisClient, thisScheme, request, instance, nuoResource)

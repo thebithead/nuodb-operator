@@ -11,7 +11,6 @@ import (
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
 	ocpappsv1 "github.com/openshift/api/apps/v1"
 	routev1 "github.com/openshift/api/route/v1"
-	//routev12 "github.com/openshift/api/route/v1"
 	securityv1 "github.com/openshift/client-go/security/clientset/versioned/typed/security/v1"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
@@ -814,7 +813,7 @@ func CreateServiceAccountFromTemplate(owner runtime.Object, thisClient client.Cl
 	return serviceAccount, err
 }
 
-func CreateStatefulSet(owner runtime.Object, thisClient client.Client, thisScheme *runtime.Scheme,
+func CreateStatefulSetV1(owner runtime.Object, thisClient client.Client, thisScheme *runtime.Scheme,
 	statefulSet *appsv1.StatefulSet) error {
 	log.Info("Create", "StatefulSet", statefulSet.Name)
 	_, ok := owner.(runtime.Object)
@@ -832,7 +831,7 @@ func CreateStatefulSet(owner runtime.Object, thisClient client.Client, thisSchem
 	return err
 }
 
-func GetStatefulSet(thisClient client.Client, namespace string, name string) (*appsv1.StatefulSet, error) {
+func GetStatefulSetV1(thisClient client.Client, namespace string, name string) (*appsv1.StatefulSet, error) {
 	var statefulSet = &appsv1.StatefulSet{}
 	err := thisClient.Get(context.TODO(), client.ObjectKey{Namespace: namespace, Name: name}, statefulSet)
 	return statefulSet, err
@@ -854,7 +853,7 @@ func CreateStatefulSetFromTemplate(owner runtime.Object, thisClient client.Clien
 		return statefulSet, err
 	}
 	statefulSet.Namespace = namespace
-	err = CreateStatefulSet(owner, thisClient, thisScheme, statefulSet)
+	err = CreateStatefulSetV1(owner, thisClient, thisScheme, statefulSet)
 	if err != nil {
 		return statefulSet, trace.Wrap(err)
 	}
@@ -879,12 +878,6 @@ func CreateStatefulSetV1beta2(owner runtime.Object, thisClient client.Client, th
 	return err
 }
 
-func GetStatefulSetV1beta2(thisClient client.Client, namespace string, name string) (*v1beta2.StatefulSet, error) {
-	var statefulSet = &v1beta2.StatefulSet{}
-	err := thisClient.Get(context.TODO(), client.ObjectKey{Namespace: namespace, Name: name}, statefulSet)
-	return statefulSet, err
-}
-
 func DecodeStatefulSetV1beta2Template(template string) (*v1beta2.StatefulSet, error) {
 	obj, err := DecodeTemplate(template, "StatefulSet")
 	if err != nil {
@@ -894,15 +887,24 @@ func DecodeStatefulSetV1beta2Template(template string) (*v1beta2.StatefulSet, er
 
 }
 
-func CreateStatefulSetV1beta2FromTemplate(owner runtime.Object, thisClient client.Client, thisScheme *runtime.Scheme,
-	template string, namespace string) (*v1beta2.StatefulSet, error) {
-	var statefulSet *v1beta2.StatefulSet = nil
-	statefulSet, err := DecodeStatefulSetV1beta2Template(template)
+func DecodeStatefulSetV1Template(template string) (*appsv1.StatefulSet, error) {
+	obj, err := DecodeTemplate(template, "StatefulSet")
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return obj.(*appsv1.StatefulSet), err
+
+}
+
+func CreateStatefulSetV1FromTemplate(owner runtime.Object, thisClient client.Client, thisScheme *runtime.Scheme,
+	template string, namespace string) (*appsv1.StatefulSet, error) {
+	var statefulSet *appsv1.StatefulSet = nil
+	statefulSet, err := DecodeStatefulSetV1Template(template)
 	if err != nil {
 		return statefulSet, err
 	}
 	statefulSet.Namespace = namespace
-	err = CreateStatefulSetV1beta2(owner, thisClient, thisScheme, statefulSet)
+	err = CreateStatefulSetV1(owner, thisClient, thisScheme, statefulSet)
 	if err != nil {
 		return statefulSet, trace.Wrap(err)
 	}

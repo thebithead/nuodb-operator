@@ -411,7 +411,7 @@ spec:
 
 func Test_getStatefulSet(t *testing.T){
 	var sts = &appsv1.StatefulSet{}
-	sts, err := utils.GetStatefulSet(cl, namespace,"admin")
+	sts, err := utils.GetStatefulSetV1(cl, namespace,"admin")
 	if err != nil{
 		t.Fatalf("Get StatefulSet error : (%v)", err)
 	}
