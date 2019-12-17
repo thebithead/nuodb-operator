@@ -159,7 +159,12 @@ To apply a NuoDB Communiity Edition (CE) license file, run
 
 To apply a NuoDB Enterprise Edition (EE) license file, obtain your license file from your NuoDB Sales or Support representative and copy the file to&ensp;`nuodb.lic`, then run
 
-&ensp; `kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-file=nuodb.lic`
+```
+kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE
+kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-file=nuodb.lic
+```
+Then, delete a NuoDB Admin pod, and once it has been restarted, connect to the new Admin pod and run,
+&ensp; `nuocmd set license --license-file /etc/nuodb/nuodb.lic`
 
 **Note:** The filename specified must be nuodb.lic
 
