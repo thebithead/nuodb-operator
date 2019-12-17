@@ -163,9 +163,14 @@ To apply a NuoDB Enterprise Edition (EE) license file, obtain your license file 
 kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE
 kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-file=nuodb.lic
 ```
-Then, delete a NuoDB Admin pod, and once it has been restarted, connect to the new Admin pod and run,
+Then, delete a NuoDB Admin pod, and once the Admin pod has been restarted, connect to the new pod and run,
 
 &ensp; `nuocmd set license --license-file /etc/nuodb/nuodb.lic`
+
+To check the effective license and confirm license level, run
+
+&ensp; `nuocmd --show-json get effective-license`
+
 
 **Note:** The filename specified must be nuodb.lic
 
