@@ -167,12 +167,12 @@ Then, delete a NuoDB Admin pod, and once the Admin pod has been restarted, conne
 
 &ensp; `nuocmd set license --license-file /etc/nuodb/nuodb.lic`
 
+**Note:** The filename specified must be nuodb.lic
+
 To check the effective license and confirm license level, run
 
 &ensp; `nuocmd --show-json get effective-license`
 
-
-**Note:** The filename specified must be nuodb.lic
 
 ### 9. If using the Red Hat OpenShift 
 
