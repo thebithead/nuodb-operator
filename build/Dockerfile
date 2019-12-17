@@ -11,6 +11,8 @@ ENV OPERATOR=/usr/local/bin/nuodb-operator \
     USER_UID=1001 \
     USER_NAME=nuodb-operator
 
+RUN microdnf update -y
+
 COPY licenses /licenses
 
 # install operator binary
