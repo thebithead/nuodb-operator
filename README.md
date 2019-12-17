@@ -167,7 +167,7 @@ Then, delete a NuoDB Admin pod, and once the Admin pod has been restarted, conne
 
 &ensp; `nuocmd set license --license-file /etc/nuodb/nuodb.lic`
 
-**Note:** The filename specified must be nuodb.lic
+**Note:** The filename specified in the above commands must be nuodb.lic
 
 To check the effective license and confirm license level, run
 
