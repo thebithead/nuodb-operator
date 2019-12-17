@@ -7,6 +7,7 @@ A Kubernetes Operator written in Golang that automates the packaging, provisioni
 * Red Hat OpenShift 3.11 or 4.x - On-prem or OpenShift supported public cloud environments
 * Google Cloud Platform (GCP) - GCE nodes running GKE managed Kubernetes
 * Google Cloud Platform (GCP) - GCE nodes running open source Kubernetes
+* Google Cloud Platform (GCP) - GCE nodes running Anthos GKE (on-prem) managed Kubernetes
 * Amazon Web Services (AWS)   - EC2 nodes running EKS managed Kubernetes
 * Amazon Web Services (AWS)   - EC2 nodes running open source kubernetes
 * Rancher Kubernetes Management - Rancher RKE and Rancher supported managed Kubernetes (e.g. EKS, AKS)
