@@ -164,6 +164,7 @@ kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE
 kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-file=nuodb.lic
 ```
 Then, delete a NuoDB Admin pod, and once it has been restarted, connect to the new Admin pod and run,
+
 &ensp; `nuocmd set license --license-file /etc/nuodb/nuodb.lic`
 
 **Note:** The filename specified must be nuodb.lic
