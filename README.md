@@ -7,6 +7,7 @@ A Kubernetes Operator written in Golang that automates the packaging, provisioni
 * Red Hat OpenShift 3.11 or 4.x - On-prem or OpenShift supported public cloud environments
 * Google Cloud Platform (GCP) - GCE nodes running GKE managed Kubernetes
 * Google Cloud Platform (GCP) - GCE nodes running open source Kubernetes
+* Google Cloud Platform (GCP) - GCE nodes running Anthos GKE (on-prem) managed Kubernetes
 * Amazon Web Services (AWS)   - EC2 nodes running EKS managed Kubernetes
 * Amazon Web Services (AWS)   - EC2 nodes running open source kubernetes
 * Rancher Kubernetes Management - Rancher RKE and Rancher supported managed Kubernetes (e.g. EKS, AKS)
@@ -158,9 +159,20 @@ To apply a NuoDB Communiity Edition (CE) license file, run
 
 To apply a NuoDB Enterprise Edition (EE) license file, obtain your license file from your NuoDB Sales or Support representative and copy the file to&ensp;`nuodb.lic`, then run
 
-&ensp; `kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-file=nuodb.lic`
+```
+kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE
+kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-file=nuodb.lic
+```
+Then, delete a NuoDB Admin pod, and once the Admin pod has been restarted, connect to the new pod and run,
 
-**Note:** The filename specified must be nuodb.lic
+&ensp; `nuocmd set license --license-file /etc/nuodb/nuodb.lic`
+
+**Note:** The filename specified in the above commands must be nuodb.lic
+
+To check the effective license and confirm license level, run
+
+&ensp; `nuocmd --show-json get effective-license`
+
 
 ### 9. If using the Red Hat OpenShift 
 
