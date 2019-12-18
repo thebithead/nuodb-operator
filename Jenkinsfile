@@ -80,9 +80,27 @@
                 kubectl get pods -n nuodb
 
                 ''' 
-            }
-         }
+              }
+           }
+        }
       }
+
+
+ post {
+  always {
+    withKubeConfig([credentialsId: 'kubeconfig-onprem', serverUrl: 'https://10.3.100.81:6443']) {
+    sh '''
+      kubectl get pods -n nuodb
+    ''' 
     }
+   
   }
+  failure {
+  // notify users when the Pipeline fails
+    mail to: 'ashukla@nuodb.com',
+    subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+    body: "Something is wrong with ${env.BUILD_URL}"
+  }
+ }
+}
   
