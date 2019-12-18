@@ -10,6 +10,7 @@
     parameters{
       string(defaultValue: 'quay.io/nuodb/nuodb-operator-dev', description: 'The image tag to be build and pushed', name: 'NUODB_OP_IMAGE', trim: false)
       choice(choices: ['OnPrem', 'EKS', 'GKE', 'AKS', 'OCP 4.x'], description: 'Specify A Environment to use for tests', name: 'CLUSTER_ENV')
+      string(defaultValue: 'nuodb', description: 'Namespace for e2e tests', name: 'OPERATOR_NAMESPACE', trim: true)
     }
 
 
@@ -75,9 +76,12 @@
       steps {
               withKubeConfig([credentialsId: 'kubeconfig-onprem', serverUrl: 'https://10.3.100.81:6443']) {
                 sh '''
-                operator-sdk test local ./test/e2e --namespace nuodb  --go-test-flags "-timeout 1200s" --verbose --image $NUODB_OP_IMAGE:${GIT_COMMIT}
+                kubectl create $OPERATOR_NAMESPACE
+                kubectl create secret docker-registry regcred --namespace=$OPERATOR_NAMESPACE --docker-server=quay.io --docker-username="nuodb+nuodbdev" --docker-password="RLT4418GQN01MVEUW9Q4I7P7ZZTQ1I7O9JZYNO3T8I7SX9WK0G4VK64MEAIKG3S5" --docker-email=""
+                
+                operator-sdk test local ./test/e2e --namespace $OPERATOR_NAMESPACE  --go-test-flags "-timeout 1200s" --verbose --image $NUODB_OP_IMAGE:${GIT_COMMIT}
 
-                kubectl get pods -n nuodb
+                kubectl get pods -n $OPERATOR_NAMESPACE
 
                 ''' 
               }
@@ -91,6 +95,24 @@
     withKubeConfig([credentialsId: 'kubeconfig-onprem', serverUrl: 'https://10.3.100.81:6443']) {
     sh '''
       kubectl get pods -n nuodb
+      echo "Doing cleanup"
+      cd deploy/
+      kubectl delete -n $OPERATOR_NAMESPACE -f role.yaml
+      kubectl delete -n $OPERATOR_NAMESPACE -f role_binding.yaml
+      kubectl delete -n $OPERATOR_NAMESPACE -f service_account.yaml
+      kubectl delete -n $OPERATOR_NAMESPACE -f local-disk-class.yaml 
+      kubectl delete -n $OPERATOR_NAMESPACE -f operator.yaml
+      kubectl delete -f crds/nuodb_v2alpha1_nuodb_cr.yaml -n $OPERATOR_NAMESPACE
+      kubectl delete -f crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml -n $OPERATOR_NAMESPACE
+      kubectl delete -f crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml -n $OPERATOR_NAMESPACE
+      kubectl get pods -n $OPERATOR_NAMESPACE  
+      kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE
+      echo "delete the Custom Resource to deploy NuoDB..."
+
+      kubectl delete -f crds/nuodb_v2alpha1_nuodb_crd.yaml
+      kubectl delete -f crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
+      kubectl delete -f crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
+
     ''' 
     }
    
