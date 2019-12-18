@@ -189,7 +189,7 @@ func TestNuodbInsights(t *testing.T) {
 		ElasticNodeCount: 1,
 		KibanaVersion:    "7.3.0",
 		KibanaNodeCount:  1,
-		storageClass: "",
+		StorageClass: "",
 	}
 
 	//NuoDB Insights-Server
