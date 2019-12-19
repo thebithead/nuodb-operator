@@ -76,16 +76,18 @@
       steps {
               withKubeConfig([credentialsId: 'kubeconfig-onprem', serverUrl: 'https://10.3.100.81:6443']) {
                 sh '''
-                kubectl create namespace $OPERATOR_NAMESPACE
-                kubectl create secret docker-registry regcred --namespace=$OPERATOR_NAMESPACE --docker-server=quay.io --docker-username="nuodb+nuodbdev" --docker-password="RLT4418GQN01MVEUW9Q4I7P7ZZTQ1I7O9JZYNO3T8I7SX9WK0G4VK64MEAIKG3S5" --docker-email=""
+                kubectl apply namespace $OPERATOR_NAMESPACE || true
+                kubectl create secret docker-registry regcred --namespace=$OPERATOR_NAMESPACE --docker-server=quay.io --docker-username="nuodb+nuodbdev" --docker-password="RLT4418GQN01MVEUW9Q4I7P7ZZTQ1I7O9JZYNO3T8I7SX9WK0G4VK64MEAIKG3S5" --docker-email="" || true
 
                 operator-sdk test local ./test/e2e --namespace $OPERATOR_NAMESPACE  --go-test-flags "-timeout 1200s" --verbose --image $NUODB_OP_IMAGE:${GIT_COMMIT}
 
-                kubectl get pods -n $OPERATOR_NAMESPACE
+                kubectl get pods -n $OPERATOR_NAMESPACE 
 
                 ''' 
               }
            }
+
+
         }
       }
 
@@ -97,21 +99,21 @@
       kubectl get pods -n nuodb
       echo "Doing cleanup"
       cd deploy/
-      kubectl delete -n $OPERATOR_NAMESPACE -f role.yaml
-      kubectl delete -n $OPERATOR_NAMESPACE -f role_binding.yaml
-      kubectl delete -n $OPERATOR_NAMESPACE -f service_account.yaml
-      kubectl delete -n $OPERATOR_NAMESPACE -f local-disk-class.yaml 
-      kubectl delete -n $OPERATOR_NAMESPACE -f operator.yaml
-      kubectl delete -f crds/nuodb_v2alpha1_nuodb_cr.yaml -n $OPERATOR_NAMESPACE
-      kubectl delete -f crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml -n $OPERATOR_NAMESPACE
-      kubectl delete -f crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml -n $OPERATOR_NAMESPACE
+      kubectl delete -n $OPERATOR_NAMESPACE -f role.yaml || true
+      kubectl delete -n $OPERATOR_NAMESPACE -f role_binding.yaml || true
+      kubectl delete -n $OPERATOR_NAMESPACE -f service_account.yaml || true
+      kubectl delete -n $OPERATOR_NAMESPACE -f local-disk-class.yaml || true
+      kubectl delete -n $OPERATOR_NAMESPACE -f operator.yaml || true
+      kubectl delete -f crds/nuodb_v2alpha1_nuodb_cr.yaml -n $OPERATOR_NAMESPACE || true
+      kubectl delete -f crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml -n $OPERATOR_NAMESPACE || true
+      kubectl delete -f crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml -n $OPERATOR_NAMESPACE || true
       kubectl get pods -n $OPERATOR_NAMESPACE  
-      kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE
+      kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE || true
       echo "delete the Custom Resource to deploy NuoDB..."
 
-      kubectl delete -f crds/nuodb_v2alpha1_nuodb_crd.yaml
-      kubectl delete -f crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
-      kubectl delete -f crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
+      kubectl delete -f crds/nuodb_v2alpha1_nuodb_crd.yaml || true
+      kubectl delete -f crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml || true
+      kubectl delete -f crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml || true
 
     ''' 
     }
@@ -122,6 +124,9 @@
     mail to: 'ashukla@nuodb.com',
     subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
     body: "Something is wrong with ${env.BUILD_URL}"
+  }
+  success {
+    echo "Build success"
   }
  }
 }
