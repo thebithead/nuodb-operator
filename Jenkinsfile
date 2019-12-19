@@ -9,7 +9,7 @@
     
     parameters{
       string(defaultValue: 'quay.io/nuodb/nuodb-operator-dev', description: 'The image tag to be build and pushed', name: 'NUODB_OP_IMAGE', trim: false)
-      choice(choices: ['OnPrem', 'EKS', 'GKE', 'AKS', 'OCP 4.x'], description: 'Specify A Environment to use for tests', name: 'CLUSTER_ENV')
+      choice(choices: ['OnPrem', 'AWS','EKS', 'GKE', 'AKS', 'OCP 4.x'], description: 'Specify A Environment to use for tests', name: 'CLUSTER_ENV')
       string(defaultValue: 'nuodb', description: 'Namespace for e2e tests', name: 'OPERATOR_NAMESPACE', trim: true)
     }
 
@@ -28,7 +28,15 @@
 
       stage('Checkout') {
         steps {
-            checkout scm
+          checkout scm
+
+          dir('kops-ansible') {
+            git(
+               url: 'git@github.com:nuodb/aws-kops.git',
+               credentialsId: 'ashukla-git',
+               branch: "master" 
+            )
+          }
         }
       }
 
@@ -71,26 +79,33 @@
       }
 
 
-      stage('E2E With Given Environment') {
+      stage('E2E With OnPrem Environment') {
         when { expression { params.CLUSTER_ENV == 'OnPrem' }}
-      steps {
-              withKubeConfig([credentialsId: 'kubeconfig-onprem', serverUrl: 'https://10.3.100.81:6443']) {
-                sh '''
-                kubectl apply namespace $OPERATOR_NAMESPACE || true
-                kubectl create secret docker-registry regcred --namespace=$OPERATOR_NAMESPACE --docker-server=quay.io --docker-username="nuodb+nuodbdev" --docker-password="RLT4418GQN01MVEUW9Q4I7P7ZZTQ1I7O9JZYNO3T8I7SX9WK0G4VK64MEAIKG3S5" --docker-email="" || true
+          steps {
+            withKubeConfig([credentialsId: 'kubeconfig-onprem', serverUrl: 'https://10.3.100.81:6443']) {
+              sh '''
+              kubectl apply namespace $OPERATOR_NAMESPACE || true
+              kubectl create secret docker-registry regcred --namespace=$OPERATOR_NAMESPACE --docker-server=quay.io --docker-username="nuodb+nuodbdev" --docker-password="RLT4418GQN01MVEUW9Q4I7P7ZZTQ1I7O9JZYNO3T8I7SX9WK0G4VK64MEAIKG3S5" --docker-email="" || true
 
-                operator-sdk test local ./test/e2e --namespace $OPERATOR_NAMESPACE  --go-test-flags "-timeout 1200s" --verbose --image $NUODB_OP_IMAGE:${GIT_COMMIT}
+              operator-sdk test local ./test/e2e --namespace $OPERATOR_NAMESPACE  --go-test-flags "-timeout 1200s" --verbose --image $NUODB_OP_IMAGE:${GIT_COMMIT}
 
-                kubectl get pods -n $OPERATOR_NAMESPACE 
+              kubectl get pods -n $OPERATOR_NAMESPACE 
 
-                ''' 
-              }
-           }
-
-
-        }
+              ''' 
+            }
+          }
       }
 
+      stage('E2E With AWS Environment') {
+        when { expression { params.CLUSTER_ENV == 'AWS' }}
+          steps {
+            sh 'docker build . -f kops-ansible/Dockerfile -t ansible-kops:latest'
+          }
+
+        
+      }
+        
+    }
 
  post {
   always {
@@ -129,5 +144,6 @@
     echo "Build success"
   }
  }
+
 }
   
