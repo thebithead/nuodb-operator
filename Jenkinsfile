@@ -110,7 +110,7 @@
 
 
             export KUBECONFIG=${params.CLUSTER_NAME}-kubeconfig
-
+            
             kubectl apply namespace $OPERATOR_NAMESPACE || true
             kubectl create secret docker-registry regcred --namespace=$OPERATOR_NAMESPACE --docker-server=quay.io --docker-username="nuodb+nuodbdev" --docker-password="RLT4418GQN01MVEUW9Q4I7P7ZZTQ1I7O9JZYNO3T8I7SX9WK0G4VK64MEAIKG3S5" --docker-email="" || true
 
@@ -155,10 +155,10 @@
    
   }
   failure {
-    // notify users when the Pipeline fails
-    // mail to: 'ashukla@nuodb.com',
-    // subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
-    // body: "Something is wrong with ${env.BUILD_URL}"
+  // notify users when the Pipeline fails
+    mail to: 'ashukla@nuodb.com',
+    subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+    body: "Something is wrong with ${env.BUILD_URL}"
   }
   success {
     echo "Build success"
