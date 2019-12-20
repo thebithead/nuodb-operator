@@ -102,7 +102,6 @@
       stage('E2E With AWS Environment') {
         when { expression { params.CLUSTER_ENV == 'AWS' }}
           steps {
-            zoneId = ""
             def built = build job: 'aws-kops', propagate: true, wait: true,  parameters: [[$class: 'StringParameterValue', name: 'CLUSTER_NAME', value: ${params.CLUSTER_NAME}], [$class: 'StringParameterValue', name: 'KOPS_STATE_STORE', value: ${params.KOPS_STATE_STORE}], [$class: 'StringParameterValue', name: 'DNS_ZONE_ID', value: ${params.DNS_ZONE_ID}]]
             copyArtifacts(projectName: 'aws-kops', selector: specific("${built.number}"));
             sh '''
@@ -110,7 +109,7 @@
 
 
             export KUBECONFIG=${params.CLUSTER_NAME}-kubeconfig
-            
+
             kubectl apply namespace $OPERATOR_NAMESPACE || true
             kubectl create secret docker-registry regcred --namespace=$OPERATOR_NAMESPACE --docker-server=quay.io --docker-username="nuodb+nuodbdev" --docker-password="RLT4418GQN01MVEUW9Q4I7P7ZZTQ1I7O9JZYNO3T8I7SX9WK0G4VK64MEAIKG3S5" --docker-email="" || true
 
