@@ -99,7 +99,15 @@
       stage('E2E With AWS Environment') {
         when { expression { params.CLUSTER_ENV == 'AWS' }}
           steps {
-            sh 'docker build . -f kops-ansible/Dockerfile -t ansible-kops:latest'
+
+            clusterNmae = "paramAValue"
+            stateStore = "paramBValue"
+            zoneId = ""
+            def built = build job: 'aws-kops', propagate: true, wait: true,  parameters: [[$class: 'StringParameterValue', name: 'ParamA', value: paramAValue], [$class: 'StringParameterValue', name: 'ParamB', value: paramBValue], [$class: 'StringParameterValue', name: 'ParamB', value: paramBValue]]
+            copyArtifacts(projectName: 'aws-kops', selector: specific("${built.number}"));
+            sh '''
+            ls -al
+            '''
           }
 
         
