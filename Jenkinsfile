@@ -105,7 +105,7 @@
             script {
             def built = build job: 'aws-kops', propagate: true, wait: true,  parameters: [[$class: 'StringParameterValue', name: 'CLUSTER_NAME', value: ${params.CLUSTER_NAME}], [$class: 'StringParameterValue', name: 'KOPS_STATE_STORE', value: ${params.KOPS_STATE_STORE}], [$class: 'StringParameterValue', name: 'DNS_ZONE_ID', value: ${params.DNS_ZONE_ID}]]
             copyArtifacts(projectName: 'aws-kops', selector: specific("${built.number}"));
-            
+            }
             sh '''
             ls -al
 
@@ -121,7 +121,7 @@
 
 
             '''
-          }
+          
           }
 
         
