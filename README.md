@@ -4,13 +4,17 @@
 
 A Kubernetes Operator written in Golang that automates the packaging, provisioning, and managing of operational tasks for Kubernetes containerized applications. By default the NuoDB Kubernetes Operator deploys the NuoDB with Community Edition (CE) capability in the following tested and verified Kubernetes distributions:
 
-* Red Hat OpenShift 3.11 or 4.x - On-prem or OpenShift supported public cloud environments
-* Google Cloud Platform (GCP) - GCE nodes running GKE managed Kubernetes
-* Google Cloud Platform (GCP) - GCE nodes running open source Kubernetes
-* Google Cloud Platform (GCP) - GCE nodes running Anthos GKE (on-prem) managed Kubernetes
-* Amazon Web Services (AWS)   - EC2 nodes running EKS managed Kubernetes
-* Amazon Web Services (AWS)   - EC2 nodes running open source kubernetes
-* Rancher Kubernetes Management - Rancher RKE and Rancher supported managed Kubernetes (e.g. EKS, AKS)
+* Red Hat OpenShift 3.11, 4.x
+  * On-prem or OpenShift supported public cloud platforms
+* Google Cloud Platform (GCP)
+  * GKE managed Kubernetes
+  * Anthos GKE (on-prem) managed Kubernetes
+  * Open source Kubernetes
+* Amazon Web Services (AWS)
+  * EKS managed Kubernetes
+  * Open source kubernetes
+* Rancher Kubernetes Manager
+  * Rancher RKE and Rancher supported Kubernetes (e.g. EKS, AKS) on Rancher supported cloud platforms
 
 The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample SQL application (ycsb) to quickly generate a user-configurable SQL workload against the database.
 
@@ -54,7 +58,7 @@ This page is organized in the following sections:
 
 ## Installation Prerequisites
 
-_**Note:** The instructions on this page use the Kubernetes&ensp;`kubectl` command (for portability reasons across Kubernetes environments). For environments, the&ensp;`kubectl` command is an alias that points to the OpenShift client program&ensp;`oc`._
+_**Note:** The instructions on this page use the Kubernetes `kubectl` command (for portability reasons across Kubernetes environments). For environments, the `kubectl` command is an alias that points to the OpenShift client program `oc`._
 
 
 ### 1. Create environment variables
@@ -67,27 +71,20 @@ export NUODB_OPERATOR_VERSION=2.0.3           --confirm you set the correction N
 ### 2. Clone a copy of the NuoDB Operator from Github
 In your home or working directory, run:
 
-&ensp; `git clone https://github.com/nuodb/nuodb-operator`
+`git clone https://github.com/nuodb/nuodb-operator`
 
-### 3. Log into your Kubernetes cluster
+### 3. Create the "nuodb" project/namespace (if not already created)
 
-&ensp; `Example: kubectl login -u system:admin`
+Confirm you are connected to your Kubernetes cluster and run,
 
-### 4. Create the "nuodb" project/namespace (if not already created)
+`kubectl create namespace $OPERATOR_NAMESPACE`
 
-&ensp; `kubectl create namespace $OPERATOR_NAMESPACE`
+### 4. Optionally Use Cluster Node Local Storage
 
-### 5. Set the context to your operator namespace
+NuoDB supports cloud platform storage (e.g. AWS EBS), 3rd-party CSI storage (e.g. Portworx, OpenEBS, Linbit, etc.), and the use of local storage via Hostpath. The Amazon EBS storageclass (gp2) is the default storage class for both the NuoDB Admin and the Storage Manager (SM) pods in `nuodb-cr.yaml` custom resource file.
 
-&ensp; `kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE`
-
-### 6. Set container storage prerequisites
-
-Amazon EBS storage (storageclass gp2) is the default storage class for both NuoDB Admin and Storage Manager (SM) pods. 
-If you would like to change the default, please see below: 
-
-#### FOR ON-PREM local storage (using Hostpath): 
-Set the local storage permissions on each cluster node to enable hosting storage for either the Admin or the Storage Manager (SM) pods.
+#### To Setup local storage (using HOSTPATH): 
+Configure the local storage permissions on each cluster node to enable hosting storage for either the NuoDB Admin or the Storage Manager (SM) pods.
 **Note:** When using the local disk storage option only 1 Admin pod is supported.
 
 ```
@@ -96,49 +93,22 @@ sudo chmod -R 777 /mnt/local-storage/
 sudo chcon -R unconfined_u:object_r:svirt_sandbox_file_t:s0 /mnt/local-storage
 sudo chown -R root:root /mnt/local-storage
 ```
-Create the storage class "local-disk" and persistent volume
+Create the Kubernetes storage class "local-disk" and persistent volume
 
-&ensp; `kubectl create -f nuodb-operator/build/etc/charts/nuodb-helm/local-disk-class.yaml`
+ `kubectl create -f nuodb-operator/build/etc/charts/nuodb-helm/local-disk-class.yaml`
 
-Set the storage class values in cr.yaml
+### 5. Cluster Node Labeling
+Label the cluster nodes you want to use to run NuoDB pods.
 
-```
-adminStorageClass: local-disk
-smStorageClass: local-disk
-```
-
-#### FOR Amazon AWS: Set the storage class values in cr.yaml
-
-```
-adminStorageClass: gp2
-smStorageClass: gp2
-```
-
-#### FOR Google GCP: Set the storage class values in cr.yaml 
-
-```
-adminStorageClass: standard
-smStorageClass: standard
-```
-#### When using 3rd-party container-native storage(e.g. OpenEBS,LinStor,Portworx,etc.): Set the storage class values in cr.yaml 
-
-```
-adminStorageClass: <3rd-party storageClassName>
-smStorageClass: <3rd-party storageClassName>
-```
-
-### 7. Cluster Node Labeling
-Label the cluster nodes you want to run NuoDB pods.
-
-&ensp; `kubectl  label node <node name> nuodb.com/zone=nuodb`
+ `kubectl  label node <node name> nuodb.com/zone=nuodb`
 
 _**Note:** The label value, in this example "nuodb", can be any value._
 
-Next, label one of these nodes as your storage node. This is the node that will host your NuoDB Storage Manager (SM) pod and is where you database persistent storage will reside. Ensure there is sufficient disk space. To create this label run:
+Next, label one of these nodes as your storage node that will host the NuoDB Storage Manager (SM) pod. If using Local storage, ensure there is sufficient disk space on this node. To create this label run:
 
-&ensp; `kubectl  label node $STORAGE_NODE nuodb.com/node-type=storage`
+ `kubectl  label node $STORAGE_NODE nuodb.com/node-type=storage`
 
-Once your cluster nodes are labeled for NuoDB use, run the following&ensp; `kubectl get nodes` command to confirm nodes are labeled properly. The display output should look similar to the below
+Once your cluster nodes are labeled for NuoDB use, run the following `kubectl get nodes` command to confirm nodes are labeled properly. The display output should look similar to the below
 ```
 kubectl get nodes -l nuodb.com/zone -L nuodb.com/zone,nuodb.com/node-type
 NAME                           STATUS   ROLES    AGE   VERSION             ZONE    NODE-TYPE
@@ -149,15 +119,17 @@ ip-10-0-184-233.ec2.internal   Ready    worker   15d   v1.13.4+cb455d664   nuodb
 ip-10-0-206-8.ec2.internal     Ready    worker   15d   v1.13.4+cb455d664   nuodb 
 ```
 
-### 8. Apply a NuoDB license file
+### 6. Apply a NuoDB license file
 
 Each time a NuoDB Admin pod starts it will load a Kubernetes configmap that contains the current NuoDB license level information and places its contents in the /etc/nuodb/nuodb.lic file. When a request is made to either start a NuoDB Transaction Engine (TE) or Storage Manager (SM) process, the NuoDB Admin will check the license file contents to ensure the process request is authorized.
 
 To apply a NuoDB Communiity Edition (CE) license file, run
 
-&ensp; `kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-literal=nuodb.lic=""`
+`kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-literal=nuodb.lic=""`
 
-To apply a NuoDB Enterprise Edition (EE) license file, obtain your license file from your NuoDB Sales or Support representative and copy the file to&ensp;`nuodb.lic`, then run
+To apply a NuoDB Enterprise Edition (EE) license file to a system running a CE license, 
+
+obtain your license file from your NuoDB Sales or Support representative and copy the file to `nuodb.lic`, then run
 
 ```
 kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE
@@ -165,19 +137,20 @@ kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-file=
 ```
 Then, delete a NuoDB Admin pod, and once the Admin pod has been restarted, connect to the new pod and run,
 
-&ensp; `nuocmd set license --license-file /etc/nuodb/nuodb.lic`
+`nuocmd set license --license-file /etc/nuodb/nuodb.lic`
+
+This command will propagate the new NuoDB EE license throughout the Admin tier (remaining pods).  
 
 **Note:** The filename specified in the above commands must be nuodb.lic
 
-To check the effective license and confirm license level, run
+To check the effective NuoDB license and confirm license level, run
 
-&ensp; `nuocmd --show-json get effective-license`
+`nuocmd --show-json get effective-license`
 
 
-### 9. If using the Red Hat OpenShift 
+### 7. If using the Red Hat OpenShift 
 
-#### To permit the pulling of the container and operator images, create the Kubernetes image pull secret
-**Note:** If using Quay.io to pull the NuoDB Operator image, a login to quay.io and a Kubernetes secret is not required because the NuoDB Quay.io repository is public. For example, to pull the image from quay.io, run at the command prompt, docker pull quay.io/nuodb/nuodb-operator
+#### To permit the pulling of the NuoDB database and operator container images, create the Kubernetes image pull secret
 
 This secret will be used to pull the NuoDB Operator and NuoDB container images from the  Red Hat Container
 Catalog (RHCC). Enter your Red Hat login credentials for the --docker-username and --docker-password values.
@@ -187,6 +160,7 @@ kubectl  create secret docker-registry pull-secret \
    --docker-username='yourUserName' --docker-password='yourPassword' \
    --docker-email='yourEmailAddr'  --docker-server='registry.connect.redhat.com'
  ```
+**Note:** If using Quay.io (or other supported public repo) to pull the NuoDB container images, a Kubernetes secret is not required because the NuoDB repository is public. For example, to pull the image from quay.io, run at the command prompt, docker pull quay.io/nuodb/nuodb-operator.
 
 #### Disable Linux Transparent Huge Pages (THP). Run the following required command to create a security context constraint which will allow the Operator to disable THP during Operator deployment.
 ```
@@ -221,10 +195,10 @@ Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. N
       If you agree to these terms, following the below instructions to enable NuoDB Insights.
       Insights can also be enabled at a later time if you choose.
 
-Before deploying  NuoDB, to enable NuoDB Insights you can 
-1. deploy Insights locally on your Kubernetes cluster. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring solution. To enable this option: 
-   * the &ensp;`nuodbinsightsserver_crd.yaml` during Operator deployment and &ensp;`nuodbinsightsserver_cr.yaml` during database deployment.
-2. stream your performance data to the NuoDB Insights hosted public cloud portal and access your secure performance data via a private Subscriber ID. To enable this option: 
+Before deploying  NuoDB, to enable NuoDB Insights you will need to choose one of the available deployment methods: 
+1. LOCAL: Deploy Insights locally on your Kubernetes cluster. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring solution. To enable this option: 
+   * the `nuodbinsightsserver_crd.yaml` during Operator deployment and `nuodbinsightsserver_cr.yaml` during database deployment.
+2. HOSTED in AWS: Stream your Insights performance data to the NuoDB hosted Insights data portal on the Amazon AWS public clould. To access your secure performance data using this option, you will use a private Subscriber ID provided once the Insights collection agent starts. To enable this option: 
    * Set "insightsEnabled: true" in your nuodb-cr.yaml file.
 
 ## Install the NuoDB Operator
@@ -241,21 +215,31 @@ Run the following yaml in your OpenShift cluster to authorize the NuoDB Operator
 kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
 ```
 Steps:
-1. Select &ensp;`Projects` from the OpenShift 4 left toolbar and click the &ensp;`NuoDB` project to make
+1. Select `Projects` from the OpenShift 4 left toolbar and click the `NuoDB` project to make
    it your current project.
-2. Select the &ensp;`OperatorHub` under the &ensp;`Catalog` section in the OCP 4 left toolbar.
-3. Select the &ensp;`Database` filter and scroll down to the NuoDB Application tile and click the tile.
-4. In the right-hand corner of the NuoDB Operator page, click the &ensp;`Install` button.
+2. Select the `OperatorHub` under the `Catalog` section in the OCP 4 left toolbar.
+3. Select the `Database` filter and scroll down to the NuoDB Application tile and click the tile.
+4. In the right-hand corner of the NuoDB Operator page, click the `Install` button.
 5. On the "Create Operator Subscription" page, select the radio group option "A specific namespace on the cluster"
    and enter the project/namespace in the pull-down field that you would like to install the NuoDB Operator,
-   then select &ensp;`Subscribe` to subscribe to the NuoDB Operator.
+   then select `Subscribe` to subscribe to the NuoDB Operator.
 6. In less than a minute, on the page that displays should indicate the NuoDB Operator has been
    installed, see "1 installed" message.
-7. To verify the NuoDB Operator installed correctly, select &ensp;`Installed Operators` from the left
+7. To verify the NuoDB Operator installed correctly, select `Installed Operators` from the left
    toolbar. The STATUS column should show "Install Succeeded".
-8. Select &ensp;`Status` under the &ensp;`Projects` on the left toolbar to view your running Operator.
+8. Select `Status` under the `Projects` on the left toolbar to view your running Operator.
 
-### Red Hat OpenShift v3.11 --or-- Open source / GKE / EKS Kubernetes
+### Google Cloud Platform (GCP) - GKE Kubernetes
+
+1. Using the GCP Marketplace, locate the NuoDB Operator. Click the `Configure` botton and follow the on screen instructions to deploy the NuoDB Operator. During this step: 
+2. Select a GCP Project. 
+3. Either create a GKE cluster or choose an existing one from the list
+4. Create a namespace called `nuodb` in which to install the NuoDB Operator
+5. Take defaults for `App instance name` and `Cluster Admin Service Account` 
+6. Click the `Deploy` button.
+Your NuoDB Operator will deploy in several minutes. You can use the GCP Kubernetes Engine Web UI "Workloads" selection to monitor progress.
+
+### Red Hat OpenShift v3.11 --or-- Open source, RKE, Anthos GKE, and EKS Kubernetes
 
 #### If not already installed, then install the Operator Lifecycle Manager (OLM)
 ```
@@ -276,6 +260,9 @@ error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSo
 
 #### NuoDB Operator Install Script
 ```
+# Set the environment context to the namespace you will deploy the NuoDB Operator
+kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE`
+
 kubectl create -f nuodb-operator/deploy/catalogSource.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/cluster_role.yaml
@@ -321,9 +308,9 @@ done
 
 The nuodb-operator/deploy directory includes sample Custom Resources to deploy the NuoDB database:
 
-&ensp; `cr-ephemeral.yaml` deploys NuoDB CE domain without a persistent storage volume by setting storageMode to "ephemeral".
+`cr-ephemeral.yaml` deploys NuoDB CE domain without a persistent storage volume by setting storageMode to "ephemeral".
 
-&ensp; `cr-persistent-insights-enabled.yaml` deploys NuoDB CE domain using persistent storage and has NuoDB Insights enabled.
+`cr-persistent-insights-enabled.yaml` deploys NuoDB CE domain using persistent storage and has NuoDB Insights enabled.
 
 Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
 ```
@@ -333,7 +320,7 @@ spec:
   insightsEnabled: false
   adminCount: 3
   adminStorageSize: 2G
-  adminStorageClass: local-disk
+  adminStorageClass: <ENTER VALUE>
   dbName: test
   dbUser: dba
   dbPassword: secret
@@ -341,7 +328,7 @@ spec:
   smMemory: 4Gi
   smCpu: 2
   smStorageSize: 20G
-  smStorageClass: local-disk
+  smStorageClass: <ENTER VALUE>
   engineOptions: ""
   teCount: 1
   teMemory: 4Gi
@@ -349,7 +336,19 @@ spec:
   container: nuodb/nuodb-ce:latest
 ```
 
-**Note:** We recommend replacing the database password `dbPassword` value 'secret' with one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
+We recommend replacing the database password `dbPassword` value 'secret' with one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
+
+For parameters `adminStorageClass` and `smStorageClass` enter the Kubernetes storage class value you wish to use. For example, 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using the AWS public cloud, use `gp2`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using the GCP public cloud, use `standard`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using the AZURE public cloud, use `standard_lrs` or `premium_lrs`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using hostpath local storage, use `local-disk`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using a 3rd-party CSI storage provider, enter the appropriate storage class value for that storage product.
 
 ### Sample SQL application using the nuodb-ycsb-cr.yaml deployment file
 ```
@@ -369,6 +368,9 @@ ycsbLoadName: ycsb-load
 
 This sample deploys a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
 ```
+# Set the environment context to the namespace you will deploy the NuoDB Operator
+kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE`
+
 # To deploy the NuoDB database into your Kubernetes cluster, first make a local copy of the NuoDB cr yaml files
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
 cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
@@ -447,7 +449,7 @@ https://insights.nuodb.com/yourSubID#
 
 To check the status of hosted NuoDB Insights visual monitoring tool, run
 
-&ensp; `oc exec -it nuodb-insights -c insights -- nuoca check insights`
+`oc exec -it nuodb-insights -c insights -- nuoca check insights`
 
 
 ## Launch a Sample SQL Workload
@@ -464,7 +466,7 @@ Once your NuoDB database is running, here are a few steps to try out to quickly 
 
 To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
 
-&ensp; `kubectl edit nuodbs.nuodb.com`
+`kubectl edit nuodbs.nuodb.com`
 * Demonstrate Continuous Availability
 * Demonstrate Visual Monitoring Using NuoDB Insights
 
