@@ -15,6 +15,8 @@ A Kubernetes Operator written in Golang that automates the packaging, provisioni
   * Open source kubernetes
 * Rancher Kubernetes Manager
   * Rancher RKE and Rancher supported Kubernetes (e.g. EKS, AKS) on Rancher supported cloud platforms
+  
+The NuoDB Operator and database deployment (and samples) provided on this page are regularly tested and verified on the Platforms and Kubernetes distributions described above. 
 
 The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample SQL application (ycsb) to quickly generate a user-configurable SQL workload against the database.
 
@@ -60,26 +62,27 @@ This page is organized in the following sections:
 
 _**Note:** The instructions on this page use the Kubernetes `kubectl` command (for portability reasons across Kubernetes environments). For environments, the `kubectl` command is an alias that points to the OpenShift client program `oc`._
 
+### 1. Provision a Kubernetes cluster 
 
-### 1. Create environment variables
+Create a Kubernetes cluster and connect to the cluster. In our verification tests, we regularly create five node clusters with 2 CPUs and 16 GB of RAM each to run the samples outlined on this page. Please use this as a guideline for a minimal configuration when you create your cluster.
+
+### 2. Create environment variables
 
 ```
 export OPERATOR_NAMESPACE=nuodb
 export STORAGE_NODE=yourStorageNodeDNSName
 export NUODB_OPERATOR_VERSION=2.0.3           --confirm you set the correction NuoDB Operator version here.
 ```
-### 2. Clone a copy of the NuoDB Operator from Github
+### 3. Clone a copy of the NuoDB Operator from Github
 In your home or working directory, run:
 
 `git clone https://github.com/nuodb/nuodb-operator`
 
-### 3. Create the "nuodb" project/namespace (if not already created)
-
-Confirm you are connected to your Kubernetes cluster and run,
+### 4. Create the "nuodb" project/namespace (if not already created)
 
 `kubectl create namespace $OPERATOR_NAMESPACE`
 
-### 4. Optionally Use Cluster Node Local Storage
+### 5. Optionally Use Cluster Node Local Storage
 
 NuoDB supports cloud platform storage (e.g. AWS EBS), 3rd-party CSI storage (e.g. Portworx, OpenEBS, Linbit, etc.), and the use of local storage via Hostpath. The Amazon EBS storageclass (gp2) is the default storage class for both the NuoDB Admin and the Storage Manager (SM) pods in `nuodb-cr.yaml` custom resource file.
 
@@ -97,7 +100,7 @@ Create the Kubernetes storage class "local-disk" and persistent volume
 
  `kubectl create -f nuodb-operator/build/etc/charts/nuodb-helm/local-disk-class.yaml`
 
-### 5. Cluster Node Labeling
+### 6. Cluster Node Labeling
 Label the cluster nodes you want to use to run NuoDB pods.
 
  `kubectl  label node <node name> nuodb.com/zone=nuodb`
@@ -119,7 +122,7 @@ ip-10-0-184-233.ec2.internal   Ready    worker   15d   v1.13.4+cb455d664   nuodb
 ip-10-0-206-8.ec2.internal     Ready    worker   15d   v1.13.4+cb455d664   nuodb 
 ```
 
-### 6. Apply a NuoDB license file
+### 7. Apply a NuoDB license file
 
 Each time a NuoDB Admin pod starts it will load a Kubernetes configmap that contains the current NuoDB license level information and places its contents in the /etc/nuodb/nuodb.lic file. When a request is made to either start a NuoDB Transaction Engine (TE) or Storage Manager (SM) process, the NuoDB Admin will check the license file contents to ensure the process request is authorized.
 
@@ -148,7 +151,7 @@ To check the effective NuoDB license and confirm license level, run
 `nuocmd --show-json get effective-license`
 
 
-### 7. If using the Red Hat OpenShift 
+### 8. If using the Red Hat OpenShift 
 
 #### To permit the pulling of the NuoDB database and operator container images, create the Kubernetes image pull secret
 
