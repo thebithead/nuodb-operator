@@ -70,7 +70,6 @@ Create a Kubernetes cluster and connect to the cluster. In our verification test
 
 ```
 export OPERATOR_NAMESPACE=nuodb
-export STORAGE_NODE=yourStorageNodeDNSName
 export NUODB_OPERATOR_VERSION=2.0.3           --confirm you set the correction NuoDB Operator version here.
 ```
 ### 3. Clone a copy of the NuoDB Operator from Github
@@ -109,7 +108,7 @@ _**Note:** The label value, in this example "nuodb", can be any value._
 
 Next, label one of these nodes as your storage node that will host the NuoDB Storage Manager (SM) pod. If using Local storage, ensure there is sufficient disk space on this node. To create this label run:
 
- `kubectl  label node $STORAGE_NODE nuodb.com/node-type=storage`
+`kubectl  label node <yourStorageNodeDNSName> nuodb.com/node-type=storage`
 
 Once your cluster nodes are labeled for NuoDB use, run the following `kubectl get nodes` command to confirm nodes are labeled properly. The display output should look similar to the below
 ```
