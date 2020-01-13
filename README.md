@@ -69,6 +69,7 @@ In our verification tests, we regularly verify the samples workloads outlined on
 * 5 nodes, each with with 2 CPUs and 16 GB of RAM
 * 5 GB disk for Admin pods
 * 20 GB disk for Storage Manager(SM) pods
+
 Please use this as a guideline for a minimal configuration when you create your cluster. To run larger SQL workloads using the included YCSB sample application, adjust node CPU and Memory upwards as required. To determine resources used, monitor your NuoDB database process resource consumption using the NuoDB Insights visual montioring tool. 
 
 ### 2. Create environment variables
@@ -333,13 +334,13 @@ spec:
   dbPassword: secret
   smCount: 1
   smMemory: 4Gi
-  smCpu: 2
+  smCpu: "2"
   smStorageSize: 20G
   smStorageClass: <ENTER VALUE>
   engineOptions: ""
   teCount: 1
   teMemory: 4Gi
-  teCpu: 2
+  teCpu: "2"
   container: nuodb/nuodb-ce:latest
 ```
 
@@ -607,7 +608,7 @@ kubectl get role/grafana-operator
 
 **smCpu** - SM CPU cores to request
 
-&ensp; `smCpu: 1`
+&ensp; `smCpu: "1"`
 
 
 **smStorageSize** - Storage manager (SM) volume size (GB)
@@ -637,7 +638,7 @@ kubectl get role/grafana-operator
 
 **teCpu** - TE CPU cores to request
 
-&ensp; `teCpu: 1`
+&ensp; `teCpu: "1"`
 
 **apiServer** - Load balancer service URL. hostname:port (or LB address) for nuocmd and nuodocker process to connect to.
 
