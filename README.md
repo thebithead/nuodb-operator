@@ -62,10 +62,10 @@ This page is organized in the following sections:
 
 _**Note:** The instructions on this page use the Kubernetes `kubectl` command (for portability reasons across Kubernetes environments). For environments, the `kubectl` command is an alias that points to the OpenShift client program `oc`._
 
-### 1. Provision a Kubernetes cluster with at least the minimal resources requirements
+### 1. Provision a Kubernetes cluster
 
 Create a Kubernetes cluster and connect to the cluster. 
-In our verification tests, we regularly verify the samples workloads outlined on this page using the following configuration
+In our verification tests, we regularly verify the samples workloads outlined on this page using the following minimal configuration:
 * 5 nodes, each with with 2 CPUs and 16 GB of RAM
 * 5 GB disk for Admin pods
 * 20 GB disk for Storage Manager(SM) pods
