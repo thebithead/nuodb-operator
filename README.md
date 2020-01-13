@@ -66,10 +66,10 @@ _**Note:** The instructions on this page use the Kubernetes `kubectl` command (f
 
 Create a Kubernetes cluster and connect to the cluster. 
 In our verification tests, we regularly verify the samples workloads outlined on this page using the following configuration
-*5 nodes, each with with 2 CPUs and 16 GB of RAM
-*5 GB disk for Admin pods
-*20 GB disk for Storage Manager(SM) pods
-Please use this as a guideline for a minimal configuration when you create your cluster.
+* 5 nodes, each with with 2 CPUs and 16 GB of RAM
+* 5 GB disk for Admin pods
+* 20 GB disk for Storage Manager(SM) pods
+Please use this as a guideline for a minimal configuration when you create your cluster. To run larger SQL workloads using the included YCSB sample application, adjust node CPU and Memory upwards as required. To determine resources used, monitor your NuoDB database process resource consumption using the NuoDB Insights visual montioring tool. 
 
 ### 2. Create environment variables
 
