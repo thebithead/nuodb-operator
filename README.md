@@ -289,15 +289,15 @@ sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb
 
 # To replace quay.io as the default location to pull the NuoDB Operator image, follow these examples:
 
-# To pull from the Red Hat Container Catalog, run
-#   sed "s/quay.io/registry.connect.redhat.com/" nuodb-csv.yaml > nuodb-csv-rhcc.yaml
+   # To pull from the Red Hat Container Catalog, run
+   #   sed "s/quay.io/registry.connect.redhat.com/" nuodb-csv.yaml > nuodb-csv-rhcc.yaml
 
-# To pull from the Google Marketplace, run
-#   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
+   # To pull from the Google Marketplace, run
+   #   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
 
-# To pull from the AWS Marketplace, 
-# replace in the nuodb-csv.yaml file the two image references with 
-# 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-3874915802/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
+   # To pull from the AWS Marketplace, 
+   # replace in the nuodb-csv.yaml file the two image references with the following image pull value:
+   # 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-3874915802/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
 
 # If appliable, copy your customized nuodb-csv-xxx.yaml file to nuodb-csv.yaml and run,
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
