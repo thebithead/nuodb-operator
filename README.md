@@ -46,7 +46,7 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Database](#Deploy-the-NuoDB-Database)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Connect to your Database using nuosql](Connect-to-your-Database-using-nuosql)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Connect to your Database using nuosql](#Connect-to-your-Database-using-nuosql)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Launch a Sample SQL Workload](#Launch-a-Sample-SQL-Workload)
 
@@ -466,7 +466,7 @@ To check the status of hosted NuoDB Insights visual monitoring tool, run
 
 ## Connect to your Database using nuosql
 
-Once your database is running, you can connect and run SQL command using the NuoDB nuosql command tool. See sample below:
+Once your database is running, you can connect and run SQL using the NuoDB nuosql command tool. See sample below:
 
 ```
 kubectl exec -it <te-pod-name> bash
