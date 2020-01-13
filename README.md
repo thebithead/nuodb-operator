@@ -18,7 +18,7 @@ A Kubernetes Operator written in Golang that automates the packaging, provisioni
   
 The NuoDB Operator and database deployment (and samples) provided on this page are regularly tested and verified on the Platforms and Kubernetes distributions described above. 
 
-The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample SQL application (ycsb) to quickly generate a user-configurable SQL workload against the database.
+The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample application (ycsb) to quickly generate a user-configurable SQL workload against the database.
 
 ## About the NuoDB Community Edition Capability
 The NuoDB Community Edition (CE) capability is a full featured, but limits the database to one Storage Manager (SM) and three Transaction Engine (TE) processes. The Community Edition is free of charge and allows you to self-evaluate NuoDB at your own pace. The NuoDB Community Edition (CE) will allow first time users to experience all the benefits and value points of NuoDB including: 
@@ -473,7 +473,7 @@ kubectl exec -it <te-pod-name> bash
 nuosql <db-name> --user dba --password secret
 SQL>
 ```
-For more information on running NuoDB SQL, see [Using NuoDB SQL Command Line](http://doc.nuodb.com/Latest/Content/Using-NuoDB-SQL-Command-Line.htm) and [NuoDB SQL Development](http://doc.nuodb.com/Latest/Default.htm#SQL-Development.htm) online documenation.
+For more information on how to run SQL, see [Using NuoDB SQL Command Line](http://doc.nuodb.com/Latest/Default.htm#Using-NuoDB-SQL-Command-Line.htm) and [NuoDB SQL Development](http://doc.nuodb.com/Latest/Default.htm#SQL-Development.htm) online documenation.
 
 ## Launch a Sample SQL Workload
 
