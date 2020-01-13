@@ -46,6 +46,8 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Deploy the NuoDB Database](#Deploy-the-NuoDB-Database)
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Connect to your Database using nuosql]Connect-to-your-Database-using-nuosql)
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Launch a Sample SQL Workload](#Launch-a-Sample-SQL-Workload)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Sample NuoDB Features and Benefits Evaluation Steps](#Sample-NuoDB-Features-and-Benefits-Evaluation-Steps)
@@ -462,6 +464,15 @@ To check the status of hosted NuoDB Insights visual monitoring tool, run
 
 `oc exec -it nuodb-insights -c insights -- nuoca check insights`
 
+## Connect to your Database using nuosql
+
+Once your database is running, you can connect to run SQL command using the NuoDB nuosql command tool. See sample below:
+
+```
+kubectl exec -it <te-pod-name> bash
+nuosql <db-name> --user dba --password secret
+SQL>
+```
 
 ## Launch a Sample SQL Workload
 
