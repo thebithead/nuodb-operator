@@ -15,8 +15,6 @@ A Kubernetes Operator written in Golang that automates the packaging, provisioni
   * Open source kubernetes
 * Rancher Kubernetes Manager
   * Rancher RKE and Rancher supported Kubernetes (e.g. EKS, AKS) on Rancher supported cloud platforms
-  
-The NuoDB Operator and database deployment (and samples) provided on this page are regularly tested and verified on the Platforms and Kubernetes distributions described above. 
 
 The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample application (ycsb) to quickly generate a user-configurable SQL workload against the database.
 
