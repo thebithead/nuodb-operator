@@ -317,7 +317,7 @@ done
 
 ### Sample nuodb-cr.yaml deployment file
 
-The nuodb-operator/deploy directory includes sample Custom Resources to deploy the NuoDB database. For example, 
+The nuodb-operator/deploy/crds directory includes sample Custom Resources yaml files that can be used to deploy a NuoDB database. For example, 
 
 `nuodb_v2alpha1_nuodb_cr.yaml`
 
