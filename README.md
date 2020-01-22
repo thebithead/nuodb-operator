@@ -317,13 +317,11 @@ done
 
 ### Sample nuodb-cr.yaml deployment file
 
-The nuodb-operator/deploy directory includes sample Custom Resources to deploy the NuoDB database:
+The nuodb-operator/deploy directory includes sample Custom Resources to deploy the NuoDB database. For example, 
 
-`cr-ephemeral.yaml` deploys NuoDB CE domain without a persistent storage volume by setting storageMode to "ephemeral".
+`nuodb_v2alpha1_nuodb_cr.yaml`
 
-`cr-persistent-insights-enabled.yaml` deploys NuoDB CE domain using persistent storage and has NuoDB Insights enabled.
-
-Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` to customize your database. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. A sample nuodb-ycsb-cr.yaml is also provided. The nuodb-insights-cr.yaml normally does not require modification.
+Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` file to customize your database configuration. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample nuodb-ycsb-cr.yaml and nuodb-insights-cr.yaml files are also provided. Below is a sample `nuodb-cr.yaml` file that starts a database *test* that uses persistent storage, disables *hosted* Insights monitoring, starts three NuoDB Admin pods, along with various others configurations like controling the number desired pods, CPU, and memory used per NuoDB process type.
 ```
 spec:
   replicaCount: 1
