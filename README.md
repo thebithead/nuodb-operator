@@ -321,7 +321,7 @@ The nuodb-operator/deploy/crds directory includes sample Custom Resources yaml f
 
 `nuodb_v2alpha1_nuodb_cr.yaml`
 
-Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` file to customize your database configuration. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample nuodb-ycsb-cr.yaml and nuodb-insights-cr.yaml files are also provided. Below is a sample `nuodb-cr.yaml` file that starts a database *test* that uses persistent storage, disables *hosted* Insights monitoring, starts three NuoDB Admin pods, along with various others configurations like controling the number desired pods, CPU, and memory used per NuoDB process type.
+Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` file to customize your database configuration. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample nuodb-ycsb-cr.yaml and nuodb-insights-cr.yaml files are also provided. Below is a sample `nuodb-cr.yaml` file that starts a database named *test* that uses persistent storage, disables *hosted* Insights monitoring, starts three NuoDB Admin pods, along with various others configurations like controling the number desired pods, CPU, and memory used per NuoDB process type.
 ```
 spec:
   replicaCount: 1
