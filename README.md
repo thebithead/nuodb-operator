@@ -1,5 +1,3 @@
-![NuoDB Logo](https://www.nuodb.com/sites/all/themes/nuodb/logo.svg | width=250)
-
 <img src="https://www.nuodb.com/sites/all/themes/nuodb/logo.svg" data-canonical-src="https://www.nuodb.com/sites/all/themes/nuodb/logo.svg" width="200" height="400" />
 
 # The NuoDB Operator
