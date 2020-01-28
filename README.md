@@ -495,9 +495,7 @@ To easily scale NuoDB Transaction engines from the CLI, edit the teCount value b
 * Demonstrate Continuous Availability
 * Demonstrate Visual Monitoring Using NuoDB Insights
 
-The following videos provide a walk-thru of each feature area mentioned above. These videos show NuoDB running in Red Hat OpenShift, but the sample steps can be performed in any NuoDB supported Kubernetes managed environment.
-
-   [NuoDB in OpenShift v3.11 video](https://www.youtube.com/playlist?list=PLQJ_WGDxAYCG340ODaOACaG9KIG6IQBYL)
+The following video provide a walk-thru of each feature area mentioned above. This video shows NuoDB running in Red Hat OpenShift, but the same benefit areas can be demonstrated in any NuoDB supported Kubernetes managed environment.
 
    [NuoDB in OpenShift  v4.x video](https://www.youtube.com/playlist?list=PLQJ_WGDxAYCEU7Ae-b7shbwE8bn_iJDwM)
 
