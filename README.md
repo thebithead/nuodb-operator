@@ -1,4 +1,4 @@
-![NuoDB Logo](https://www.nuodb.com/sites/all/themes/nuodb/logo.svg)
+![NuoDB Logo](https://www.nuodb.com/sites/all/themes/nuodb/logo.svg =250x250)
 
 # The NuoDB Operator
 
