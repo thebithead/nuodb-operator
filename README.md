@@ -1,5 +1,7 @@
 ![NuoDB Logo](https://www.nuodb.com/sites/all/themes/nuodb/logo.svg | width=250)
 
+<img src="https://camo.githubusercontent.com/..." data-canonical-src="https://www.nuodb.com/sites/all/themes/nuodb/logo.svg" width="200" height="400" />
+
 # The NuoDB Operator
 
 [![Build Status](https://travis-ci.org/nuodb/nuodb-operator.svg?branch=master)](https://travis-ci.org/nuodb/nuodb-operator)
