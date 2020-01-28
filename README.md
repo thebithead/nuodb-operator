@@ -187,6 +187,8 @@ oc adm policy add-scc-to-user privileged system:serviceaccount:$OPERATOR_NAMESPA
 
 ## Configure NuoDB Insights Visual Monitor
 
+![](https://www.nuodb.com/sites/default/files/nuodb-insights.png)
+
 Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
 
 > Insights is also part of NuoDB Services and Support in order to service our customers better and more efficiently and is
