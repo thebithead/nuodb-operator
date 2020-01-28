@@ -1,3 +1,5 @@
+![NuoDB Logo](https://www.nuodb.com/sites/all/themes/nuodb/logo.svg)
+
 # The NuoDB Operator
 
 [![Build Status](https://travis-ci.org/nuodb/nuodb-operator.svg?branch=master)](https://travis-ci.org/nuodb/nuodb-operator)
