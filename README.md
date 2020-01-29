@@ -243,6 +243,12 @@ Steps:
    toolbar. The STATUS column should show "Install Succeeded".
 8. Select `Status` under the `Projects` on the left toolbar to view your running Operator.
 
+The following video provide a full walk-thru when deploying the NuoDB Operator with OpenShift 4.x. 
+
+   [NuoDB in OpenShift  v4.x video](https://www.youtube.com/playlist?list=PLQJ_WGDxAYCEU7Ae-b7shbwE8bn_iJDwM)
+
+**Note:** The same benefit areas can also be demonstrated in any NuoDB supported Kubernetes managed environment.
+
 ### Google Cloud Platform (GCP) - GKE Kubernetes
 
 1. Using the GCP Marketplace, locate the NuoDB Operator. Click the `Configure` botton and follow the on screen instructions to deploy the NuoDB Operator. During this step: 
@@ -481,7 +487,7 @@ For more information on how to run SQL, see [Using NuoDB SQL Command Line](http:
 
 The NuoDB Operator includes a sample SQL application that will allow you to get started quickly running SQL statements against your NuoDB database. The sample workload uses YCSB (the Yahoo Cloud Servicing Benchmark). The cr.yaml includes YCSB parameters that will allow you to configure the SQL workload to your preferences.
 
-To start a SQL Workload (if your nuodb-ycsb-cr.yaml isn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
+To start a SQL Workload (if your `nuodb-ycsb-cr.yaml` isn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
 
 ## NuoDB Features and Benefits Evaluation Steps
 
@@ -494,11 +500,6 @@ To easily scale NuoDB Transaction engines from the CLI, edit the teCount value b
 `kubectl edit nuodbs.nuodb.com`
 * Demonstrate Continuous Availability
 * Demonstrate Visual Monitoring Using NuoDB Insights
-
-The following video provide a walk-thru of each feature area mentioned above. This video shows NuoDB running in Red Hat OpenShift, but the same benefit areas can be demonstrated in any NuoDB supported Kubernetes managed environment.
-
-   [NuoDB in OpenShift  v4.x video](https://www.youtube.com/playlist?list=PLQJ_WGDxAYCEU7Ae-b7shbwE8bn_iJDwM)
-
 
 ## Delete the NuoDB database
 ```
