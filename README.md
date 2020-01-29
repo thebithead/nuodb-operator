@@ -495,7 +495,7 @@ Once your NuoDB database and Insights visual monitor are running, here are a few
 
 * Demonstrate Transactional Scale-out
 
-    To easily scale out your NuoDB Transaction Engines (TEs) to meet an increased SQL application workload, from the CLI, edit the teCount value by running,
+      To easily scale out your NuoDB Transaction Engines (TEs) to meet an increased SQL application workload, from the CLI, edit the teCount value by running,
 
       `kubectl edit nuodbs.nuodb.com`
     
