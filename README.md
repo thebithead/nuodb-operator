@@ -243,7 +243,7 @@ Steps:
    toolbar. The STATUS column should show "Install Succeeded".
 8. Select `Status` under the `Projects` on the left toolbar to view your running Operator.
 
-The following video provide a full walk-thru when deploying the NuoDB Operator with OpenShift 4.x. 
+The following video provides a full walk-thru of how to deploy the NuoDB Operator and database in OpenShift 4.x. 
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[NuoDB in OpenShift  v4.x video](https://youtu.be/KYx_B_ykbtU)
 
