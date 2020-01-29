@@ -491,15 +491,21 @@ To start a SQL Workload (if your `nuodb-ycsb-cr.yaml` wasn't configured to start
 
 ## NuoDB Features and Benefits Evaluation Steps
 
-Once your NuoDB database is running, here are a few steps to try out to quickly realize the benefits of running a NuoDB SQL database
+Once your NuoDB database and Insights visual monitor are running, here are a few steps to try out to quickly realize the benefits of running a NuoDB SQL database
 
 * Demonstrate Transactional Scale-out
 
-To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
+    To easily scale out your NuoDB Transaction engines to meet an increased application workload, from the CLI, edit the teCount value by running,
 
-`kubectl edit nuodbs.nuodb.com`
+    `kubectl edit nuodbs.nuodb.com`
+    
+    Using NuoDB Insights, monitor the application during the time of increased application workload and the scale-out of TEs and observe the increase transactional throughput, Transactions Per Second (TPS) 
+    
 * Demonstrate Continuous Availability
-* Demonstrate Visual Monitoring Using NuoDB Insights
+
+    Deploy your NuoDB system with 3 NuoDB Admins and 3 Transaction Engines (TEs). Using either your Kubernetes dashboard or the `kubectl delete pod` CLI command, forcibly remove either a NuoDB Admin or a TE pod. **Note:** when using the Community Edition, only 1 Storage Manager (SM) is availabe. 
+    
+   Using NuoDB Insights, monitor the application during the time of the forced pod deletes and observe that application availability continues unimpacted while the Kubernetes system and NuoDB recovery from failure events in seconds.
 
 ## Delete the NuoDB database
 ```
