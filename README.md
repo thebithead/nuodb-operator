@@ -245,7 +245,7 @@ Steps:
 
 The following video provide a full walk-thru when deploying the NuoDB Operator with OpenShift 4.x. 
 
-    [NuoDB in OpenShift  v4.x video](https://youtu.be/KYx_B_ykbtU)
+ [NuoDB in OpenShift  v4.x video](https://youtu.be/KYx_B_ykbtU)
 
 **Note:** The same benefit areas can also be demonstrated in any NuoDB supported Kubernetes managed environment.
 
