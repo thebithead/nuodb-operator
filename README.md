@@ -1,3 +1,5 @@
+<img src="https://www.nuodb.com/sites/all/themes/nuodb/logo.svg" data-canonical-src="https://www.nuodb.com/sites/all/themes/nuodb/logo.svg" width="200" height="200" />
+
 # The NuoDB Operator
 
 [![Build Status](https://travis-ci.org/nuodb/nuodb-operator.svg?branch=master)](https://travis-ci.org/nuodb/nuodb-operator)
@@ -15,6 +17,8 @@ A Kubernetes Operator written in Golang that automates the packaging, provisioni
   * Open source kubernetes
 * Rancher Kubernetes Manager
   * Rancher RKE and Rancher supported Kubernetes (e.g. EKS, AKS) on Rancher supported cloud platforms
+
+**Note:** The NuoDB Operator is ideal for development, test and for product evaluation purposes in single cluster Kubernetes environments. **The NuoDB Operator is not yet available for production use.** Coming soon in 1H'20 is automated LEVEL 2 (rolling upgrade) and LEVEL 3 (backup and recovery) operational support. Multi-cluster support is also on the roadmap.
 
 The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample application (ycsb) to quickly generate a user-configurable SQL workload against the database.
 
@@ -48,7 +52,7 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Launch a Sample SQL Workload](#Launch-a-Sample-SQL-Workload)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Sample NuoDB Features and Benefits Evaluation Steps](#Sample-NuoDB-Features-and-Benefits-Evaluation-Steps)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[NuoDB Features and Benefits Evaluation Steps](#NuoDB-Features-and-Benefits-Evaluation-Steps)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Delete the NuoDB Database](#Delete-the-NuoDB-Database)
 
@@ -183,6 +187,8 @@ oc adm policy add-scc-to-user privileged system:serviceaccount:$OPERATOR_NAMESPA
 
 ## Configure NuoDB Insights Visual Monitor
 
+![](https://www.nuodb.com/sites/default/files/nuodb-insights.png)
+
 Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
 
 > Insights is also part of NuoDB Services and Support in order to service our customers better and more efficiently and is
@@ -236,6 +242,12 @@ Steps:
 7. To verify the NuoDB Operator installed correctly, select `Installed Operators` from the left
    toolbar. The STATUS column should show "Install Succeeded".
 8. Select `Status` under the `Projects` on the left toolbar to view your running Operator.
+
+The following video provides a full walk-thru of how to deploy the NuoDB Operator and database in OpenShift 4.x. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[NuoDB in OpenShift  v4.x video](https://youtu.be/KYx_B_ykbtU)
+
+**Note:** The same benefit areas can also be demonstrated in any NuoDB supported Kubernetes managed environment.
 
 ### Google Cloud Platform (GCP) - GKE Kubernetes
 
@@ -373,7 +385,7 @@ ycsbLoadName: ycsb-load
   ycsbContainer: nuodb/ycsb:latest
 ```
 
-### Sample NuoDB database deployment scripts
+### Sample NuoDB database deployment script
 
 This sample deploys a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
 ```
@@ -475,26 +487,25 @@ For more information on how to run SQL, see [Using NuoDB SQL Command Line](http:
 
 The NuoDB Operator includes a sample SQL application that will allow you to get started quickly running SQL statements against your NuoDB database. The sample workload uses YCSB (the Yahoo Cloud Servicing Benchmark). The cr.yaml includes YCSB parameters that will allow you to configure the SQL workload to your preferences.
 
-To start a SQL Workload (if your nuodb-ycsb-cr.yaml isn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
+To start a SQL Workload (if your `nuodb-ycsb-cr.yaml` wasn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
 
 ## NuoDB Features and Benefits Evaluation Steps
 
-Once your NuoDB database is running, here are a few steps to try out to quickly realize the benefits of running a NuoDB SQL database
+Once your NuoDB database and Insights visual monitor are running, here are a few steps to try out to quickly realize the benefits of running a NuoDB SQL database
 
 * Demonstrate Transactional Scale-out
 
-To easily scale NuoDB Transaction engines from the CLI, edit the teCount value by running,
+    To easily scale out your NuoDB Transaction Engines (TEs) to meet an increased SQL application workload, from the CLI, edit the teCount value by running,
 
-`kubectl edit nuodbs.nuodb.com`
+    `kubectl edit nuodbs.nuodb.com`
+    
+    Using NuoDB Insights, monitor the SQL application during the time of increased application workload and the scale-out of TEs and observe the increase in transactional throughput, Transactions Per Second (TPS) 
+    
 * Demonstrate Continuous Availability
-* Demonstrate Visual Monitoring Using NuoDB Insights
 
-The following videos provide a walk-thru of each feature area mentioned above. These videos show NuoDB running in Red Hat OpenShift, but the sample steps can be performed in any NuoDB supported Kubernetes managed environment.
-
-   [NuoDB in OpenShift v3.11 video](https://www.youtube.com/playlist?list=PLQJ_WGDxAYCG340ODaOACaG9KIG6IQBYL)
-
-   [NuoDB in OpenShift  v4.x video](https://www.youtube.com/playlist?list=PLQJ_WGDxAYCEU7Ae-b7shbwE8bn_iJDwM)
-
+    Deploy your NuoDB system with three NuoDB Admins and three Transaction Engines (TEs). Using either your Kubernetes dashboard or the `kubectl delete pod` CLI command, forcibly delete either a NuoDB Admin or a TE pod. **Note:** when using the Community Edition, only 1 Storage Manager (SM) is availabe. 
+    
+    Using NuoDB Insights, monitor the SQL application during the time of the forced pod deletes and observe that SQL application availability continues unimpacted while the Kubernetes system and NuoDB recovery from failure events in seconds.
 
 ## Delete the NuoDB database
 ```
