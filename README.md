@@ -385,7 +385,7 @@ ycsbLoadName: ycsb-load
   ycsbContainer: nuodb/ycsb:latest
 ```
 
-### Sample NuoDB database deployment scripts
+### Sample NuoDB database deployment script
 
 This sample deploys a NuoDB database using "on-cluster" NuoDB Insight visual monitoring and start a sample SQL application
 ```
