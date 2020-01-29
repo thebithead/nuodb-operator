@@ -52,7 +52,7 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Launch a Sample SQL Workload](#Launch-a-Sample-SQL-Workload)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Sample NuoDB Features and Benefits Evaluation Steps](#Sample-NuoDB-Features-and-Benefits-Evaluation-Steps)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[NuoDB Features and Benefits Evaluation Steps](#NuoDB-Features-and-Benefits-Evaluation-Steps)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Delete the NuoDB Database](#Delete-the-NuoDB-Database)
 
