@@ -6,7 +6,7 @@ ENV OPERATOR=/usr/local/bin/nuodb-operator \
     USER_NAME=nuodb-operator
 
 # install operator binary
-COPY build/_output/bin/nuodb-operator ${OPERATOR}
+COPY tmp/_output/bin/nuodb-operator-dev ${OPERATOR}
 
 COPY build/etc /usr/local/etc/nuodb-operator
 COPY deploy/crds /usr/local/etc/nuodb-operator/crds
