@@ -278,7 +278,7 @@ Note: If you experience the following error when running the catalogSource.yaml 
 error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSource" in version "operators.coreos.com/v1"
 ```
 
-#### NuoDB Operator Install Script
+#### NuoDB Operator Linux CLI Install Script
 ```
 # Set the environment context to the namespace you will deploy the NuoDB Operator
 kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE`
@@ -297,19 +297,20 @@ kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_crd.yaml
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
 
+# create a local copy of the nuodb-csv.yaml file
 sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb-operator.v$NUODB_OPERATOR_VERSION.clusterserviceversion.yaml > nuodb-csv.yaml
 
 # To replace quay.io as the default location to pull the NuoDB Operator image, follow these examples:
 
-   # To pull from the Red Hat Container Catalog, run
+   # Create a new nuodb-csv.yaml flie that pulls from the Red Hat Container Catalog, run
    #   sed "s/quay.io/registry.connect.redhat.com/" nuodb-csv.yaml > nuodb-csv-rhcc.yaml
 
-   # To pull from the Google Marketplace, run
+   # Create a new nuodb-csv.yaml file that pulls from the Google Marketplace, run
    #   sed "s/quay.io/marketplace.gcr.io/"          nuodb-csv.yaml > nuodb-csv-gcp.yaml
 
-   # To pull from the AWS Marketplace, 
-   # replace in the nuodb-csv.yaml file the two image references with the following image pull value:
-   # 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-3874915802/quay.io/nuodb/nuodb-operator:$NUODB_OPERATOR_VERSION-latest
+   # To pull from the AWS Marketplace, make a copy of nuodb-csv.yaml and name it nuodb-csv-aws.yaml.
+   # Replace in the nuodb-csv-aws.yaml file the two image references with the following image pull value:
+   # 117940112483.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-756769224/quay.io/nuodb/nuodb-operator:2.0.3-1-latest
 
 # If appliable, copy your customized nuodb-csv-xxx.yaml file to nuodb-csv.yaml and run,
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-csv.yaml
@@ -674,7 +675,7 @@ Below are examples that pull the NuoDB container image from Red Hat (RHCC), Goog
 ```
 container: registry.connect.redhat.com/nuodb/nuodb-ce:latest
 container: marketplace.gcr.io/nuodb/nuodb:latest
-container: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-3874915802/docker.io/nuodb/nuodb-ce:$NUODB_OPERATOR_VERSION-latest
+container: 117940112483.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-756769224/docker.io/nuodb/nuodb-ce:2.0.3-1-latest
 
 container: nuodb/nuodb-ce:latest
 ```
@@ -731,7 +732,7 @@ container: nuodb/nuodb-ce:latest
 
 ```
 ycsbContainer: nuodb/ycsb:latest
-ycsbContainer: 403495124976.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-3874915802/docker.io/nuodb/ycsb:$NUODB_OPERATOR_VERSION-latest
+ycsbContainer: 117940112483.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-756769224/docker.io/nuodb/ycsb:2.0.3-1-latest
 ```
 
 
