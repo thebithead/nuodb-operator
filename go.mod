@@ -1,7 +1,6 @@
 module nuodb/nuodb-operator
 
 require (
-	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/elastic/cloud-on-k8s v0.0.0-20190729075318-8280d4172234
 	github.com/elastic/go-elasticsearch/v7 v7.3.0
@@ -52,3 +51,5 @@ replace (
 )
 
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.9.0
+
+go 1.13
