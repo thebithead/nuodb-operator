@@ -676,7 +676,6 @@ Below are examples that pull the NuoDB container image from Red Hat (RHCC), Goog
 container: registry.connect.redhat.com/nuodb/nuodb-ce:latest
 container: marketplace.gcr.io/nuodb/nuodb:latest
 container: 117940112483.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-756769224/docker.io/nuodb/nuodb-ce:2.0.3-1-latest
-
 container: nuodb/nuodb-ce:latest
 ```
 
