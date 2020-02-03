@@ -139,9 +139,9 @@ To apply a NuoDB Communiity Edition (CE) license file, run
 
 `kubectl create configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE --from-literal=nuodb.lic=""`
 
-To apply a NuoDB Enterprise Edition (EE) license file to a system running a CE license, 
+To apply a NuoDB Enterprise Edition (EE) license file to a running NuoDB database system that is using a CE license, 
 
-obtain your license file from your NuoDB Sales or Support representative and copy the file to `nuodb.lic`, then run
+obtain your EE license file from your NuoDB Sales or Support representative and copy the file to `nuodb.lic`, then run
 
 ```
 kubectl delete configmap nuodb-lic-configmap -n $OPERATOR_NAMESPACE
@@ -281,7 +281,7 @@ error: unable to recognize "catalogSource.yaml": no matches for kind "OperatorSo
 #### NuoDB Operator Linux CLI Install Script
 ```
 # Set the environment context to the namespace you will deploy the NuoDB Operator
-kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE`
+kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE
 
 kubectl create -f nuodb-operator/deploy/catalogSource.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/operatorGroup.yaml
@@ -334,7 +334,7 @@ The nuodb-operator/deploy/crds directory includes sample Custom Resources yaml f
 
 `nuodb_v2alpha1_nuodb_cr.yaml`
 
-Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` file to customize your database configuration. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample nuodb-ycsb-cr.yaml and nuodb-insights-cr.yaml files are also provided. Below is a sample `nuodb-cr.yaml` file that starts a database named *test* that uses persistent storage, disables *hosted* Insights monitoring, starts three NuoDB Admin pods, along with various others configurations like controling the number desired pods, CPU, and memory used per NuoDB process type.
+Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` file to customize your database configuration. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample `nuodb-ycsbwl-cr.yaml` and nuodb-insights-cr.yaml files are also provided. Below is a sample `nuodb-cr.yaml` file that starts a database named *test* that uses persistent storage, disables *hosted* Insights monitoring, starts three NuoDB Admin pods, along with various others configurations like controling the number desired pods, CPU, and memory used per NuoDB process type.
 ```
 spec:
   replicaCount: 1
@@ -372,7 +372,7 @@ For parameters `adminStorageClass` and `smStorageClass` enter the Kubernetes sto
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using a 3rd-party CSI storage provider, enter the appropriate storage class value for that storage product.
 
-### Sample SQL application using the nuodb-ycsb-cr.yaml deployment file
+### Sample SQL application using the nuodb-ycsbwl-cr.yaml deployment file
 ```
 ycsbLoadName: ycsb-load
   ycsbWorkload: b
@@ -404,7 +404,7 @@ kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
 # Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-cr.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-insights-cr.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f nuodb-ycsb-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-ycsbwl-cr.yaml
 
 #Wait for nuodb to be logstash instance to be ready
 # Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
@@ -488,7 +488,7 @@ For more information on how to run SQL, see [Using NuoDB SQL Command Line](http:
 
 The NuoDB Operator includes a sample SQL application that will allow you to get started quickly running SQL statements against your NuoDB database. The sample workload uses YCSB (the Yahoo Cloud Servicing Benchmark). The cr.yaml includes YCSB parameters that will allow you to configure the SQL workload to your preferences.
 
-To start a SQL Workload (if your `nuodb-ycsb-cr.yaml` wasn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
+To start a SQL Workload (if your `nuodb-ycsbwl-cr.yaml` wasn't configured to start one by default) locate the ycsb Replication Controller in your Kubernetes dashboard and scale it to your desired number of pods to create your desired SQL application workload. Once the YCSB application is running the resulting SQL workload will be viewable from the NuoDB Insights visual monitoring WebUI.
 
 ## NuoDB Features and Benefits Evaluation Steps
 
@@ -515,7 +515,7 @@ kubectl delete -n $OPERATOR_NAMESPACE configmap nuodb-lic-configmap
 kubectl delete pod/insights-client
 kubectl delete -f nuodb-cr.yaml
 kubectl delete -f nuodb-insights-cr.yaml
-kubectl delete -f nuodb-ycsb-cr.yaml
+kubectl delete -f nuodb-ycsbwl-cr.yaml
 
 # Delete the NuoDB persistent storage volumes claims
 kubectl delete -n $OPERATOR_NAMESPACE pvc --all 
