@@ -39,6 +39,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"net"
 	"net/http"
+	"nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
 	"nuodb/nuodb-operator/pkg/trace"
 	"os"
 	"path"
@@ -853,6 +854,9 @@ func CreateStatefulSetFromTemplate(owner runtime.Object, thisClient client.Clien
 		return statefulSet, err
 	}
 	statefulSet.Namespace = namespace
+	if statefulSet.Name == "sm" {
+		statefulSet.Name = owner.(*v2alpha1.Nuodb).Name + "-sm"
+	}
 	err = CreateStatefulSetV1(owner, thisClient, thisScheme, statefulSet)
 	if err != nil {
 		return statefulSet, trace.Wrap(err)
@@ -951,6 +955,9 @@ func CreateDeploymentFromTemplate(owner runtime.Object, thisClient client.Client
 		return deployment, err
 	}
 	deployment.Namespace = namespace
+	if deployment.Name == "te" {
+		deployment.Name = owner.(*v2alpha1.Nuodb).Name + "-te"
+	}
 	err = CreateDeployment(owner, thisClient, thisScheme, deployment)
 	if err != nil {
 		return deployment, trace.Wrap(err)

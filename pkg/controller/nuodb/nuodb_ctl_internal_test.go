@@ -90,15 +90,27 @@ func init() {
 	},
 	}
 
+	nl := [1] nuodbv2alpha1.Nuodb {*nuodb}
+	nuodbList := &nuodbv2alpha1.NuodbList{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "nuodbs.nuodb.com/v2alpha1",
+			Kind:       "NuodbList",
+		},
+		ListMeta: metav1.ListMeta{},
+		Items:    nl[1:1],
+	}
+
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		nuodb,
+		nuodbList,
 	}
 
 	// Register operator types with the runtime scheme.
 	s = scheme.Scheme
 
 	s.AddKnownTypes(nuodbv2alpha1.SchemeGroupVersion, nuodb)
+	s.AddKnownTypes(nuodbv2alpha1.SchemeGroupVersion, nuodbList)
 	// Create a fake client to mock API calls.
 	cl = fake.NewFakeClient(objs...)
 
@@ -261,7 +273,7 @@ status:
 
 func Test_getDeployment(t *testing.T)  {
 	var deployment *appsv1.Deployment = nil
-	deployment, err := utils.GetDeployment(cl, namespace, "te")
+	deployment, err := utils.GetDeployment(cl, namespace, "nuodb-operator-te")
 	if err != nil {
 		t.Fatalf("Get Deployment error : (%v)", err)
 	}

@@ -16,6 +16,7 @@ if [ "$1" == "clean" ]; then
   kubectl delete nuodbycsbwls/nuodbycsbwl-test1
   kubectl delete nuodbinsightsservers/insightsserver
   kubectl delete nuodbs/nuodb-test1
+  kubectl delete nuodbs/nuodb-test2
   kubectl delete deployment/nuodb-operator
   kubectl delete crds/nuodbinsightsservers.nuodb.com
   kubectl delete crds/nuodbs.nuodb.com
@@ -84,7 +85,7 @@ if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 
 echo ""
 echo "Cloning the nuodb-operator GitHub repo..."
-git clone https://github.com/nuodb/nuodb-operator.git
+git clone --branch master https://github.com/nuodb/nuodb-operator.git
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 
@@ -153,17 +154,26 @@ fi
 
 echo ""
 echo "Deploy the NuoDB Operator..."
-sed 's/REPLACE_IMAGE/quay.io\/nuodb\/nuodb-operator:latest/' nuodb-operator/deploy/operator.yaml > nuodb-operator/deploy/operator-test.yaml
+#sed 's/REPLACE_IMAGE/quay.io\/nuodb\/nuodb-operator:latest/' nuodb-operator/deploy/operator.yaml > nuodb-operator/deploy/operator-test.yaml
+sed 's/REPLACE_IMAGE/quay.io\/nuodb\/nuodb-golang-operator-dev:latest/' nuodb-operator/deploy/operator.yaml > nuodb-operator/deploy/operator-test.yaml
 kubectl create -f nuodb-operator/deploy/operator-test.yaml
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 
 echo ""
 date
-echo "Create NuoDB CR..."
+echo "Create NuoDB test1 CR..."
 kubectl create -f nuodb-operator/test/deploy/crs/nuodb_v2alpha1_nuodb_test1_cr.yaml
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
+echo ""
+date
+echo "Create NuoDB test2 CR..."
+kubectl create -f nuodb-operator/test/deploy/crs/nuodb_v2alpha1_nuodb_test2_cr.yaml
+retval=$?
+if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
 
 echo ""
 echo "Create NuoDB Insights Server CR..."
@@ -172,8 +182,8 @@ retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 
 echo ""
-echo -n "Checking SM statefulset..."
-while [[ $(kubectl get pods -l app=sm -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]
+echo -n "Checking SM statefulsets..."
+while [[ $(kubectl get pods -l app=sm -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True True" ]]
 do
   ((i++))
   if [[ "$i" == '36' ]]; then
@@ -185,13 +195,25 @@ do
   echo -n '.'
 done
 echo ""
-kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=60s -l statefulset.kubernetes.io/pod-name=sm-0
+echo -n "Checking nuodb-test1 SM statefulset..."
+kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=60s -l statefulset.kubernetes.io/pod-name=nuodb-test1-sm-0
+retval=$?
+if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+echo ""
+echo -n "Checking nuodb-test2 SM statefulset..."
+kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=60s -l statefulset.kubernetes.io/pod-name=nuodb-test2-sm-0
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 
 echo ""
-echo "Checking TE deployment..."
-kubectl rollout status deployment te 
+echo "Checking nuodb-test1 TE deployment..."
+kubectl rollout status deployment nuodb-test1-te
+retval=$?
+if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
+echo ""
+echo "Checking nuodb-test2 TE deployment..."
+kubectl rollout status deployment nuodb-test2-te
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 

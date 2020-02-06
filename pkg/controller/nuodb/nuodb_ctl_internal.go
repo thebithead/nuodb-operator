@@ -11,6 +11,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/engine"
@@ -287,7 +288,11 @@ func reconcileNuodbReplicationController(thisClient client.Client, thisScheme *r
 func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
 	nuoResource NuoResource, namespace string) (*appsv1.Deployment, reconcile.Result, error) {
 	var deployment *appsv1.Deployment = nil
-	deployment, err := utils.GetDeployment(thisClient, namespace, nuoResource.name)
+	var teName = nuoResource.name
+	if nuoResource.name == "te" {
+		teName = request.Name + "-te"
+	}
+	deployment, err := utils.GetDeployment(thisClient, namespace, teName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			deployment, err = createNuodbDeployment(thisClient, thisScheme, request, instance, nuoResource)
@@ -320,7 +325,36 @@ func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Sche
 func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
 	nuoResource NuoResource, namespace string) (*appsv1.StatefulSet, reconcile.Result, error) {
 	var statefulSet *appsv1.StatefulSet = nil
-	statefulSet, err := utils.GetStatefulSetV1(thisClient, namespace, nuoResource.name)
+	var stsName = nuoResource.name
+	var  desiredAdminPodCount int32 = instance.Spec.AdminCount
+	if nuoResource.name == "sm" {
+		stsName = request.Name + "-sm"
+	}
+
+	list := &nuodbv2alpha1.NuodbList{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "nuodbs.nuodb.com/v2alpha1",
+			Kind:       "Nuodb",
+		},
+	}
+	listOpts := client.ListOptions{
+		Namespace:     request.Namespace,
+	}
+
+	err := thisClient.List(context.TODO(), &listOpts, list)
+	if err != nil {
+		panic(err)
+	}
+	for _, nuodbCR := range list.Items {
+		if nuodbCR.Spec.AdminCount > desiredAdminPodCount {
+			desiredAdminPodCount = nuodbCR.Spec.AdminCount
+		}
+	}
+	if desiredAdminPodCount%2 == 0 {
+		desiredAdminPodCount++
+	}
+
+	statefulSet, err = utils.GetStatefulSetV1(thisClient, namespace, stsName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			statefulSet, err = createNuodbStatefulSet(thisClient, thisScheme, request, instance, nuoResource)
@@ -337,8 +371,8 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 				log.Error(err, "Error: Unable to update Admin ready count.")
 				return statefulSet, reconcile.Result{}, trace.Wrap(err)
 			}
-			if *statefulSet.Spec.Replicas != instance.Spec.AdminCount {
-				*statefulSet.Spec.Replicas = instance.Spec.AdminCount
+			if *statefulSet.Spec.Replicas != desiredAdminPodCount {
+				*statefulSet.Spec.Replicas = desiredAdminPodCount
 				err = thisClient.Update(context.TODO(), statefulSet)
 				if err != nil {
 					log.Error(err, "Error: Unable to update AdminCount in Admin StatefulSet.")
@@ -604,6 +638,7 @@ func reconcileNuodbInternal(r *ReconcileNuodb, request reconcile.Request) (recon
 	currentTime := time.Now()
 	log.Info("Starting Reconcile request: " + currentTime.String())
 	var rr reconcile.Result
+
 
 	for item := range processOrder {
 		for _, nuoResource := range nuoResources.nuoResourceList {
