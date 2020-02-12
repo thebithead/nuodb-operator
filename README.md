@@ -93,7 +93,7 @@ In your home or working directory, run:
 
 ### 5. Optionally Use Cluster Node Local Storage
 
-NuoDB supports cloud platform storage (e.g. AWS EBS), 3rd-party CSI storage (e.g. Portworx, OpenEBS, Linbit, etc.), and the use of local storage via Hostpath. The Amazon EBS storageclass (gp2) is the default storage class for both the NuoDB Admin and the Storage Manager (SM) pods in `nuodb-cr.yaml` custom resource file.
+NuoDB supports cloud platform storage (e.g. AWS EBS, GCP PD, Azure Disk, etc), 3rd-party CSI storage (e.g. Portworx, OpenEBS, Linbit, etc.), and the use of local storage via Hostpath. If planning to use any of these storage types, configure them prior to deploying your database. 
 
 #### To Setup local storage (using HOSTPATH): 
 Configure the local storage permissions on each cluster node to enable hosting storage for either the NuoDB Admin or the Storage Manager (SM) pods.
@@ -189,31 +189,17 @@ oc adm policy add-scc-to-user privileged system:serviceaccount:$OPERATOR_NAMESPA
 
 ![](https://www.nuodb.com/sites/default/files/nuodb-insights.png)
 
-Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
-
-> Insights is also part of NuoDB Services and Support in order to service our customers better and more efficiently and is
-      subject to our Terms of Use and Privacy Policy.
-      [Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy)
-      Insights collects anonymized data about your NuoDB implementation, and use,
-      including system information, configuration, response times, load averages,
-      usage statistics, and user activity logs ("Usage Information").  Usage
-      Information does not include any personally identifiable information ("PII"),
-      but may include some aggregated and anonymized information derived from data
-      that may be considered PII in some contexts (e.g., user locations or IP
-      addresses).
-      NuoDB uses Usage Information to monitor, analyze and improve the performance
-      and reliability of our Services, and to contribute to analytical models used by
-      NuoDB.  Usage Information is not shared with any third parties.  Insights also
-      includes a user dashboard that allows administrators to view the performance of
-      your NuoDB implementation.
-      If you agree to these terms, following the below instructions to enable NuoDB Insights.
-      Insights can also be enabled at a later time if you choose.
+Optionally deploy the NuoDB Insights visual monitoring tool **(recommended)**. NuoDB Insights is a powerful database monitoring tool that can greatly aid in visualizing database workload and resource consumption. For more information about the benefits of Insights, and data privacy when using `HOSTED`, please refer to the [NuoDB Insights](https://www.nuodb.com/product/insights) Webpage.
 
 Before deploying  NuoDB, to enable NuoDB Insights you will need to choose one of the available deployment methods: 
 1. LOCAL: Deploy Insights locally on your Kubernetes cluster. With this option, all performance data is privately stored and managed locally on your cluster by starting local elasticsearch, logstash, kibana, and grafana components that are utilized by the Insights on-cluster monitoring solution. To enable this option: 
-   * the `nuodbinsightsserver_crd.yaml` during Operator deployment and `nuodbinsightsserver_cr.yaml` during database deployment.
-2. HOSTED in AWS: Stream your Insights performance data to the NuoDB hosted Insights data portal on the Amazon AWS public clould. To access your secure performance data using this option, you will use a private Subscriber ID provided once the Insights collection agent starts. To enable this option: 
-   * Set "insightsEnabled: true" in your nuodb-cr.yaml file.
+   * Apply the `nuodbinsightsserver_crd.yaml` during Operator deployment and `nuodbinsightsserver_cr.yaml` during database deployment.
+   
+2. HOSTED in AWS: This option streams your NuoDB Insights performance data to the NuoDB hosted Insights data portal on the Amazon AWS public cloud. To access your secure performance data using this option, you will use a private Subscriber ID that will be provided to you once the Insights collection agent starts. 
+**Note:** Before selecting this option, you must agree to our NuoDB Terms of Use and Data Privacy Policy located here:
+[Terms of Use](https://www.nuodb.com/terms-use) and [Privacy Policy](https://www.nuodb.com/privacy-policy). If you agree to these terms, following the below instructions to enable HOSTED NuoDB Insights. This option can also be enabled at a later time if you choose.
+ To enable this option: 
+   * Set `insightsEnabled` paramater to `true` in your `nuodb-cr.yaml` file. By setting this option, this is your acknowledgement and acceptance of the NuoDB terms of use and data Privacy policy. 
 
 ## Install the NuoDB Operator
 
@@ -328,13 +314,19 @@ done
 
 ## Deploy the NuoDB Database
 
-### Sample nuodb-cr.yaml deployment file
+### Sample Database deployment files
 
-The nuodb-operator/deploy/crds directory includes sample Custom Resources yaml files that can be used to deploy a NuoDB database. For example, 
+The nuodb-operator/deploy/crds directory includes sample Custom Resources yaml files that can be used to deploy a NuoDB database with on-cluster (locally deployed) NuoDB Insights, and a ycsb sample workload. 
 
 `nuodb_v2alpha1_nuodb_cr.yaml`
+`nuodb_v2alpha1_nuodbinsightsserver_cr.yaml`
+`nuodb_v2alpha1_nuodbycsbwl_cr.yaml`
 
-Optionally, you can add any of these below parameters values to your own `nuodb-cr.yaml` file to customize your database configuration. Each are described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample `nuodb-ycsbwl-cr.yaml` and nuodb-insights-cr.yaml files are also provided. Below is a sample `nuodb-cr.yaml` file that starts a database named *test* that uses persistent storage, disables *hosted* Insights monitoring, starts three NuoDB Admin pods, along with various others configurations like controling the number desired pods, CPU, and memory used per NuoDB process type.
+Optionally, you can add any of the below parameters values to your own customer resource files to customize your deployment. Each parameter is described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample deployment files are provided below. 
+
+#### nuodb_v2alpha1_nuodb_cr.yaml
+
+This sample file starts a database named *test*,  uses persistent storage, disables *hosted* Insights monitoring, starts three NuoDB Admin pods, and includes various others configurations like controlling the number desired pods, CPU, and memory used per NuoDB process type.
 ```
 spec:
   replicaCount: 1
@@ -358,23 +350,35 @@ spec:
   container: nuodb/nuodb-ce:latest
 ```
 
-We recommend replacing the database password `dbPassword` value 'secret' with one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type. See section &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) for working samples.
+We recommend replacing the database password `dbPassword` value 'secret' with one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type.
 
-For parameters `adminStorageClass` and `smStorageClass` enter the Kubernetes storage class value you wish to use. For example, 
+#### nuodb_v2alpha1_nuodbinsightsserver_cr.yaml
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using the AWS public cloud, use `gp2`
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using the GCP public cloud, use `standard`
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using the AZURE public cloud, use `standard_lrs` or `premium_lrs`
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using hostpath local storage, use `local-disk`
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if using a 3rd-party CSI storage provider, enter the appropriate storage class value for that storage product.
-
-### Sample SQL application using the nuodb-ycsbwl-cr.yaml deployment file
 ```
-ycsbLoadName: ycsb-load
+spec:
+  elasticVersion: 7.3.0
+  elasticNodeCount: 1
+  kibanaVersion: 7.3.0
+  kibanaNodeCount: 1
+  storageClass: <ENTER VALUE>
+```
+**Note:**  For parameters `adminStorageClass`, `smStorageClass`, and `storageClass` enter the Kubernetes storage class value you wish to use. For example, 
+
+| Public Cloud | Kubernetes Storage Class    |
+|--------------|-----------------------------|
+| AWS          | gp2                         |
+| GCP          | standard                    |
+| AZURE        | standard_lrs or premium_lrs |
+
+| User Config'd  | Kubernetes Storage Class   |
+|----------------|----------------------------|
+| Local Hostpath | local-disk                 |
+| 3rd Party      | vendor specific value      |
+
+#### nuodb_v2alpha1_nuodbycsbwl_cr.yaml
+```
+spec:
+  ycsbLoadName: ycsb-load
   ycsbWorkload: b
   ycsbLbPolicy: ""
   ycsbNoOfProcesses: 5
