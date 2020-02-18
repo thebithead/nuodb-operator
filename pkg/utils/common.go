@@ -39,7 +39,6 @@ import (
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"net"
 	"net/http"
-	"nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
 	"nuodb/nuodb-operator/pkg/trace"
 	"os"
 	"path"
@@ -55,7 +54,7 @@ import (
 )
 
 const (
-	NuodbOperatorVersion = "v2.0.3"
+	NuodbOperatorVersion = "v2.1.0"
 	// Default path to the Operator "etc" directory when
 	// running the Operator "inside" of a K8s cluster.
 	DefaultOperatorEtcDir = "/usr/local/etc/nuodb-operator"
@@ -72,6 +71,7 @@ const (
 	KibanaYamlFileRelPath = "insights-server/kibana.yaml"
 	LogstashChartRelPath = "charts/insights-server/logstash"
 	NuodbChartRelPath = "charts/nuodb-helm"
+	NuodbAdminChartRelPath = "charts/nuodbadmin-helm"
 	NuodbYcsbChartRelPath = "charts/nuodb-ycsbwl"
 
 	// paths relative to GrafanaOperatorRelPath
@@ -144,7 +144,58 @@ var GrafanaDashboardSqlJson = path.Join(GrafanaConfigDir, GrafanaDashboardSqlJso
 var KibanaYamlFile = path.Join(OperatorEtcDir, KibanaYamlFileRelPath)
 var LogstashChartDir = path.Join(OperatorEtcDir, LogstashChartRelPath)
 var NuodbChartDir = path.Join(OperatorEtcDir, NuodbChartRelPath)
+var NuodbAdminChartDir = path.Join(OperatorEtcDir, NuodbAdminChartRelPath)
 var NuodbYcsbChartDir = path.Join(OperatorEtcDir, NuodbYcsbChartRelPath)
+
+// ######################################################
+// Start of Nuodb Health & Status section
+// ######################################################
+// NuodbHealth is the health of the NuoDB Domain as returned by the health API.
+type NuodbHealth string
+
+// Possible "traffic light" states NuoDB health can have.
+const (
+	NuodbUnknownHealth   NuodbHealth = "Unknown"
+	NuodbRedHealth       NuodbHealth = "Red"
+	NuodbYellowHealth    NuodbHealth = "Yellow"
+	NuodbGreenHealth     NuodbHealth = "Green"
+)
+
+var nuodbHealthOrder = map[NuodbHealth]int{
+	NuodbUnknownHealth:  0,
+	NuodbRedHealth:      1,
+	NuodbYellowHealth:   2,
+	NuodbGreenHealth:    3,
+}
+
+// Less for NuodbHealth means green > yellow > red > unknown
+func (h NuodbHealth) Less(other NuodbHealth) bool {
+	l := nuodbHealthOrder[h]
+	r := nuodbHealthOrder[other]
+	// 0 is not found/unknown and less is not defined for that
+	return l != 0 && r != 0 && l < r
+}
+
+// NuodbOrchestrationPhase is the phase NuoDB Domain is in from the controller point of view.
+type NuodbOrchestrationPhase string
+
+// NuoDB OrchestrationPhases
+//noinspection GoUnusedConst
+const (
+	// NuodbOperationalPhase is operating at the desired spec.
+	NuodbOperationalPhase NuodbOrchestrationPhase = "Operational"
+	// NuodbPendingPhase controller is working towards a desired state, NuoDB Domain may be unavailable.
+	NuodbPendingPhase NuodbOrchestrationPhase = "Pending"
+	// NuodbMigratingDataPhase Elasticsearch is currently migrating data to another node.
+	NuodbMigratingDataPhase NuodbOrchestrationPhase = "MigratingData"
+	// NuodbResourceInvalid is marking a resource as invalid
+	NuodbResourceInvalid NuodbOrchestrationPhase = "Invalid"
+)
+
+// ######################################################
+// End of Nuodb Health & Status section
+// ######################################################
+
 
 // Depending on where the Operator is executed, the location of the "build/etc" directory
 // could be different.  When running the operator "outside" of the K8s Cluster, the
@@ -401,18 +452,31 @@ func GetESClusterIP(namespace string) (string, error) {
 func InstallOpenShiftTypes(mgr manager.Manager) error {
 	s := mgr.GetScheme()
 	var err error=nil
-	if err = routev1.AddToScheme(s); err != nil {
-		log.Error(err, "Cannot add route/v1 resource")
-		return err
+
+	routev1_gvk := schema.GroupVersionKind{
+		Group:  routev1.SchemeGroupVersion.Group,
+		Version: routev1.SchemeGroupVersion.Version,
+		Kind:    "Route",
 	}
-	if err = ocpappsv1.AddToScheme(s); err != nil {
-		log.Error(err, "Cannot add Openshift apps/v1 resource")
-		return err
+	if !s.Recognizes(routev1_gvk) {
+		if err = routev1.AddToScheme(s); err != nil {
+			log.Error(err, "Cannot add route/v1 resource")
+			return err
+		}
 	}
-	if err = apiextensionsv1beta1.AddToScheme(s); err != nil {
-		log.Error(err, "Cannot add apiextensionsv1beta1 resource")
-		return err
+
+	ocpappsv1_gvk := schema.GroupVersionKind{
+		Group:  ocpappsv1.SchemeGroupVersion.Group,
+		Version: ocpappsv1.SchemeGroupVersion.Version,
+		Kind:    "DeploymentConfig",
 	}
+	if !s.Recognizes(ocpappsv1_gvk) {
+		if err = ocpappsv1.AddToScheme(s); err != nil {
+			log.Error(err, "Cannot add Openshift apps/v1 resource")
+			return err
+		}
+	}
+
 	return err
 }
 
@@ -420,18 +484,43 @@ func InstallOpenShiftTypes(mgr manager.Manager) error {
 func InstallAdditionalTypes(mgr manager.Manager) error {
 	s := mgr.GetScheme()
 	var err error=nil
-	if err = apiextensionsv1beta1.AddToScheme(s); err != nil {
-		log.Error(err, "Cannot add apiextensionsv1beta1 resource")
-		return err
+
+	apiextensionsv1beta1_gvk := schema.GroupVersionKind{
+		Group:   apiextensionsv1beta1.SchemeGroupVersion.Group,
+		Version: apiextensionsv1beta1.SchemeGroupVersion.Version,
+		Kind:    "CustomResourceDefinition",
 	}
-	if err = policy.AddToScheme(s); err != nil {
-		log.Error(err, "Cannot add policy resource")
-		return err
+	if !s.Recognizes(apiextensionsv1beta1_gvk) {
+		if err = apiextensionsv1beta1.AddToScheme(s); err != nil {
+			log.Error(err, "Cannot add apiextensionsv1beta1 resource")
+			return err
+		}
 	}
-	if err = grafanav1alpha1.AddToScheme(s); err != nil {
-		log.Error(err, "Cannot add integreatly/v1alpha1 resource")
-		return err
+
+	policy_gvk := schema.GroupVersionKind{
+		Group:   policy.SchemeGroupVersion.Group,
+		Version: policy.SchemeGroupVersion.Version,
+		Kind:    "PodDisruptionBudget",
 	}
+	if !s.Recognizes(policy_gvk) {
+		if err = policy.AddToScheme(s); err != nil {
+			log.Error(err, "Cannot add policy resource")
+			return err
+		}
+	}
+
+	grafanav1alpha1_gvk := schema.GroupVersionKind{
+		Group:   grafanav1alpha1.SchemeGroupVersion.Group,
+		Version: grafanav1alpha1.SchemeGroupVersion.Version,
+		Kind:    grafanav1alpha1.GrafanaDataSourceKind,
+	}
+	if !s.Recognizes(grafanav1alpha1_gvk) {
+		if err = grafanav1alpha1.AddToScheme(s); err != nil {
+			log.Error(err, "Cannot add integreatly/v1alpha1 resource")
+			return err
+		}
+	}
+
 	err = InstallOpenShiftTypes(mgr)
 	return err
 }
@@ -623,8 +712,6 @@ func GetNamespace(name string) (*corev1.Namespace, error) {
 	retNamespace, err = namespaceInterface.Get(name, metav1.GetOptions{})
 	return retNamespace, err
 }
-
-
 
 func CreateSecret(owner runtime.Object, thisClient client.Client, thisScheme *runtime.Scheme, secret *corev1.Secret) error {
 	log.Info("Create", "Secret", secret.Name)
@@ -847,16 +934,14 @@ func DecodeStatefulSetTemplate(template string) (*appsv1.StatefulSet, error) {
 }
 
 func CreateStatefulSetFromTemplate(owner runtime.Object, thisClient client.Client, thisScheme *runtime.Scheme,
-	template string, namespace string) (*appsv1.StatefulSet, error) {
+	template string, namespace string, name string) (*appsv1.StatefulSet, error) {
 	var statefulSet *appsv1.StatefulSet = nil
 	statefulSet, err := DecodeStatefulSetTemplate(template)
 	if err != nil {
 		return statefulSet, err
 	}
 	statefulSet.Namespace = namespace
-	if statefulSet.Name == "sm" {
-		statefulSet.Name = owner.(*v2alpha1.Nuodb).Name + "-sm"
-	}
+	statefulSet.Name = name
 	err = CreateStatefulSetV1(owner, thisClient, thisScheme, statefulSet)
 	if err != nil {
 		return statefulSet, trace.Wrap(err)
@@ -948,16 +1033,14 @@ func DecodeDeploymentTemplate(template string) (*appsv1.Deployment, error) {
 }
 
 func CreateDeploymentFromTemplate(owner runtime.Object, thisClient client.Client, thisScheme *runtime.Scheme,
-	template string, namespace string) (*appsv1.Deployment, error) {
+	template string, namespace string, name string) (*appsv1.Deployment, error) {
 	var deployment *appsv1.Deployment = nil
 	deployment, err := DecodeDeploymentTemplate(template)
 	if err != nil {
 		return deployment, err
 	}
 	deployment.Namespace = namespace
-	if deployment.Name == "te" {
-		deployment.Name = owner.(*v2alpha1.Nuodb).Name + "-te"
-	}
+	deployment.Name = name
 	err = CreateDeployment(owner, thisClient, thisScheme, deployment)
 	if err != nil {
 		return deployment, trace.Wrap(err)

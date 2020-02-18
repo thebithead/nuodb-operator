@@ -21,6 +21,7 @@ if [ "$1" == "clean" ]; then
   kubectl delete crds/nuodbinsightsservers.nuodb.com
   kubectl delete crds/nuodbs.nuodb.com
   kubectl delete crds/nuodbycsbwls.nuodb.com
+  kubectl delete crds/nuodbadmins.nuodb.com
   kubectl delete crds/grafanadashboards.integreatly.org
   kubectl delete crds/grafanadatasources.integreatly.org
   kubectl delete crds/grafanas.integreatly.org
@@ -120,6 +121,12 @@ retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 
 echo ""
+echo "Creating nuodbadmin CRD..."
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbadmin_crd.yaml
+retval=$?
+if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
+echo ""
 echo "Creating nuodb CRD..."
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_crd.yaml
 retval=$?
@@ -157,6 +164,32 @@ echo "Deploy the NuoDB Operator..."
 #sed 's/REPLACE_IMAGE/quay.io\/nuodb\/nuodb-operator:latest/' nuodb-operator/deploy/operator.yaml > nuodb-operator/deploy/operator-test.yaml
 sed 's/REPLACE_IMAGE/quay.io\/nuodb\/nuodb-golang-operator-dev:latest/' nuodb-operator/deploy/operator.yaml > nuodb-operator/deploy/operator-test.yaml
 kubectl create -f nuodb-operator/deploy/operator-test.yaml
+retval=$?
+if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
+echo ""
+date
+echo "Create NuoDB Admin CR..."
+kubectl create -f nuodb-operator/test/deploy/crs/nuodb_v2alpha1_nuodbadmin_test_cr.yaml
+retval=$?
+if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
+echo ""
+echo -n "Checking Admin statefulsets..."
+while [[ $(kubectl get pods -l app=admin -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]
+do
+  ((i++))
+  if [[ "$i" == '36' ]]; then
+    echo "ERROR: Timeout waiting for Admin StatefulSet."
+    echo "$0: FAIL"
+    exit 1
+  fi
+  sleep 5
+  echo -n '.'
+done
+echo ""
+echo -n "Checking nuoadmin statefulset..."
+kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=60s -l statefulset.kubernetes.io/pod-name=admin-0
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 

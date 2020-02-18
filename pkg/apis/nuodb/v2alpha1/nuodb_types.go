@@ -2,6 +2,7 @@ package v2alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"nuodb/nuodb-operator/pkg/utils"
 )
 
 // NuodbSpec defines the desired state of Nuodb
@@ -10,28 +11,6 @@ type NuodbSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-
-	// adminCount
-	// Number of admin service pods. Requires 1 server available for each
-	// Admin Service
-	// example: adminCount: 1
-	AdminCount int32 `json:"adminCount"`
-
-	// adminStorageClass
-	// Admin persistent storage class name
-	// example: adminStorageClass: glusterfs-storage
-	AdminStorageClass string `json:"adminStorageClass"`
-
-	// adminStorageSize
-	// Admin service log volume size (GB)
-	// example: adminStorageSize: 5G
-	AdminStorageSize string `json:"adminStorageSize"`
-
-	// apiServer
-	// Load balancer service URL.  hostname:port (or LB address) for
-	// nuoadmin process to connect to.
-	// Example: apiServer: https://domain:8888
-	ApiServer string `json:"apiServer"`
 
 	// container
 	// NuoDB fully qualified image name (FQIN) for the Docker image to use
@@ -82,12 +61,6 @@ type NuodbSpec struct {
 	// Example: engineOptions: ""
 	EngineOptions string `json:"engineOptions"`
 
-	// insightsEnabled
-	// Use to control Insights Opt In.  Insights provides database
-	// monitoring.  Set to "true" to activate or "false" to deactivate
-	// example: insightsEnabled: false
-	InsightsEnabled bool `json:"insightsEnabled"`
-
 	// smCount
 	// Number of SM service pods. Requires 1 SM available for each
 	// NuoDB Database
@@ -110,8 +83,8 @@ type NuodbSpec struct {
 	SmStorageClass string `json:"smStorageClass"`
 
 	// smStorageSize
-	// Storage manager (SM) volume size (GB)
-	// Example: smStorageSize: 20G
+	// Storage manager (SM) volume size
+	// Example: smStorageSize: 20Gi
 	SmStorageSize string `json:"smStorageSize"`
 
 	// storageMode
@@ -137,74 +110,30 @@ type NuodbSpec struct {
 	TeMemory string `json:"teMemory"`
 }
 
-// NuodbHealth is the health of the NuoDB Domain as returned by the health API.
-type NuodbHealth string
-
-// Possible "traffic light" states NuoDB health can have.
-const (
-	NuodbUnknownHealth   NuodbHealth = "Unknown"
-	NuodbRedHealth       NuodbHealth = "Red"
-	NuodbYellowHealth    NuodbHealth = "Yellow"
-	NuodbGreenHealth     NuodbHealth = "Green"
-)
-
-var nuodbHealthOrder = map[NuodbHealth]int{
-	NuodbUnknownHealth:  0,
-	NuodbRedHealth:      1,
-	NuodbYellowHealth:   2,
-	NuodbGreenHealth:    3,
-}
-
-// Less for NuodbHealth means green > yellow > red > unknown
-func (h NuodbHealth) Less(other NuodbHealth) bool {
-	l := nuodbHealthOrder[h]
-	r := nuodbHealthOrder[other]
-	// 0 is not found/unknown and less is not defined for that
-	return l != 0 && r != 0 && l < r
-}
-
-// NuodbOrchestrationPhase is the phase NuoDB Domain is in from the controller point of view.
-type NuodbOrchestrationPhase string
-
-// NuoDB OrchestrationPhases
-//noinspection GoUnusedConst
-const (
-	// NuodbOperationalPhase is operating at the desired spec.
-	NuodbOperationalPhase NuodbOrchestrationPhase = "Operational"
-	// NuodbPendingPhase controller is working towards a desired state, NuoDB Domain may be unavailable.
-	NuodbPendingPhase NuodbOrchestrationPhase = "Pending"
-	// NuodbMigratingDataPhase Elasticsearch is currently migrating data to another node.
-	NuodbMigratingDataPhase NuodbOrchestrationPhase = "MigratingData"
-	// NuodbResourceInvalid is marking a resource as invalid
-	NuodbResourceInvalid NuodbOrchestrationPhase = "Invalid"
-)
 
 // IsDegraded returns true if the current status is worse than the previous.
 //noinspection ALL,GoReceiverNames
 func (nuodbStatus NuodbStatus) IsDegraded(prev NuodbStatus) bool {
-	return nuodbStatus.DomainHealth.Less(prev.DomainHealth)
+	return nuodbStatus.DatabaseHealth.Less(prev.DatabaseHealth)
 }
+
 
 // NuodbStatus defines the observed state of Nuodb
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 type NuodbStatus struct {
-	// Admin Node Ready Count
-	AdminReadyCount int32 `json:"adminReadyCount,omitempty"`
 	// SM Node Ready Count
 	SmReadyCount int32 `json:"smReadyCount,omitempty"`
 	// TE Node Ready Count
 	TeReadyCount int32 `json:"teReadyCount,omitempty"`
-	// AdminHealth of the NuoDB Domain
-	AdminHealth NuodbHealth `json:"adminHealth,omitempty"`
-	// SM Health of the NuoDB Domain
-	SmHealth NuodbHealth `json:"smHealth,omitempty"`
-	// TE Health of the NuoDB Domain
-	TeHealth NuodbHealth `json:"teHealth,omitempty"`
-	// DomainHealth of the NuoDB Domain
-	DomainHealth NuodbHealth `json:"domainHealth,omitempty"`
-	// Orchestration phase of the NuoDB Domain
-	Phase           NuodbOrchestrationPhase `json:"phase,omitempty"`
+	// AdminHealth of the NuoDB Database
+	SmHealth utils.NuodbHealth `json:"smHealth,omitempty"`
+	// TE Health of the NuoDB Database
+	TeHealth utils.NuodbHealth `json:"teHealth,omitempty"`
+	// Health of the NuoDB Database
+	DatabaseHealth utils.NuodbHealth `json:"databaseHealth,omitempty"`
+	// Orchestration phase of the NuoDB Database
+	Phase           utils.NuodbOrchestrationPhase `json:"phase,omitempty"`
 	// ControllerVersion is the version of the controller that last updated the NuoDB Domain
 	ControllerVersion string `json:"controllerVersion,omitempty"`
 }
@@ -215,10 +144,9 @@ type NuodbStatus struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:shortName=nuodb
 // +kubebuilder:categories=nuodb
-// +kubebuilder:printcolumn:name="Admin",type="string",JSONPath=".status.adminHealth"
 // +kubebuilder:printcolumn:name="SM",type="string",JSONPath=".status.smHealth"
 // +kubebuilder:printcolumn:name="TE",type="string",JSONPath=".status.teHealth"
-// +kubebuilder:printcolumn:name="Domain",type="string",JSONPath=".status.domainHealth"
+// +kubebuilder:printcolumn:name="Database",type="string",JSONPath=".status.databaseHealth"
 // +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase"
 // +kubebuilder:printcolumn:name="ControllerVersion",type="string",JSONPath=".status.controllerVersion"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"

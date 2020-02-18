@@ -1,3 +1,6 @@
+// This is the K8s Controller for K8s Kind nuodbycsbwl.
+// All of the reconcile functions have the name prefix: reconcileNuodbYcsbWl
+
 package nuodbycsbwl
 
 import (

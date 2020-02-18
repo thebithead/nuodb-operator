@@ -1,3 +1,6 @@
+// This is the K8s Controller for K8s Kind nuodb.
+// All of the reconcile functions have the name prefix: reconcileNuodb
+
 package nuodb
 
 import (
@@ -5,8 +8,6 @@ import (
 	"fmt"
 	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
-	ocpappsv1 "github.com/openshift/api/apps/v1"
-	v12 "github.com/openshift/api/route/v1"
 	"gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -163,12 +164,6 @@ func createNuodbConfigMap(thisClient client.Client, thisScheme *runtime.Scheme, 
 	return configMap, err
 }
 
-func createNuodbRoute(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
-	nuoResource NuoResource) (*v12.Route, error) {
-	route, err := utils.CreateRouteFromTemplate(instance, thisClient, thisScheme, nuoResource.template, request.Namespace)
-	return route, err
-}
-
 func createNuodbReplicationController(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
 	nuoResource NuoResource) (*corev1.ReplicationController, error) {
 	replicationController, err := utils.CreateReplicationControllerFromTemplate(instance, thisClient, thisScheme, nuoResource.template, request.Namespace)
@@ -177,20 +172,22 @@ func createNuodbReplicationController(thisClient client.Client, thisScheme *runt
 
 func createNuodbDeployment(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
 	nuoResource NuoResource) (*appsv1.Deployment, error) {
-	deployment, err := utils.CreateDeploymentFromTemplate(instance, thisClient, thisScheme, nuoResource.template, request.Namespace)
+	name := nuoResource.name
+	if name == "te" {
+		name = instance.Name + "-te"
+	}
+	deployment, err := utils.CreateDeploymentFromTemplate(instance, thisClient, thisScheme, nuoResource.template, request.Namespace, name)
 	return deployment, err
-}
-
-func createNuodbDeploymentConfig(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
-	nuoResource NuoResource) (*ocpappsv1.DeploymentConfig, error) {
-	deploymentConfig, err := utils.CreateDeploymentConfigFromTemplate(instance, thisClient, thisScheme, nuoResource.template, request.Namespace)
-	return deploymentConfig, err
 }
 
 func createNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
 	nuoResource NuoResource) (*appsv1.StatefulSet, error) {
+	name := nuoResource.name
+	if name == "sm" {
+		name = instance.Name + "-sm"
+	}
 	statefulSet, err := utils.CreateStatefulSetFromTemplate(instance, thisClient, thisScheme,
-		nuoResource.template, request.Namespace)
+		nuoResource.template, request.Namespace, name)
 	return statefulSet, err
 }
 
@@ -268,23 +265,6 @@ func reconcileNuodbConfigMap(thisClient client.Client, thisScheme *runtime.Schem
 	return configMap, reconcile.Result{}, err
 }
 
-func reconcileNuodbReplicationController(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
-	nuoResource NuoResource, namespace string) (*corev1.ReplicationController, reconcile.Result, error) {
-	var replicationController *corev1.ReplicationController = nil
-	replicationController, err := utils.GetReplicationController(thisClient, namespace, nuoResource.name)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			replicationController, err = createNuodbReplicationController(thisClient, thisScheme, request, instance, nuoResource)
-			if err != nil {
-				return replicationController, reconcile.Result{}, err
-			}
-		} else {
-			return replicationController, reconcile.Result{Requeue: true, RequeueAfter: utils.ReconcileRequeueAfterDefault}, err
-		}
-	}
-	return replicationController, reconcile.Result{}, err
-}
-
 func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.Nuodb,
 	nuoResource NuoResource, namespace string) (*appsv1.Deployment, reconcile.Result, error) {
 	var deployment *appsv1.Deployment = nil
@@ -326,7 +306,6 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 	nuoResource NuoResource, namespace string) (*appsv1.StatefulSet, reconcile.Result, error) {
 	var statefulSet *appsv1.StatefulSet = nil
 	var stsName = nuoResource.name
-	var  desiredAdminPodCount int32 = instance.Spec.AdminCount
 	if nuoResource.name == "sm" {
 		stsName = request.Name + "-sm"
 	}
@@ -345,15 +324,6 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 	if err != nil {
 		panic(err)
 	}
-	for _, nuodbCR := range list.Items {
-		if nuodbCR.Spec.AdminCount > desiredAdminPodCount {
-			desiredAdminPodCount = nuodbCR.Spec.AdminCount
-		}
-	}
-	if desiredAdminPodCount%2 == 0 {
-		desiredAdminPodCount++
-	}
-
 	statefulSet, err = utils.GetStatefulSetV1(thisClient, namespace, stsName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -365,21 +335,7 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 			return statefulSet, reconcile.Result{Requeue: true, RequeueAfter: utils.ReconcileRequeueAfterDefault}, err
 		}
 	} else {
-		if nuoResource.name == "admin" {
-			_, _, err = updateAdminReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
-			if err != nil {
-				log.Error(err, "Error: Unable to update Admin ready count.")
-				return statefulSet, reconcile.Result{}, trace.Wrap(err)
-			}
-			if *statefulSet.Spec.Replicas != desiredAdminPodCount {
-				*statefulSet.Spec.Replicas = desiredAdminPodCount
-				err = thisClient.Update(context.TODO(), statefulSet)
-				if err != nil {
-					log.Error(err, "Error: Unable to update AdminCount in Admin StatefulSet.")
-					return statefulSet, reconcile.Result{}, trace.Wrap(err)
-				}
-			}
-		} else if nuoResource.name == "sm" {
+		if nuoResource.name == "sm" {
 			_, _, err = updateSmReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
 			if err != nil {
 				log.Error(err, "Error: Unable to update SM ready count.")
@@ -460,47 +416,37 @@ func updateStatus(thisClient client.Client, request reconcile.Request, status nu
 		// Error reading the object - requeue the request.
 		return nil, false, err
 	}
-	// Update Admin Health
-	if status.AdminReadyCount >= currentInstance.Spec.AdminCount {
-		status.AdminHealth = nuodbv2alpha1.NuodbGreenHealth
-	} else if status.AdminReadyCount == 0 {
-		status.AdminHealth = nuodbv2alpha1.NuodbRedHealth
-	} else {
-		status.AdminHealth = nuodbv2alpha1.NuodbYellowHealth
-	}
 
 	// Update SM Health
 	if status.SmReadyCount >= currentInstance.Spec.SmCount {
-		status.SmHealth = nuodbv2alpha1.NuodbGreenHealth
+		status.SmHealth = utils.NuodbGreenHealth
 	} else if status.SmReadyCount == 0 {
-		status.SmHealth = nuodbv2alpha1.NuodbRedHealth
+		status.SmHealth = utils.NuodbRedHealth
 	} else {
-		status.SmHealth = nuodbv2alpha1.NuodbYellowHealth
+		status.SmHealth = utils.NuodbYellowHealth
 	}
 
 	// Update TE Health
 	if status.TeReadyCount >= currentInstance.Spec.TeCount {
-		status.TeHealth = nuodbv2alpha1.NuodbGreenHealth
+		status.TeHealth = utils.NuodbGreenHealth
 	} else if status.TeReadyCount == 0 {
-		status.TeHealth = nuodbv2alpha1.NuodbRedHealth
+		status.TeHealth = utils.NuodbRedHealth
 	} else {
-		status.TeHealth = nuodbv2alpha1.NuodbYellowHealth
+		status.TeHealth = utils.NuodbYellowHealth
 	}
 
-	// Derive Domain Health from Admin/SM/TE Health
-	if ((status.TeHealth == nuodbv2alpha1.NuodbGreenHealth) &&
-		(status.SmHealth == nuodbv2alpha1.NuodbGreenHealth) &&
-		(status.AdminHealth == nuodbv2alpha1.NuodbGreenHealth)) {
-		status.DomainHealth = nuodbv2alpha1.NuodbGreenHealth
-		status.Phase = 	nuodbv2alpha1.NuodbOperationalPhase
-	} else if ((status.TeHealth == nuodbv2alpha1.NuodbRedHealth) ||
-		(status.SmHealth == nuodbv2alpha1.NuodbRedHealth) ||
-		(status.AdminHealth == nuodbv2alpha1.NuodbRedHealth)) {
-		status.DomainHealth = nuodbv2alpha1.NuodbRedHealth
-		status.Phase = 	nuodbv2alpha1.NuodbPendingPhase
+	// Get Phase
+	if ((status.TeHealth == utils.NuodbGreenHealth) &&
+		(status.SmHealth == utils.NuodbGreenHealth)) {
+		status.DatabaseHealth = utils.NuodbGreenHealth
+		status.Phase = 	utils.NuodbOperationalPhase
+	} else if ((status.TeHealth == utils.NuodbRedHealth) ||
+		(status.SmHealth == utils.NuodbRedHealth)) {
+		status.DatabaseHealth = utils.NuodbRedHealth
+		status.Phase = 	utils.NuodbPendingPhase
 	} else {
-		status.DomainHealth = nuodbv2alpha1.NuodbYellowHealth
-		status.Phase = 	nuodbv2alpha1.NuodbOperationalPhase
+		status.DatabaseHealth = utils.NuodbYellowHealth
+		status.Phase = 	utils.NuodbOperationalPhase
 	}
 
 	if !reflect.DeepEqual(currentInstance.Status, status) {
@@ -512,29 +458,6 @@ func updateStatus(thisClient client.Client, request reconcile.Request, status nu
 		return currentInstance, true, err
 	}
 	return currentInstance, false, err
-}
-
-func updateAdminReadyCount(thisClient client.Client, request reconcile.Request,
-	adminReadyCount int32) (*nuodbv2alpha1.Nuodb, bool, error) {
-	// Fetch the Nuodb instance
-	currentInstance, err := getnuodbv2alpha1NuodbInstanceUsingClient(thisClient, request)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
-			return nil, false, nil
-		}
-		// Error reading the object - requeue the request.
-		return nil, false, err
-	}
-	if currentInstance.Status.AdminReadyCount == adminReadyCount {
-		return currentInstance, false, nil
-	}
-	newStatus := nuodbv2alpha1.NuodbStatus{}
-	currentInstance.Status.DeepCopyInto(&newStatus)
-	newStatus.AdminReadyCount = adminReadyCount
-	return updateStatus(thisClient, request, newStatus)
 }
 
 func updateSmReadyCount(thisClient client.Client, request reconcile.Request,
@@ -603,14 +526,12 @@ func reconcileNuodbInternal(r *ReconcileNuodb, request reconcile.Request) (recon
 
 	nuodbStatus := nuodbv2alpha1.NuodbStatus{
 		ControllerVersion: utils.NuodbOperatorVersion,
-		Phase:             nuodbv2alpha1.NuodbPendingPhase,
-		AdminReadyCount:   0,
+		Phase:             utils.NuodbPendingPhase,
 		SmReadyCount:      0,
 		TeReadyCount:      0,
-		AdminHealth:       nuodbv2alpha1.NuodbUnknownHealth,
-		SmHealth:          nuodbv2alpha1.NuodbUnknownHealth,
-		TeHealth:          nuodbv2alpha1.NuodbUnknownHealth,
-		DomainHealth:      nuodbv2alpha1.NuodbUnknownHealth,
+		SmHealth:          utils.NuodbUnknownHealth,
+		TeHealth:          utils.NuodbUnknownHealth,
+		DatabaseHealth:    utils.NuodbUnknownHealth,
 	}
 
 	if instance.Status.ControllerVersion == "" {
@@ -644,28 +565,8 @@ func reconcileNuodbInternal(r *ReconcileNuodb, request reconcile.Request) (recon
 		for _, nuoResource := range nuoResources.nuoResourceList {
 			if nuoResource.kind == processOrder[item] {
 				switch nuoResource.kind {
-				case "Pod":
-					_, rr, err := reconcileNuodbPod(r.client, r.scheme, request, instance, nuoResource, request.Namespace)
-					if err != nil || rr.Requeue  {
-						return rr, err
-					}
-				case "Service":
-					_, rr, err = reconcileNuodbService(r.client, r.scheme, request, instance, nuoResource, request.Namespace)
-					if err != nil || rr.Requeue {
-						return rr, err
-					}
 				case "Secret":
 					_, rr, err = reconcileNuodbSecret(r.client, r.scheme, request, instance, nuoResource, request.Namespace)
-					if err != nil || rr.Requeue {
-						return rr, err
-					}
-				case "ConfigMap":
-					_, rr, err = reconcileNuodbConfigMap(r.client, r.scheme, request, instance, nuoResource, request.Namespace)
-					if err != nil || rr.Requeue {
-						return rr, err
-					}
-				case "ReplicationController":
-					_, rr, err = reconcileNuodbReplicationController(r.client, r.scheme, request, instance, nuoResource, request.Namespace)
 					if err != nil || rr.Requeue {
 						return rr, err
 					}

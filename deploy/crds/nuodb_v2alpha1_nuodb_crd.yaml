@@ -4,17 +4,14 @@ metadata:
   name: nuodbs.nuodb.com
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.adminHealth
-    name: Admin
-    type: string
   - JSONPath: .status.smHealth
     name: SM
     type: string
   - JSONPath: .status.teHealth
     name: TE
     type: string
-  - JSONPath: .status.domainHealth
-    name: Domain
+  - JSONPath: .status.databaseHealth
+    name: Database
     type: string
   - JSONPath: .status.phase
     name: Phase
@@ -53,24 +50,6 @@ spec:
           type: object
         spec:
           properties:
-            adminCount:
-              description: 'adminCount Number of admin service pods. Requires 1 server
-                available for each Admin Service example: adminCount: 1'
-              format: int32
-              type: integer
-            adminStorageClass:
-              description: 'adminStorageClass Admin persistent storage class name
-                example: adminStorageClass: glusterfs-storage'
-              type: string
-            adminStorageSize:
-              description: 'adminStorageSize Admin service log volume size (GB) example:
-                adminStorageSize: 5G'
-              type: string
-            apiServer:
-              description: 'apiServer Load balancer service URL.  hostname:port (or
-                LB address) for nuoadmin process to connect to. Example: apiServer:
-                https://domain:8888'
-              type: string
             container:
               description: 'container NuoDB fully qualified image name (FQIN) for
                 the Docker image to use container: "registry.connect.redhat.com/nuodb/nuodb-ce:latest"
@@ -104,11 +83,6 @@ spec:
               description: 'engineOptions Additional "nuodb" engine options Format:
                 <option> <value> <option> <value> ... Example: engineOptions: ""'
               type: string
-            insightsEnabled:
-              description: 'insightsEnabled Use to control Insights Opt In.  Insights
-                provides database monitoring.  Set to "true" to activate or "false"
-                to deactivate example: insightsEnabled: false'
-              type: boolean
             smCount:
               description: 'smCount Number of SM service pods. Requires 1 SM available
                 for each NuoDB Database example: smCount: 1'
@@ -125,8 +99,8 @@ spec:
                 smStorageClass: local-disk'
               type: string
             smStorageSize:
-              description: 'smStorageSize Storage manager (SM) volume size (GB) Example:
-                smStorageSize: 20G'
+              description: 'smStorageSize Storage manager (SM) volume size Example:
+                smStorageSize: 20Gi'
               type: string
             storageMode:
               description: 'storageMode Run NuoDB using a persistent, local, disk
@@ -145,17 +119,12 @@ spec:
               description: 'teMemory TE memory Example: teMemory: 2Gi'
               type: string
           required:
-          - adminCount
-          - adminStorageClass
-          - adminStorageSize
-          - apiServer
           - container
           - dbAvailability
           - dbName
           - dbPassword
           - dbUser
           - engineOptions
-          - insightsEnabled
           - smCount
           - smCpu
           - smMemory
@@ -168,32 +137,25 @@ spec:
           type: object
         status:
           properties:
-            adminHealth:
-              description: AdminHealth of the NuoDB Domain
-              type: string
-            adminReadyCount:
-              description: Admin Node Ready Count
-              format: int32
-              type: integer
             controllerVersion:
               description: ControllerVersion is the version of the controller that
                 last updated the NuoDB Domain
               type: string
-            domainHealth:
-              description: DomainHealth of the NuoDB Domain
+            databaseHealth:
+              description: Health of the NuoDB Database
               type: string
             phase:
-              description: Orchestration phase of the NuoDB Domain
+              description: Orchestration phase of the NuoDB Database
               type: string
             smHealth:
-              description: SM Health of the NuoDB Domain
+              description: AdminHealth of the NuoDB Database
               type: string
             smReadyCount:
               description: SM Node Ready Count
               format: int32
               type: integer
             teHealth:
-              description: TE Health of the NuoDB Domain
+              description: TE Health of the NuoDB Database
               type: string
             teReadyCount:
               description: TE Node Ready Count

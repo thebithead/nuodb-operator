@@ -4,25 +4,6 @@
 # or volatile storage "ephemeral".  Must be set to one of those values.
 storageMode: persistent
 
-
-# insightsEnabled
-# Use to control Insights Opt In.  Insights provides database monitoring.
-# Set to "true" to activate or "false" to deactivate
-insightsEnabled: false
-
-# adminCount
-# Number of admin service pods. Requires 1 server available for each
-# Admin Service
-adminCount: 1
-
-# adminStorageSize
-# Admin service log volume size (GB)
-adminStorageSize: 5G
-
-# adminStorageClass
-# Admin persistent storage class name
-adminStorageClass: glusterfs-storage
-
 # dbName
 # NuoDB Database name.  must consist of lowercase alphanumeric
 #characters '[a-z0-9]+'
@@ -50,8 +31,8 @@ smMemory: 2Gi
 smCpu: 1
 
 # smStorageSize
-# Storage manager (SM) volume size (GB)
-smStorageSize: 20G
+# Storage manager (SM) volume size
+smStorageSize: 20Gi
 
 # smStorageClass
 # SM persistent storage class name

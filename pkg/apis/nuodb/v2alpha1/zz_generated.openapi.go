@@ -12,6 +12,9 @@ import (
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
 		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.Nuodb":                     schema_pkg_apis_nuodb_v2alpha1_Nuodb(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbAdmin":                schema_pkg_apis_nuodb_v2alpha1_NuodbAdmin(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbAdminSpec":            schema_pkg_apis_nuodb_v2alpha1_NuodbAdminSpec(ref),
+		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbAdminStatus":          schema_pkg_apis_nuodb_v2alpha1_NuodbAdminStatus(ref),
 		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServer":       schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServer(ref),
 		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerSpec":   schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerSpec(ref),
 		"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbInsightsServerStatus": schema_pkg_apis_nuodb_v2alpha1_NuodbInsightsServerStatus(ref),
@@ -63,6 +66,160 @@ func schema_pkg_apis_nuodb_v2alpha1_Nuodb(ref common.ReferenceCallback) common.O
 		},
 		Dependencies: []string{
 			"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbSpec", "github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_nuodb_v2alpha1_NuodbAdmin(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "NuodbAdmin is the Schema for the nuodbadmins API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbAdminSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbAdminStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbAdminSpec", "github.com/nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1.NuodbAdminStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_nuodb_v2alpha1_NuodbAdminSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "NuodbAdminSpec defines the desired state of NuodbAdmin",
+				Properties: map[string]spec.Schema{
+					"adminCount": {
+						SchemaProps: spec.SchemaProps{
+							Description: "adminCount Number of admin service pods. Requires 1 server available for each Admin Service example: adminCount: 1",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"adminStorageClass": {
+						SchemaProps: spec.SchemaProps{
+							Description: "adminStorageClass Admin persistent storage class name example: adminStorageClass: glusterfs-storage",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"adminStorageSize": {
+						SchemaProps: spec.SchemaProps{
+							Description: "adminStorageSize Admin service log volume size example: adminStorageSize: 5Gi",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storageMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "storageMode Run NuoDB using a persistent, local, disk volume \"persistent\" or volatile storage \"ephemeral\".  Must be set to one of those values. example: storageMode: persistent",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"insightsEnabled": {
+						SchemaProps: spec.SchemaProps{
+							Description: "insightsEnabled Use to control Insights Opt In.  Insights provides database monitoring.  Set to \"true\" to activate or \"false\" to deactivate example: insightsEnabled: false",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"apiServer": {
+						SchemaProps: spec.SchemaProps{
+							Description: "apiServer Load balancer service URL.  hostname:port (or LB address) for nuoadmin process to connect to. Example: apiServer: https://domain:8888",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"container": {
+						SchemaProps: spec.SchemaProps{
+							Description: "container NuoDB fully qualified image name (FQIN) for the Docker image to use container: \"registry.connect.redhat.com/nuodb/nuodb-ce:latest\" Example: container: nuodb/nuodb-ce:latest",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"adminCount", "adminStorageClass", "adminStorageSize", "storageMode", "insightsEnabled", "apiServer", "container"},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_nuodb_v2alpha1_NuodbAdminStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "NuodbAdminStatus defines the observed state of NuodbAdmin",
+				Properties: map[string]spec.Schema{
+					"adminReadyCount": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Admin Node Ready Count",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"adminHealth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "AdminHealth of the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"domainHealth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "DomainHealth of the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Orchestration phase of the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"controllerVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ControllerVersion is the version of the controller that last updated the NuoDB Domain",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{},
 	}
 }
 
@@ -176,34 +333,6 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbSpec(ref common.ReferenceCallback) comm
 			SchemaProps: spec.SchemaProps{
 				Description: "NuodbSpec defines the desired state of Nuodb",
 				Properties: map[string]spec.Schema{
-					"adminCount": {
-						SchemaProps: spec.SchemaProps{
-							Description: "adminCount Number of admin service pods. Requires 1 server available for each Admin Service example: adminCount: 1",
-							Type:        []string{"integer"},
-							Format:      "int32",
-						},
-					},
-					"adminStorageClass": {
-						SchemaProps: spec.SchemaProps{
-							Description: "adminStorageClass Admin persistent storage class name example: adminStorageClass: glusterfs-storage",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"adminStorageSize": {
-						SchemaProps: spec.SchemaProps{
-							Description: "adminStorageSize Admin service log volume size (GB) example: adminStorageSize: 5G",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiServer": {
-						SchemaProps: spec.SchemaProps{
-							Description: "apiServer Load balancer service URL.  hostname:port (or LB address) for nuoadmin process to connect to. Example: apiServer: https://domain:8888",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
 					"container": {
 						SchemaProps: spec.SchemaProps{
 							Description: "container NuoDB fully qualified image name (FQIN) for the Docker image to use container: \"registry.connect.redhat.com/nuodb/nuodb-ce:latest\" Example: container: nuodb/nuodb-ce:latest",
@@ -246,13 +375,6 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbSpec(ref common.ReferenceCallback) comm
 							Format:      "",
 						},
 					},
-					"insightsEnabled": {
-						SchemaProps: spec.SchemaProps{
-							Description: "insightsEnabled Use to control Insights Opt In.  Insights provides database monitoring.  Set to \"true\" to activate or \"false\" to deactivate example: insightsEnabled: false",
-							Type:        []string{"boolean"},
-							Format:      "",
-						},
-					},
 					"smCount": {
 						SchemaProps: spec.SchemaProps{
 							Description: "smCount Number of SM service pods. Requires 1 SM available for each NuoDB Database example: smCount: 1",
@@ -283,7 +405,7 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbSpec(ref common.ReferenceCallback) comm
 					},
 					"smStorageSize": {
 						SchemaProps: spec.SchemaProps{
-							Description: "smStorageSize Storage manager (SM) volume size (GB) Example: smStorageSize: 20G",
+							Description: "smStorageSize Storage manager (SM) volume size Example: smStorageSize: 20Gi",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -317,7 +439,7 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbSpec(ref common.ReferenceCallback) comm
 						},
 					},
 				},
-				Required: []string{"adminCount", "adminStorageClass", "adminStorageSize", "apiServer", "container", "dbAvailability", "dbName", "dbPassword", "dbUser", "engineOptions", "insightsEnabled", "smCount", "smCpu", "smMemory", "smStorageClass", "smStorageSize", "storageMode", "teCount", "teCpu", "teMemory"},
+				Required: []string{"container", "dbAvailability", "dbName", "dbPassword", "dbUser", "engineOptions", "smCount", "smCpu", "smMemory", "smStorageClass", "smStorageSize", "storageMode", "teCount", "teCpu", "teMemory"},
 			},
 		},
 		Dependencies: []string{},
@@ -330,13 +452,6 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbStatus(ref common.ReferenceCallback) co
 			SchemaProps: spec.SchemaProps{
 				Description: "NuodbStatus defines the observed state of Nuodb",
 				Properties: map[string]spec.Schema{
-					"adminReadyCount": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Admin Node Ready Count",
-							Type:        []string{"integer"},
-							Format:      "int32",
-						},
-					},
 					"smReadyCount": {
 						SchemaProps: spec.SchemaProps{
 							Description: "SM Node Ready Count",
@@ -351,37 +466,30 @@ func schema_pkg_apis_nuodb_v2alpha1_NuodbStatus(ref common.ReferenceCallback) co
 							Format:      "int32",
 						},
 					},
-					"adminHealth": {
-						SchemaProps: spec.SchemaProps{
-							Description: "AdminHealth of the NuoDB Domain",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
 					"smHealth": {
 						SchemaProps: spec.SchemaProps{
-							Description: "SM Health of the NuoDB Domain",
+							Description: "AdminHealth of the NuoDB Database",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"teHealth": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TE Health of the NuoDB Domain",
+							Description: "TE Health of the NuoDB Database",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
-					"domainHealth": {
+					"databaseHealth": {
 						SchemaProps: spec.SchemaProps{
-							Description: "DomainHealth of the NuoDB Domain",
+							Description: "Health of the NuoDB Database",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Orchestration phase of the NuoDB Domain",
+							Description: "Orchestration phase of the NuoDB Database",
 							Type:        []string{"string"},
 							Format:      "",
 						},

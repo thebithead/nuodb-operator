@@ -25,6 +25,7 @@ kubectl create -n $OPERATOR_NAMESPACE -f role.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f service_account.yaml
 kubectl patch serviceaccount nuodb-operator -p '{"imagePullSecrets": [{"name": "regcred"}]}' -n $OPERATOR_NAMESPACE
+kubectl create -f crds/nuodb_v2alpha1_nuodbadmin_crd.yaml
 kubectl create -f crds/nuodb_v2alpha1_nuodb_crd.yaml
 kubectl create -f crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
 kubectl create -f crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
@@ -43,6 +44,9 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
 done
 
 kubectl create configmap nuodb-lic-configmap --from-literal=nuodb.lic="" -n $OPERATOR_NAMESPACE
+
+echo "Create the Custom Resource to deploy NuoDB Admin layer..."
+kubectl create -n $OPERATOR_NAMESPACE -f ${TESTDIR}/test/deploy/crs/ci_nuodbadmin_test_cr.yaml
 
 echo "Create the Custom Resource to deploy NuoDB..."
 kubectl create -n $OPERATOR_NAMESPACE -f ${TESTDIR}/test/deploy/crs/ci_nuodb_test_cr.yaml

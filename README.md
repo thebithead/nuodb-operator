@@ -760,3 +760,13 @@ ycsbContainer: 117940112483.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b
 **storageClass** - Kubernetes Persistent Storage Class
 
 &ensp; `storageClass: ""`
+
+
+## Building the NuoDB Operator
+
+The NuoDB Operator is built using the K8s [Operator SDK](https://github.com/operator-framework/operator-sdk).  The CRDs (deploy/crds/*_crd.yaml, OpenAPI (zz_generated.openapi.go), and deep copy functions (zz_generated.deepcopy.go) are automatically generated using the Operator SDK commands:
+
+```
+operator-sdk generate k8s
+operator-sdk generate openapi
+```

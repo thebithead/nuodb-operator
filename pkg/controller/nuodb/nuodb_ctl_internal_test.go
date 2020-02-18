@@ -31,9 +31,6 @@ func init() {
 		name                    = "nuodb-operator"
 		namespace               = "nuodb"
 		storageMode             = "ephemeral"
-		adminCount        int32 = 1
-		adminStorageSize        = "5G"
-		adminStorageClass       = "local-disk"
 		dbName                  = "test1"
 		dbUser                  = "dba"
 		dbPassword              = "secret"
@@ -46,7 +43,6 @@ func init() {
 		teCount           int32 = 1
 		teMemory                = "2Gi"
 		teCpu                   = "1"
-		apiServer               = "https://domain:8888"
 		container               = "nuodb/nuodb-ce:latest"
 	)
 
@@ -58,10 +54,6 @@ func init() {
 		},
 		Spec: nuodbv2alpha1.NuodbSpec{
 			StorageMode:       storageMode,
-			InsightsEnabled:   true,
-			AdminCount:        adminCount,
-			AdminStorageSize:  adminStorageSize,
-			AdminStorageClass: adminStorageClass,
 			DbName:            dbName,
 			DbUser:            dbUser,
 			DbPassword:        dbPassword,
@@ -74,19 +66,16 @@ func init() {
 			TeCount:           teCount,
 			TeMemory:          teMemory,
 			TeCpu:             teCpu,
-			ApiServer:         apiServer,
 			Container:         container,
 		},
 		Status: nuodbv2alpha1.NuodbStatus{
 		ControllerVersion: utils.NuodbOperatorVersion,
-		Phase:             nuodbv2alpha1.NuodbPendingPhase,
-		AdminReadyCount:   0,
+		Phase:             utils.NuodbPendingPhase,
 		SmReadyCount:      0,
 		TeReadyCount:      0,
-		AdminHealth:       nuodbv2alpha1.NuodbUnknownHealth,
-		SmHealth:          nuodbv2alpha1.NuodbUnknownHealth,
-		TeHealth:          nuodbv2alpha1.NuodbUnknownHealth,
-		DomainHealth:      nuodbv2alpha1.NuodbUnknownHealth,
+		SmHealth:          utils.NuodbUnknownHealth,
+		TeHealth:          utils.NuodbUnknownHealth,
+		DatabaseHealth:    utils.NuodbUnknownHealth,
 	},
 	}
 
@@ -126,17 +115,6 @@ func init() {
 	_, err := reconcileNuodbInternal(r, req)
 	if err != nil {
 		fmt.Printf(" Reconcile Failed with error  %v\n", err)
-	}
-}
-
-func Test_getService(t *testing.T){
-	var service = &corev1.Service{}
-	service,err := utils.GetService(cl, namespace, "admin")
-	if err != nil {
-		t.Fatalf("Get Service error : (%v)", err)
-	}
-	if !reflect.DeepEqual(service.Spec.Selector, map[string]string{"app": "admin"}){
-		t.Fatalf("Expect %+v", service)
 	}
 }
 
@@ -241,9 +219,6 @@ status:
 			template: template,
 			name: "test-service",
 		},"test"},
-		{"Test With Existing Service",NuoResource{
-			name: "admin",
-		} ,"admin"},
 		{"Test With Error Service",NuoResource{
 			template: "",
 			name: "xyz",
@@ -421,18 +396,6 @@ spec:
 
 }
 
-func Test_getStatefulSet(t *testing.T){
-	var sts = &appsv1.StatefulSet{}
-	sts, err := utils.GetStatefulSetV1(cl, namespace,"admin")
-	if err != nil{
-		t.Fatalf("Get StatefulSet error : (%v)", err)
-	}
-
-	if *sts.Spec.Replicas != int32(1){
-		t.Errorf("Stateful AdminCount size (%d) is not the expected size (%d)", sts.Spec.Replicas, int32(1))
-	}
-}
-
 func Test_createNuodbStatefulSet(t *testing.T){
 	instance, err := getnuodbv2alpha1NuodbInstance(r, req)
 	if err != nil {
@@ -564,11 +527,8 @@ spec:
 		},2},
 		{"Existing-Statefulset",NuoResource{
 			template: template,
-			name: "admin",
+			name: "sm",
 		},1},
-		{"Update-Count-admin",NuoResource{
-			name: "admin",
-		} ,3},
 		{"Update-Count-sm",NuoResource{
 			name: "sm",
 		} ,3},
@@ -576,9 +536,6 @@ spec:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.name=="Update-Count-admin"{
-				instance.Spec.AdminCount=3
-			}
 			if tt.name=="Update-Count-sm"{
 				instance.Spec.SmCount=3
 			}
@@ -602,18 +559,6 @@ spec:
 		})
 	}
 
-}
-
-func Test_getConfigMap(t *testing.T){
-	var configMap = &corev1.ConfigMap{}
-	configMap, err := utils.GetConfigMap(cl, namespace,"insights-configmap")
-	if err != nil{
-		t.Fatalf("Get Configmap error : (%v)", err)
-	}
-
-	if configMap.ObjectMeta.Name != "insights-configmap"{
-		t.Errorf("ConfigMap  name (%v) is not as expected ", configMap.ObjectMeta.Name)
-	}
 }
 
 func Test_createNuodbConfigMap(t *testing.T){
@@ -830,18 +775,6 @@ data:
 	}
 }
 
-func Test_getPod(t *testing.T){
-	var pod = &corev1.Pod{}
-	pod, err := utils.GetPod(cl, namespace,"nuodb-insights")
-	if err != nil{
-		t.Fatalf("Get Pod error : (%v)", err)
-	}
-
-	if pod.ObjectMeta.Name != "nuodb-insights"{
-		t.Errorf("Pod  name (%v) is not as expected ", pod.ObjectMeta.Name)
-	}
-}
-
 func Test_createNuodbPod(t *testing.T){
 	instance, err := getnuodbv2alpha1NuodbInstance(r, req)
 	if err != nil {
@@ -965,7 +898,7 @@ func Test_processTemplates(t *testing.T){
 		in  string
 		out string
 	}{
-		{"Test with Correct directory",utils.NuodbChartDir, "nuodb-ce-helm/templates/svc-admin.yaml"},
+		{"Test with Correct directory",utils.NuodbChartDir, "nuodb-ce-helm/templates/sts-sm.yaml"},
 		{"Incorrect_directory","" ,""},
 	}
 

@@ -1,0 +1,116 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: nuodbadmins.nuodb.com
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.adminHealth
+    name: Admin
+    type: string
+  - JSONPath: .status.domainHealth
+    name: Domain
+    type: string
+  - JSONPath: .status.phase
+    name: Phase
+    type: string
+  - JSONPath: .status.controllerVersion
+    name: ControllerVersion
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: nuodb.com
+  names:
+    categories:
+    - nuodbadmin
+    kind: NuodbAdmin
+    listKind: NuodbAdminList
+    plural: nuodbadmins
+    shortNames:
+    - nuodbadmin
+    singular: nuodbadmin
+  scope: Namespaced
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            adminCount:
+              description: 'adminCount Number of admin service pods. Requires 1 server
+                available for each Admin Service example: adminCount: 1'
+              format: int32
+              type: integer
+            adminStorageClass:
+              description: 'adminStorageClass Admin persistent storage class name
+                example: adminStorageClass: glusterfs-storage'
+              type: string
+            adminStorageSize:
+              description: 'adminStorageSize Admin service log volume size example:
+                adminStorageSize: 5Gi'
+              type: string
+            apiServer:
+              description: 'apiServer Load balancer service URL.  hostname:port (or
+                LB address) for nuoadmin process to connect to. Example: apiServer:
+                https://domain:8888'
+              type: string
+            container:
+              description: 'container NuoDB fully qualified image name (FQIN) for
+                the Docker image to use container: "registry.connect.redhat.com/nuodb/nuodb-ce:latest"
+                Example: container: nuodb/nuodb-ce:latest'
+              type: string
+            insightsEnabled:
+              description: 'insightsEnabled Use to control Insights Opt In.  Insights
+                provides database monitoring.  Set to "true" to activate or "false"
+                to deactivate example: insightsEnabled: false'
+              type: boolean
+            storageMode:
+              description: 'storageMode Run NuoDB using a persistent, local, disk
+                volume "persistent" or volatile storage "ephemeral".  Must be set
+                to one of those values. example: storageMode: persistent'
+              type: string
+          required:
+          - adminCount
+          - adminStorageClass
+          - adminStorageSize
+          - storageMode
+          - insightsEnabled
+          - apiServer
+          - container
+          type: object
+        status:
+          properties:
+            adminHealth:
+              description: AdminHealth of the NuoDB Domain
+              type: string
+            adminReadyCount:
+              description: Admin Node Ready Count
+              format: int32
+              type: integer
+            controllerVersion:
+              description: ControllerVersion is the version of the controller that
+                last updated the NuoDB Domain
+              type: string
+            domainHealth:
+              description: DomainHealth of the NuoDB Domain
+              type: string
+            phase:
+              description: Orchestration phase of the NuoDB Domain
+              type: string
+          type: object
+  version: v2alpha1
+  versions:
+  - name: v2alpha1
+    served: true
+    storage: true

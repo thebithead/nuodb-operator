@@ -1,0 +1,12 @@
+apiVersion: nuodb.com/v2alpha1
+kind: NuodbAdmin
+metadata:
+  name: nuoadmin
+spec:
+  storageMode: ephemeral
+  insightsEnabled: true
+  adminCount: 1
+  adminStorageSize: 5Gi
+  adminStorageClass: local-disk
+  apiServer: https://domain:8888
+  container: nuodb/nuodb-ce:latest

@@ -5,23 +5,18 @@ metadata:
 spec:
   dbAvailability: manual
   storageMode: ephemeral
-  insightsEnabled: true
-  adminCount: 1
-  adminStorageSize: 5G
-  adminStorageClass: local-disk
   dbName: test1
   dbUser: dba
   dbPassword: secret
   smMemory: "1"
   smCount: 1
   smCpu: "100m"
-  smStorageSize: 20G
+  smStorageSize: 20Gi
   smStorageClass: local-disk
   engineOptions: ""
   teCount: 1
   teMemory: "1"
   teCpu: "100m"
-  apiServer: https://domain:8888
   container: nuodb/nuodb-ce:latest
 
 
