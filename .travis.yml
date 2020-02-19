@@ -22,7 +22,6 @@ env:
     - GO111MODULE=on
 
 before_install:
-  - go test -v ./pkg/...
   - chmod +x scripts/ci/install-deps.sh
   - chmod +x scripts/ci/build_operator.sh
   - chmod +x scripts/ci/test_operator.sh
@@ -31,5 +30,6 @@ install:
   - scripts/ci/install-deps.sh
 
 script:
-- scripts/ci/build_operator.sh
-- scripts/ci/test_operator.sh
+  - go test -v ./pkg/...
+  - scripts/ci/build_operator.sh
+  - scripts/ci/test_operator.sh
