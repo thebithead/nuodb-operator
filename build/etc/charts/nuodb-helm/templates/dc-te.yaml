@@ -86,12 +86,28 @@ spec:
             cpu: {{ .Values.teCpu | quote }}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          exec:
+            command: [ "readinessprobe" ]
+          failureThreshold: 54
+          # the TE becomes unready if it does not start within 5 minutes = 30s + 5s*54
+          successThreshold: 2
+          timeoutSeconds: 1
         volumeMounts:
         - name: logdir
           mountPath: /var/log/nuodb
+        - name: readinessprobe
+          mountPath: /usr/local/bin/readinessprobe
+          subPath: readinessprobe
       volumes:
         - name: logdir
           emptyDir: {}
+        - name: readinessprobe
+          configMap:
+            name: readinessprobe
+            defaultMode: 0777
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

@@ -43,6 +43,11 @@ spec:
         - name: archive
           mountPath: /var/opt/nuodb/archive
 {{- end }}
+      volumes:
+        - name: readinessprobe
+          configMap:
+            name: readinessprobe
+            defaultMode: 0777
       containers:
       - name: sm
         image: {{ .Values.container }}
@@ -88,10 +93,22 @@ spec:
             cpu: {{ .Values.smCpu | quote }}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
-{{- if eq .Values.storageMode "persistent" }}
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          exec:
+            command: [ "readinessprobe" ]
+          failureThreshold: 58
+          # the SM becomes unready if it does not start within 15 minutes = 30s + 15s*58
+          successThreshold: 2
+          timeoutSeconds: 1
         volumeMounts:
-        - mountPath: /var/opt/nuodb/archive
-          name: archive
+          - name: readinessprobe
+            mountPath: /usr/local/bin/readinessprobe
+            subPath: readinessprobe
+{{- if eq .Values.storageMode "persistent" }}
+          - mountPath: /var/opt/nuodb/archive
+            name: archive
   volumeClaimTemplates:
   - metadata:
       name: archive
