@@ -3,14 +3,13 @@ package nuodbycsbwl
 import (
 	"context"
 	"fmt"
+	"gotest.tools/assert"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	nuodbv2alpha1 "nuodb/nuodb-operator/pkg/apis/nuodb/v2alpha1"
-	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -90,9 +89,8 @@ func init() {
 
 func Test_createNuodbYcsbWlReplicationController(t *testing.T){
 	instance, err := getnuodbv2alpha1NuodbYcsbWlInstance(r, req)
-	if err != nil {
-		t.Fatalf("Error while getting instance : (%v)", err)
-	}
+	assert.NilError(t, err)
+
 	template :=`apiVersion: v1
 kind: ReplicationController
 metadata:
@@ -113,47 +111,33 @@ spec:
         ports:
         - containerPort: 80`
 
-	var tests = []struct {
-		name string
-		in  NuoYcsbWlResource
-		out string
-	}{
-		{"Test With new replicationcontroller",NuoYcsbWlResource{
+	t.Run("Test With new replicationcontroller", func(t *testing.T) {
+		_, err = createNuodbYcsbWlReplicationController(cl, s, req, instance, NuoYcsbWlResource{
 			template: template,
 			name: "test-replicationcontroller",
-		},"test-replicationcontroller"},
-		{"Test With Error replicationcontroller",NuoYcsbWlResource{
+		})
+		assert.NilError(t, err)
+		var replicationController = &corev1.ReplicationController{}
+		err := cl.Get(context.TODO(), types.NamespacedName{Name: "test-replicationcontroller", Namespace: "nuodb"}, replicationController)
+		assert.NilError(t, err)
+
+		assert.Equal(t, replicationController.ObjectMeta.Name, "test-replicationcontroller")
+	})
+
+	t.Run("Test With error replicationcontroller", func(t *testing.T) {
+		_, err = createNuodbYcsbWlReplicationController(cl, s, req, instance, NuoYcsbWlResource{
 			template: "",
 			name: "xyz",
-		} ,"NotFound"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err = createNuodbYcsbWlReplicationController(cl, s, req, instance, tt.in)
-			var replicationController = &corev1.ReplicationController{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: tt.in.name, Namespace: "nuodb"}, replicationController)
-			if err != nil {
-				sErr, ok := err.(*apierrors.StatusError)
-				if ok && sErr.Status().Reason == "NotFound" {
-					return
-				}
-				t.Fatalf("Test replicationController not found : (%v)", err)
-			}
-
-			if !reflect.DeepEqual(replicationController.ObjectMeta.Name,tt.out) {
-				t.Errorf("Created replicationController doesnt has same name (%v)", replicationController.Name)
-			}
 		})
-	}
+		assert.Assert(t, err != nil)
+	})
 
 }
 
 func Test_reconcileNuodbYcsbWlReplicationController(t *testing.T){
 	instance, err := getnuodbv2alpha1NuodbYcsbWlInstance(r, req)
-	if err != nil {
-		t.Fatalf("Error while getting instance : (%v)", err)
-	}
+	assert.NilError(t, err)
+
 	template :=`apiVersion: v1
 kind: ReplicationController
 metadata:
@@ -174,47 +158,55 @@ spec:
         ports:
         - containerPort: 80`
 
-	var tests = []struct {
-		name string
-		in  NuoYcsbWlResource
-		out int32
-	}{
-		{"Test With new replicationcontroller",NuoYcsbWlResource{
+
+	t.Run("Test With new replicationcontroller", func(t *testing.T) {
+		_,_, err = reconcileNuodbYcsbWlReplicationController(cl, s, req, instance, NuoYcsbWlResource{
 			template: template,
 			name: "test-replicationcontroller",
-		},3},
-		{"Existing-replicationcontroller",NuoYcsbWlResource{
+		}, namespace)
+		assert.NilError(t, err)
+
+		var replicationController = &corev1.ReplicationController{}
+		err := cl.Get(context.TODO(), types.NamespacedName{Name: "test-replicationcontroller", Namespace: "nuodb"}, replicationController)
+		assert.NilError(t, err)
+
+		repSize := replicationController.Spec.Replicas
+		assert.Equal(t, *repSize, int32(3))
+	})
+
+	t.Run("Existing-replicationcontroller", func(t *testing.T) {
+		_,_, err = reconcileNuodbYcsbWlReplicationController(cl, s, req, instance, NuoYcsbWlResource{
 			template: template,
 			name: "ycsb-load",
-		},1},
-		{"Update-replicationcontroller",NuoYcsbWlResource{
+		}, namespace)
+		assert.NilError(t, err)
+
+		var replicationController = &corev1.ReplicationController{}
+		err := cl.Get(context.TODO(), types.NamespacedName{Name: "ycsb-load", Namespace: "nuodb"}, replicationController)
+		assert.NilError(t, err)
+
+		repSize := replicationController.Spec.Replicas
+		assert.Equal(t, *repSize, int32(1))
+	})
+
+	t.Run("Test update replicationcontroller", func(t *testing.T) {
+		instance.Spec.YcsbWorkloadCount = 3
+		defer func() {
+			instance.Spec.YcsbWorkloadCount = 1
+		}()
+
+		_,_, err = reconcileNuodbYcsbWlReplicationController(cl, s, req, instance, NuoYcsbWlResource{
 			template: template,
 			name: "ycsb-load",
-		},3},
-	}
+		}, namespace)
+		assert.NilError(t, err)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.name=="Update-replicationcontroller"{
-				instance.Spec.YcsbWorkloadCount = 3
-			}
-			_,_, err = reconcileNuodbYcsbWlReplicationController(cl, s, req, instance, tt.in, namespace)
-			var replicationController = &corev1.ReplicationController{}
-			err := cl.Get(context.TODO(), types.NamespacedName{Name: tt.in.name, Namespace: "nuodb"}, replicationController)
-			if err != nil {
-				//Case where the given Deployment is not found by the get funciton
-				//and new Deployment cannot be created
-				sErr, ok := err.(*apierrors.StatusError)
-				if ok && sErr.Status().Reason == "NotFound" {
-					return
-				}
-				t.Fatalf("Test replicationController not found : (%v)", err)
-			}
-			repSize := replicationController.Spec.Replicas
+		var replicationController = &corev1.ReplicationController{}
+		err := cl.Get(context.TODO(), types.NamespacedName{Name: "ycsb-load", Namespace: "nuodb"}, replicationController)
+		assert.NilError(t, err)
 
-			if *repSize!=tt.out {
-				t.Errorf("Created replicationController doesnt has same Count (%d)", repSize)
-			}
-		})
-	}
+		repSize := replicationController.Spec.Replicas
+		assert.Equal(t, *repSize, int32(3))
+	})
+
 }
