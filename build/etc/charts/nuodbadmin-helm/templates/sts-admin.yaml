@@ -75,7 +75,11 @@ spec:
         - { name: NUODB_DOMAIN_ENTRYPOINT,      value: "admin-0.domain" }
         - { name: NUODB_ALT_ADDRESS,            value: "$(POD_NAME).domain.$(NAMESPACE).svc" }
         - { name: NUODB_VARDIR,                 value: "/var/opt/nuodb/$(POD_NAME).$(NAMESPACE)" }
-        args: [ "nuoadmin" ]
+        args:
+          - "nuoadmin"
+          - "--"
+          - "-pendingReconnectTimeout=60000"
+          - "-processLivenessCheckSec=30"
         livenessProbe:
           initialDelaySeconds: 30
           periodSeconds: 15
