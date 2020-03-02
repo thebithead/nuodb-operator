@@ -585,7 +585,13 @@ func reconcileNuodbInternal(r *ReconcileNuodb, request reconcile.Request) (recon
 					if err != nil || rr.Requeue {
 						return rr, err
 					}
+				case "ConfigMap":
+					_, rr, err = reconcileNuodbConfigMap(r.client, r.scheme, request, instance, nuoResource, request.Namespace)
+					if err != nil || rr.Requeue {
+						return rr, err
+					}
 				}
+
 			}
 		}
 	}
