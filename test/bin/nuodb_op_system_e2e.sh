@@ -52,6 +52,22 @@ then
 fi
 
 echo ""
+echo "Checking NUOOPGITBRANCH environment variable..."
+if [ -z "$NUOOPGITBRANCH" ]
+then
+  export NUOOPGITBRANCH=master
+fi
+echo "Using nuodb-operator branch: $NUOOPGITBRANCH"
+
+echo ""
+echo "Checking NUOOPIMAGE environment variable..."
+if [ -z "$NUOOPIMAGE" ]
+then
+  export NUOOPIMAGE=nuodb-operator:latest
+fi
+echo "Using nuodb-operator image name: $NUOOPIMAGE"
+
+echo ""
 echo "Version info..."
 kubectl version
 retval=$?
@@ -86,7 +102,7 @@ if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 
 echo ""
 echo "Cloning the nuodb-operator GitHub repo..."
-git clone --branch master https://github.com/nuodb/nuodb-operator.git
+git clone --branch $NUOOPGITBRANCH https://github.com/nuodb/nuodb-operator.git
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 
@@ -161,8 +177,7 @@ fi
 
 echo ""
 echo "Deploy the NuoDB Operator..."
-#sed 's/REPLACE_IMAGE/quay.io\/nuodb\/nuodb-operator:latest/' nuodb-operator/deploy/operator.yaml > nuodb-operator/deploy/operator-test.yaml
-sed 's/REPLACE_IMAGE/quay.io\/nuodb\/nuodb-golang-operator-dev:latest/' nuodb-operator/deploy/operator.yaml > nuodb-operator/deploy/operator-test.yaml
+sed "s/REPLACE_IMAGE/quay.io\/nuodb\/$NUOOPIMAGE/" nuodb-operator/deploy/operator.yaml > nuodb-operator/deploy/operator-test.yaml
 kubectl create -f nuodb-operator/deploy/operator-test.yaml
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
@@ -192,6 +207,51 @@ echo -n "Checking nuoadmin statefulset..."
 kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=60s -l statefulset.kubernetes.io/pod-name=admin-0
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
+echo ""
+date
+echo "Patching nuodbadmin/nuoadmin CR to enable Hosted NuoDB Insights..."
+kubectl patch nuodbadmin nuoadmin --type='json' -p='[{"op": "replace", "path": "/spec/insightsEnabled", "value":true}]'
+retval=$?
+if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
+echo ""
+echo -n "Checking nuodb-insights pod..."
+while [[ $(kubectl get pods -l insights=hosted -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]
+do
+  ((i++))
+  if [[ "$i" == '36' ]]; then
+    echo "ERROR: Timeout waiting for nuodb-insights Pod."
+    echo "$0: FAIL"
+    exit 1
+  fi
+  sleep 5
+  echo -n '.'
+done
+echo "nuodb-insights pod found"
+
+echo ""
+date
+echo "Patching nuodbadmin/nuoadmin CR to disable Hosted NuoDB Insights..."
+kubectl patch nuodbadmin nuoadmin --type='json' -p='[{"op": "replace", "path": "/spec/insightsEnabled", "value":false}]'
+retval=$?
+if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
+
+echo ""
+echo -n "Waiting for nuodb-insights pod to be deleted..."
+while [[ $(kubectl get pods -l insights=hosted) ]]
+do
+  ((i++))
+  if [[ "$i" == '36' ]]; then
+    echo "ERROR: Timeout waiting for nuodb-insights Pod."
+    echo "$0: FAIL"
+    exit 1
+  fi
+  sleep 5
+  echo -n '.'
+done
+echo "nuodb-insights pod deleted"
+
 
 echo ""
 date

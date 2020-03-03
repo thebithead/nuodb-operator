@@ -6,6 +6,7 @@ metadata:
     app: insights
     group: nuodb
     subgroup: monitoring
+    insights: hosted
 spec:
 {{- if eq .Values.storageMode "ephemeral" }}
   affinity:

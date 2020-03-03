@@ -4,7 +4,7 @@ metadata:
   name: nuoadmin
 spec:
   storageMode: ephemeral
-  insightsEnabled: true
+  insightsEnabled: false
   adminCount: 1
   adminStorageSize: 5Gi
   adminStorageClass: local-disk

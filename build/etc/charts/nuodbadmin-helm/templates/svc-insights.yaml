@@ -7,6 +7,7 @@ metadata:
     group: nuodb
     subgroup: monitoring
     app: insights
+    insights: hosted
   name: insights-server
 spec:
   ports:

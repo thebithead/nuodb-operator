@@ -24,6 +24,7 @@ import (
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"strings"
 	//logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"time"
 )
@@ -168,15 +169,27 @@ func createNuodbAdminStatefulSet(thisClient client.Client, thisScheme *runtime.S
 func reconcileNuodbAdminPod(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbAdmin,
 	nuoResource NuoResource, namespace string)(*corev1.Pod, reconcile.Result, error) {
 	var pod *corev1.Pod = nil
+	var isInsightsResource = strings.HasSuffix(nuoResource.templateFilename, "-insights.yaml")
+
 	pod, err := utils.GetPod(thisClient, namespace, nuoResource.name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
+			if isInsightsResource && !instance.Spec.InsightsEnabled {
+				return nil, reconcile.Result{}, nil
+			}
 			pod, err = createNuodbAdminPod(thisClient, thisScheme, request, instance, nuoResource)
 			if err != nil {
 				return pod, reconcile.Result{}, err
 			}
 		} else {
 			return pod, reconcile.Result{Requeue: true, RequeueAfter: utils.ReconcileRequeueAfterDefault}, err
+		}
+	} else {
+		if isInsightsResource && !instance.Spec.InsightsEnabled {
+			log.Info("Hosted NuoDB Insights disabled - Deleting Pod:",
+				"Namespace", request.Namespace, "Name", nuoResource.name)
+			err = thisClient.Delete(context.TODO(), pod)
+			return nil, reconcile.Result{}, err
 		}
 	}
 	return pod, reconcile.Result{}, err
@@ -185,15 +198,27 @@ func reconcileNuodbAdminPod(thisClient client.Client, thisScheme *runtime.Scheme
 func reconcileNuodbAdminService(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbAdmin,
 	nuoResource NuoResource, namespace string) (*corev1.Service, reconcile.Result, error) {
 	var service *corev1.Service = nil
+	var isInsightsResource = strings.HasSuffix(nuoResource.templateFilename, "-insights.yaml")
+
 	service, err := utils.GetService(thisClient, namespace, nuoResource.name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
+			if isInsightsResource && !instance.Spec.InsightsEnabled {
+				return nil, reconcile.Result{}, nil
+			}
 			service, err = createNuodbAdminService(thisClient, thisScheme, request, instance, nuoResource)
 			if err != nil {
 				return service, reconcile.Result{}, err
 			}
 		} else {
 			return service, reconcile.Result{Requeue: true, RequeueAfter: utils.ReconcileRequeueAfterDefault}, err
+		}
+	} else {
+		if isInsightsResource && !instance.Spec.InsightsEnabled {
+			log.Info("Hosted NuoDB Insights disabled - Deleting Service:",
+				"Namespace", request.Namespace, "Name", nuoResource.name)
+			err = thisClient.Delete(context.TODO(), service)
+			return nil, reconcile.Result{}, err
 		}
 	}
 	return service, reconcile.Result{}, err
@@ -202,15 +227,27 @@ func reconcileNuodbAdminService(thisClient client.Client, thisScheme *runtime.Sc
 func reconcileNuodbAdminConfigMap(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbAdmin,
 	nuoResource NuoResource, namespace string) (*corev1.ConfigMap, reconcile.Result, error) {
 	var configMap *corev1.ConfigMap = nil
+	var isInsightsResource = strings.HasSuffix(nuoResource.templateFilename, "-insights.yaml")
+
 	configMap, err := utils.GetConfigMap(thisClient, namespace, nuoResource.name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
+			if isInsightsResource && !instance.Spec.InsightsEnabled {
+				return nil, reconcile.Result{}, nil
+			}
 			configMap, err = createNuodbAdminConfigMap(thisClient, thisScheme, request, instance, nuoResource)
 			if err != nil {
 				return configMap, reconcile.Result{}, err
 			}
 		} else {
 			return configMap, reconcile.Result{Requeue: true, RequeueAfter: utils.ReconcileRequeueAfterDefault}, err
+		}
+	} else {
+		if isInsightsResource && !instance.Spec.InsightsEnabled {
+			log.Info("Hosted NuoDB Insights disabled - Deleting ConfigMap:",
+				"Namespace", request.Namespace, "Name", nuoResource.name)
+			err = thisClient.Delete(context.TODO(), configMap)
+			return nil, reconcile.Result{}, err
 		}
 	}
 	return configMap, reconcile.Result{}, err
