@@ -54,10 +54,10 @@ func init() {
 		},
 		Status: nuodbv2alpha1.NuodbAdminStatus{
 			ControllerVersion: utils.NuodbOperatorVersion,
-			Phase:             utils.NuodbPendingPhase,
+			Phase:             nuodbv2alpha1.NuodbPendingPhase,
 			AdminReadyCount:   0,
-			AdminHealth:       utils.NuodbUnknownHealth,
-			DomainHealth:      utils.NuodbUnknownHealth,
+			AdminHealth:       nuodbv2alpha1.NuodbUnknownHealth,
+			DomainHealth:      nuodbv2alpha1.NuodbUnknownHealth,
 		},
 	}
 

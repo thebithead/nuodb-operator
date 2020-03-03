@@ -2,8 +2,10 @@ package util
 
 import (
 	goctx "context"
+	"flag"
 	"testing"
 	"time"
+	"gotest.tools/assert"
 
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
@@ -24,22 +26,55 @@ import (
 
 // Time constants.
 const (
-	RetryInterval        = time.Second * 5
-	Timeout              = time.Second * 90
-	CleanupRetryInterval = time.Second * 1
-	CleanupTimeout       = time.Second * 15
+	RetryInterval                 = time.Second * 5
+	Timeout                       = time.Second * 90
+	StatefulSetTimeout            = time.Second * 180
+	InsightsServerTimeout         = time.Second * 540
+	CleanupRetryInterval          = time.Second * 1
+	CleanupTimeout                = time.Second * 15
+	InsightsServerCleanupTimeout  = time.Second * 120
 )
 
-func NewNuodbCluster(namespace string, clusterSpec nuodb.NuodbSpec) *nuodb.Nuodb {
+func NewNuodbAdmin(namespace string, adminSpec nuodb.NuodbAdminSpec) *nuodb.NuodbAdmin {
+	name := "nuoadmin"
+	return &nuodb.NuodbAdmin{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: adminSpec,
+	}
+}
 
+func NewNuodbDatabase(namespace string, nuodbSpec nuodb.NuodbSpec) *nuodb.Nuodb {
 	name := "nuodb"
 	return &nuodb.Nuodb{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
-		Spec: clusterSpec,
+		Spec: nuodbSpec,
 	}
+}
+
+// return 'true' if the string is the name of a 'true' boolean flag.
+// Otherwise return 'false'
+func IsBoolFlagTrue(name string) bool {
+	type BoolFlag interface {
+		IsBoolFlag() bool
+	}
+	localOperatorFlag := flag.Lookup(name)
+	if localOperatorFlag == nil {
+		return false
+	}
+	getter := localOperatorFlag.Value.(flag.Getter)
+	if bf, ok := localOperatorFlag.Value.(BoolFlag); ok && bf.IsBoolFlag() {
+		val, ok := getter.Get().(bool)
+		if ok && val {
+			return true
+		}
+	}
+	return false
 }
 
 // SetupOperator installs the operator and ensures that the deployment is successful.
@@ -50,9 +85,15 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 			APIVersion: "nuodb.com/v2alpha1",
 		},
 	}
+
 	err := framework.AddToFrameworkScheme(apis.AddToScheme, clusterList)
 	if err != nil {
 		t.Fatalf("failed to add custom resource scheme to framework: %v", err)
+	}
+
+	if IsBoolFlagTrue("localOperator") {
+		t.Log("Testing with local Operator.")
+		return
 	}
 
 	err = ctx.InitializeClusterResources(&framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
@@ -62,32 +103,38 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 	t.Log("Initialized cluster resources")
 
 	namespace, err := ctx.GetNamespace()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	f := framework.Global
 
 	err = e2eutil.WaitForDeployment(t, f.KubeClient, namespace, "nuodb-operator", 1, RetryInterval, Timeout)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 }
 
-// DeployCluster creates a custom resource and checks if the
+// DeployNuodbAdmin creates a custom resource and checks if the
+// admin statefulset is deployed successfully.
+func DeployNuodbAdmin(t *testing.T, ctx *framework.TestCtx, nuodbAdmin *nuodb.NuodbAdmin) error {
+	f := framework.Global
+
+	err := f.Client.Create(goctx.TODO(), nuodbAdmin, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
+	assert.NilError(t, err)
+
+	err = WaitForStatefulSet(t, f.KubeClient, nuodbAdmin.Namespace, "admin", 1, RetryInterval, StatefulSetTimeout)
+	assert.NilError(t, err)
+
+	return nil
+}
+
+// DeployNuodb creates a custom resource and checks if the
 // admin statefulset is deployed successfully.
 func DeployNuodb(t *testing.T, ctx *framework.TestCtx, nuodb *nuodb.Nuodb) error {
 	f := framework.Global
 
 	err := f.Client.Create(goctx.TODO(), nuodb, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
-	if err != nil {
-		return err
-	}
+	assert.NilError(t, err)
 
-	err = WaitForStatefulSet(t, f.KubeClient, nuodb.Namespace, "admin", 1, RetryInterval, Timeout*2)
-	if err != nil {
-		t.Fatal(err)
-	}
+	err = WaitForStatefulSet(t, f.KubeClient, nuodb.Namespace, "admin", 1, RetryInterval, StatefulSetTimeout)
+	assert.NilError(t, err)
 
 	return nil
 }
@@ -106,12 +153,12 @@ func NewNuodbInsightsCluster(namespace string, insightsSpec nuodb.NuodbInsightsS
 func DeployInsightsServer(t *testing.T, ctx *framework.TestCtx, nuodbInsights *nuodb.NuodbInsightsServer) error {
 	f := framework.Global
 
-	err := f.Client.Create(goctx.TODO(), nuodbInsights, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
+	err := f.Client.Create(goctx.TODO(), nuodbInsights, &framework.CleanupOptions{TestContext: ctx, Timeout: InsightsServerCleanupTimeout, RetryInterval: CleanupRetryInterval})
 	if err != nil {
 		return err
 	}
 
-	err = WaitForStatefulSet(t, f.KubeClient, nuodbInsights.Namespace, "insights-server-release-logstash", 1, RetryInterval, Timeout*6)
+	err = WaitForStatefulSet(t, f.KubeClient, nuodbInsights.Namespace, "insights-server-release-logstash", 1, RetryInterval, InsightsServerTimeout)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,9 +181,7 @@ func DeployYcsbw(t *testing.T, ctx *framework.TestCtx, nuodbYcsbw *nuodb.NuodbYc
 	f := framework.Global
 
 	err := f.Client.Create(goctx.TODO(), nuodbYcsbw, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
-	if err != nil {
-		return err
-	}
+	assert.NilError(t, err)
 
 	WaitForRC(t, f, nuodbYcsbw.Namespace)
 	t.Log("YCSBW Created")
@@ -177,9 +222,7 @@ func WaitForStatefulSet(t *testing.T, kubeclient kubernetes.Interface, namespace
 		t.Logf("Waiting for ready status of %s statefulset (%d)\n", name, statefulset.Status.ReadyReplicas)
 		return false, nil
 	})
-	if err != nil {
-		return err
-	}
+	assert.NilError(t, err)
 	t.Logf("StatefulSet Ready!\n")
 	return nil
 }
@@ -260,9 +303,7 @@ func GetInsightsClientPod(namespace string) *corev1.Pod {
 func CreateInsightsPods(t *testing.T, ctx *framework.TestCtx, insightsPod *corev1.Pod) error{
 	f := framework.Global
 	err := f.Client.Create(goctx.TODO(), insightsPod, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
-	if err != nil {
-		return err
-	}
+	assert.NilError(t, err)
 	return nil
 }
 

@@ -2,7 +2,6 @@ package v2alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"nuodb/nuodb-operator/pkg/utils"
 )
 
 // NuodbAdminSpec defines the desired state of NuodbAdmin
@@ -60,11 +59,11 @@ type NuodbAdminStatus struct {
 	// Admin Node Ready Count
 	AdminReadyCount int32 `json:"adminReadyCount,omitempty"`
 	// AdminHealth of the NuoDB Domain
-	AdminHealth utils.NuodbHealth `json:"adminHealth,omitempty"`
+	AdminHealth NuodbHealth `json:"adminHealth,omitempty"`
 	// DomainHealth of the NuoDB Domain
-	DomainHealth utils.NuodbHealth `json:"domainHealth,omitempty"`
+	DomainHealth NuodbHealth `json:"domainHealth,omitempty"`
 	// Orchestration phase of the NuoDB Domain
-	Phase utils.NuodbOrchestrationPhase `json:"phase,omitempty"`
+	Phase NuodbOrchestrationPhase `json:"phase,omitempty"`
 	// ControllerVersion is the version of the controller that last updated the NuoDB Domain
 	ControllerVersion string `json:"controllerVersion,omitempty"`
 }

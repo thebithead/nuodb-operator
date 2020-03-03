@@ -335,24 +335,24 @@ func updateStatus(thisClient client.Client, request reconcile.Request, status nu
 	}
 	// Update Admin Health
 	if status.AdminReadyCount >= currentInstance.Spec.AdminCount {
-		status.AdminHealth = utils.NuodbGreenHealth
+		status.AdminHealth = nuodbv2alpha1.NuodbGreenHealth
 	} else if status.AdminReadyCount == 0 {
-		status.AdminHealth = utils.NuodbRedHealth
+		status.AdminHealth = nuodbv2alpha1.NuodbRedHealth
 	} else {
-		status.AdminHealth = utils.NuodbYellowHealth
+		status.AdminHealth = nuodbv2alpha1.NuodbYellowHealth
 	}
 
 	// Derive Domain Health from Admin/SM/TE Health
 	// TODO: Get status for each nuodb CR.
-	if (status.AdminHealth == utils.NuodbGreenHealth) {
-		status.DomainHealth = utils.NuodbGreenHealth
-		status.Phase = 	utils.NuodbOperationalPhase
-	} else if (status.AdminHealth == utils.NuodbRedHealth) {
-		status.DomainHealth = utils.NuodbRedHealth
-		status.Phase = 	utils.NuodbPendingPhase
+	if (status.AdminHealth == nuodbv2alpha1.NuodbGreenHealth) {
+		status.DomainHealth = nuodbv2alpha1.NuodbGreenHealth
+		status.Phase = 	nuodbv2alpha1.NuodbOperationalPhase
+	} else if (status.AdminHealth == nuodbv2alpha1.NuodbRedHealth) {
+		status.DomainHealth = nuodbv2alpha1.NuodbRedHealth
+		status.Phase = 	nuodbv2alpha1.NuodbPendingPhase
 	} else {
-		status.DomainHealth = utils.NuodbYellowHealth
-		status.Phase = 	utils.NuodbOperationalPhase
+		status.DomainHealth = nuodbv2alpha1.NuodbYellowHealth
+		status.Phase = 	nuodbv2alpha1.NuodbOperationalPhase
 	}
 
 	if !reflect.DeepEqual(currentInstance.Status, status) {
@@ -408,10 +408,10 @@ func reconcileNuodbAdminInternal(r *ReconcileNuodbAdmin, request reconcile.Reque
 
 	nuodbStatus := nuodbv2alpha1.NuodbAdminStatus{
 		ControllerVersion: utils.NuodbOperatorVersion,
-		Phase:             utils.NuodbPendingPhase,
+		Phase:             nuodbv2alpha1.NuodbPendingPhase,
 		AdminReadyCount:   0,
-		AdminHealth:       utils.NuodbUnknownHealth,
-		DomainHealth:      utils.NuodbUnknownHealth,
+		AdminHealth:       nuodbv2alpha1.NuodbUnknownHealth,
+		DomainHealth:      nuodbv2alpha1.NuodbUnknownHealth,
 	}
 
 	if instance.Status.ControllerVersion == "" {

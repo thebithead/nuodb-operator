@@ -1,7 +1,7 @@
 package e2e
 
 import (
-	 "context"
+	goctx "context"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"testing"
 
@@ -22,14 +22,14 @@ var (
 	dbName                  = "test1"
 	dbUser                  = "dba"
 	dbPassword              = "secret"
-	smMemory           = "500m"
+	smMemory           = "500Mi"
 	smCount           int32 = 1
 	smCpu              = "100m"
 	smStorageSize           = "20G"
 	smStorageClass          = "local-disk"
 	engineOptions           = ""
 	teCount           int32 = 1
-	teMemory           = "100m"
+	teMemory           = "500Mi"
 	teCpu              = "100m"
 	apiServer               = "https://domain:8888"
 	container               = "nuodb/nuodb-ce:latest"
@@ -37,7 +37,7 @@ var (
 
 func verifySecret(t *testing.T, f *framework.Framework, namespaceName string) {
 	var secret = &corev1.Secret{}
-	err := f.Client.Get(context.TODO(), client.ObjectKey{Namespace: namespaceName, Name: dbName + ".nuodb.com"}, secret)
+	err := f.Client.Get(goctx.TODO(), client.ObjectKey{Namespace: namespaceName, Name: dbName + ".nuodb.com"}, secret)
 
 	assert.NilError(t, err)
 
@@ -57,16 +57,30 @@ func TestNuodbDatabase(t *testing.T) {
 
 
 	namespace, err := ctx.GetNamespace()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
-	clusterSpec:= operator.NuodbSpec{
+	adminSpec := operator.NuodbAdminSpec{
 		StorageMode:       storageMode,
 		InsightsEnabled:   true,
 		AdminCount:        adminCount,
 		AdminStorageSize:  adminStorageSize,
 		AdminStorageClass: adminStorageClass,
+		ApiServer:         apiServer,
+		Container:         container,
+	}
+
+	exampleNuodbAdmin := testutil.NewNuodbAdmin(namespace, adminSpec)
+	testutil.SetupOperator(t,ctx)
+	err = testutil.DeployNuodbAdmin(t, ctx, exampleNuodbAdmin )
+	assert.NilError(t, err)
+
+	f := framework.Global
+
+	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuoadmin", Namespace: namespace}, exampleNuodbAdmin)
+	assert.NilError(t, err)
+
+	nuodbSpec:= operator.NuodbSpec{
+		StorageMode:       storageMode,
 		DbName:            dbName,
 		DbUser:            dbUser,
 		DbPassword:        dbPassword,
@@ -79,23 +93,15 @@ func TestNuodbDatabase(t *testing.T) {
 		TeCount:           teCount,
 		TeMemory:          teMemory,
 		TeCpu:             teCpu,
-		ApiServer:         apiServer,
 		Container:         container,
 	}
 
-	exampleNuodb := testutil.NewNuodbCluster(namespace, clusterSpec)
-	testutil.SetupOperator(t,ctx)
+	exampleNuodb := testutil.NewNuodbDatabase(namespace, nuodbSpec)
 	err = testutil.DeployNuodb(t, ctx, exampleNuodb )
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
-	f := framework.Global
-
-	err = f.Client.Get(context.TODO(), types.NamespacedName{Name: "nuodb", Namespace: namespace}, exampleNuodb)
-	if err != nil {
-		t.Fatal(err)
-	}
+	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuodb", Namespace: namespace}, exampleNuodb)
+	assert.NilError(t, err)
 
 	t.Run("verifySecret", func(t *testing.T) { verifySecret(t, f, namespace) })
 }

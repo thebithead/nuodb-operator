@@ -419,34 +419,34 @@ func updateStatus(thisClient client.Client, request reconcile.Request, status nu
 
 	// Update SM Health
 	if status.SmReadyCount >= currentInstance.Spec.SmCount {
-		status.SmHealth = utils.NuodbGreenHealth
+		status.SmHealth = nuodbv2alpha1.NuodbGreenHealth
 	} else if status.SmReadyCount == 0 {
-		status.SmHealth = utils.NuodbRedHealth
+		status.SmHealth = nuodbv2alpha1.NuodbRedHealth
 	} else {
-		status.SmHealth = utils.NuodbYellowHealth
+		status.SmHealth = nuodbv2alpha1.NuodbYellowHealth
 	}
 
 	// Update TE Health
 	if status.TeReadyCount >= currentInstance.Spec.TeCount {
-		status.TeHealth = utils.NuodbGreenHealth
+		status.TeHealth = nuodbv2alpha1.NuodbGreenHealth
 	} else if status.TeReadyCount == 0 {
-		status.TeHealth = utils.NuodbRedHealth
+		status.TeHealth = nuodbv2alpha1.NuodbRedHealth
 	} else {
-		status.TeHealth = utils.NuodbYellowHealth
+		status.TeHealth = nuodbv2alpha1.NuodbYellowHealth
 	}
 
 	// Get Phase
-	if ((status.TeHealth == utils.NuodbGreenHealth) &&
-		(status.SmHealth == utils.NuodbGreenHealth)) {
-		status.DatabaseHealth = utils.NuodbGreenHealth
-		status.Phase = 	utils.NuodbOperationalPhase
-	} else if ((status.TeHealth == utils.NuodbRedHealth) ||
-		(status.SmHealth == utils.NuodbRedHealth)) {
-		status.DatabaseHealth = utils.NuodbRedHealth
-		status.Phase = 	utils.NuodbPendingPhase
+	if ((status.TeHealth == nuodbv2alpha1.NuodbGreenHealth) &&
+		(status.SmHealth == nuodbv2alpha1.NuodbGreenHealth)) {
+		status.DatabaseHealth = nuodbv2alpha1.NuodbGreenHealth
+		status.Phase = 	nuodbv2alpha1.NuodbOperationalPhase
+	} else if ((status.TeHealth == nuodbv2alpha1.NuodbRedHealth) ||
+		(status.SmHealth == nuodbv2alpha1.NuodbRedHealth)) {
+		status.DatabaseHealth = nuodbv2alpha1.NuodbRedHealth
+		status.Phase = 	nuodbv2alpha1.NuodbPendingPhase
 	} else {
-		status.DatabaseHealth = utils.NuodbYellowHealth
-		status.Phase = 	utils.NuodbOperationalPhase
+		status.DatabaseHealth = nuodbv2alpha1.NuodbYellowHealth
+		status.Phase = 	nuodbv2alpha1.NuodbOperationalPhase
 	}
 
 	if !reflect.DeepEqual(currentInstance.Status, status) {
@@ -526,12 +526,12 @@ func reconcileNuodbInternal(r *ReconcileNuodb, request reconcile.Request) (recon
 
 	nuodbStatus := nuodbv2alpha1.NuodbStatus{
 		ControllerVersion: utils.NuodbOperatorVersion,
-		Phase:             utils.NuodbPendingPhase,
+		Phase:             nuodbv2alpha1.NuodbPendingPhase,
 		SmReadyCount:      0,
 		TeReadyCount:      0,
-		SmHealth:          utils.NuodbUnknownHealth,
-		TeHealth:          utils.NuodbUnknownHealth,
-		DatabaseHealth:    utils.NuodbUnknownHealth,
+		SmHealth:          nuodbv2alpha1.NuodbUnknownHealth,
+		TeHealth:          nuodbv2alpha1.NuodbUnknownHealth,
+		DatabaseHealth:    nuodbv2alpha1.NuodbUnknownHealth,
 	}
 
 	if instance.Status.ControllerVersion == "" {

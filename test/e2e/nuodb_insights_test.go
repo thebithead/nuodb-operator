@@ -67,9 +67,7 @@ func verifyGrafanaDashboards(t *testing.T, f *framework.Framework,namespace stri
 		LabelSelector: "app=grafana",
 	}
 	podList,err := f.KubeClient.CoreV1().Pods(namespace).List(listOptions)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	assert.NilError(t, err)
 
 	var grafanaPod *corev1.Pod
 	for i := range podList.Items {
@@ -87,16 +85,12 @@ func verifyGrafanaDashboards(t *testing.T, f *framework.Framework,namespace stri
 
 func verifyElasticData(t *testing.T, f *framework.Framework,namespace string) {
 	esClient, err := GetESClient(t,f,namespace)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	assert.NilError(t, err)
 
 	templateName := "ic_nuoadminagentlog_template"
 	templateSlice := []string{templateName}
 	resp, err := esClient.Indices.ExistsTemplate(templateSlice)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	assert.NilError(t, err)
 
 	if resp.StatusCode == 404 {
 		t.Fatalf("Nuoadminagentlog Template not found")
@@ -119,6 +113,11 @@ func verifyElasticData(t *testing.T, f *framework.Framework,namespace string) {
 }
 
 func TestNuodbInsights(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("skipping TestNuodbInsights in short mode.")
+	}
+
 	ctx := framework.NewTestCtx(t)
 	defer ctx.Cleanup()
 	var (
@@ -130,30 +129,34 @@ func TestNuodbInsights(t *testing.T) {
 		dbName                  = "test1"
 		dbUser                  = "dba"
 		dbPassword              = "secret"
-		smMemory          	    = "500m"
+		smMemory          	    = "500Mi"
 		smCount           int32 = 1
 		smCpu             		= "100m"
 		smStorageSize           = "20G"
 		smStorageClass          = "local-disk"
 		engineOptions           = ""
 		teCount           int32 = 1
-		teMemory          		= "500m"
+		teMemory          		= "500Mi"
 		teCpu              		= "100m"
 		apiServer               = "https://domain:8888"
 		container               = "nuodb/nuodb-ce:latest"
 	)
 
 	namespace, err := ctx.GetNamespace()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
-	clusterSpec:= operator.NuodbSpec{
+	nuodbAdminSpec := operator.NuodbAdminSpec{
+		AdminCount:        adminCount,
+		AdminStorageClass: adminStorageClass,
+		AdminStorageSize:  adminStorageSize,
 		StorageMode:       storageMode,
 		InsightsEnabled:   false,
-		AdminCount:        adminCount,
-		AdminStorageSize:  adminStorageSize,
-		AdminStorageClass: adminStorageClass,
+		ApiServer:         apiServer,
+		Container:         container,
+	}
+
+	nuodbSpec := operator.NuodbSpec{
+		StorageMode:       storageMode,
 		DbName:            dbName,
 		DbUser:            dbUser,
 		DbPassword:        dbPassword,
@@ -166,22 +169,21 @@ func TestNuodbInsights(t *testing.T) {
 		TeCount:           teCount,
 		TeMemory:          teMemory,
 		TeCpu:             teCpu,
-		ApiServer:         apiServer,
 		Container:         container,
 	}
 
-	exampleNuodb := testutil.NewNuodbCluster(namespace, clusterSpec)
+	exampleNuodbAdmin := testutil.NewNuodbAdmin(namespace, nuodbAdminSpec)
 	testutil.SetupOperator(t,ctx)
+	err = testutil.DeployNuodbAdmin(t, ctx, exampleNuodbAdmin )
+	assert.NilError(t, err)
+
+	exampleNuodb := testutil.NewNuodbDatabase(namespace, nuodbSpec)
 	err = testutil.DeployNuodb(t, ctx, exampleNuodb )
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	f := framework.Global
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuodb", Namespace: namespace}, exampleNuodb)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	//Create insights cr
 	insightsSpec := operator.NuodbInsightsServerSpec{
@@ -195,25 +197,17 @@ func TestNuodbInsights(t *testing.T) {
 	exampleNuodbInsight := testutil.NewNuodbInsightsCluster(namespace, insightsSpec)
 
 	err = testutil.DeployInsightsServer(t, ctx, exampleNuodbInsight )
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "insightsserver", Namespace: namespace}, exampleNuodbInsight)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	insightClientPod := testutil.GetInsightsClientPod(namespace)
 	err = testutil.CreateInsightsPods(t,ctx,insightClientPod)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "insights-client", Namespace: namespace}, insightClientPod)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	ycsbwSpec := operator.NuodbYcsbWlSpec{
 		DbName: dbName,
@@ -233,14 +227,10 @@ func TestNuodbInsights(t *testing.T) {
 	exampleNuodbYcsbw := testutil.NewNuodbYcsbwCluster(namespace, ycsbwSpec)
 
 	err = testutil.DeployYcsbw(t, ctx, exampleNuodbYcsbw )
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuodbycsbwl", Namespace: namespace}, exampleNuodbYcsbw)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	t.Run("verifyNuoDbState", func(t *testing.T) { testutil.VerifyAdminState(t, f, namespace, "admin-0", "admin") })
 	t.Run("verifyYcsbContainer", func(t *testing.T) { verifyYcsbContainer(t, f, "nuodb")})
@@ -253,13 +243,9 @@ func GetESClient(t *testing.T, f *framework.Framework, namespace string) (*elast
 	var esClient *elasticsearch.Client
 	esClient = nil
 	host, err := f.KubeClient.CoreV1().Services(namespace).Get(ESClusterServiceHttp, metav1.GetOptions{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	secret, err := f.KubeClient.CoreV1().Secrets(namespace).Get(ESClusterUserSecret, metav1.GetOptions{})
-	if err != nil{
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 	var esPassword string
 	secretData := secret.Data
 	for k,v := range secretData {
@@ -269,9 +255,7 @@ func GetESClient(t *testing.T, f *framework.Framework, namespace string) (*elast
 	}
 
 	certSecret, err := f.KubeClient.CoreV1().Secrets(namespace).Get(ESClusterHttpCertsPublic, metav1.GetOptions{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	tlsCrt := certSecret.Data["tls.crt"]
 	certificate := tls.Certificate{}

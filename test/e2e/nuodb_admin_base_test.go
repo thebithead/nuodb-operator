@@ -58,18 +58,6 @@ func TestNuodbAdmin(t *testing.T) {
 		adminCount        int32 = 1
 		adminStorageSize        = "5G"
 		adminStorageClass       = "local-disk"
-		dbName                  = "test1"
-		dbUser                  = "dba"
-		dbPassword              = "secret"
-		smMemory           = "500m"
-		smCount           int32 = 1
-		smCpu              = "100m"
-		smStorageSize           = "20G"
-		smStorageClass          = "local-disk"
-		engineOptions           = ""
-		teCount         int32 = 1
-		teMemory           = "100m"
-		teCpu              = "100m"
 		apiServer               = "https://domain:8888"
 		container               = "nuodb/nuodb-ce:latest"
 	)
@@ -79,38 +67,26 @@ func TestNuodbAdmin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	clusterSpec:= operator.NuodbSpec{
+	adminSpec := operator.NuodbAdminSpec{
 		StorageMode:       storageMode,
 		InsightsEnabled:   true,
 		AdminCount:        adminCount,
 		AdminStorageSize:  adminStorageSize,
 		AdminStorageClass: adminStorageClass,
-		DbName:            dbName,
-		DbUser:            dbUser,
-		DbPassword:        dbPassword,
-		SmMemory:          smMemory,
-		SmCount:           smCount,
-		SmCpu:             smCpu,
-		SmStorageSize:     smStorageSize,
-		SmStorageClass:    smStorageClass,
-		EngineOptions:     engineOptions,
-		TeCount:           teCount,
-		TeMemory:          teMemory,
-		TeCpu:             teCpu,
 		ApiServer:         apiServer,
 		Container:         container,
 	}
 
-	exampleNuodb := testutil.NewNuodbCluster(namespace, clusterSpec)
+	exampleNuodb := testutil.NewNuodbAdmin(namespace, adminSpec)
 	testutil.SetupOperator(t,ctx)
-	err = testutil.DeployNuodb(t, ctx, exampleNuodb )
+	err = testutil.DeployNuodbAdmin(t, ctx, exampleNuodb )
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	f := framework.Global
 
-	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuodb", Namespace: namespace}, exampleNuodb)
+	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuoadmin", Namespace: namespace}, exampleNuodb)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,3 +98,4 @@ func TestNuodbAdmin(t *testing.T) {
 	t.Run("verifyAdminService", func(t *testing.T) { verifyAdminService(t, f, namespace, "admin-0") })
 
 }
+
