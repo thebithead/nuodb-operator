@@ -289,12 +289,12 @@ do
 done
 echo ""
 echo -n "Checking nuodb-test1 SM statefulset..."
-kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=60s -l statefulset.kubernetes.io/pod-name=nuodb-test1-sm-0
+kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=180s -l statefulset.kubernetes.io/pod-name=nuodb-test1-sm-0
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 echo ""
 echo -n "Checking nuodb-test2 SM statefulset..."
-kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=60s -l statefulset.kubernetes.io/pod-name=nuodb-test2-sm-0
+kubectl wait --namespace=nuodb --for=condition=ready pod --timeout=180s -l statefulset.kubernetes.io/pod-name=nuodb-test2-sm-0
 retval=$?
 if [ $retval -ne 0 ]; then echo "$0: FAIL"; exit 1; fi
 

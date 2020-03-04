@@ -94,7 +94,7 @@ spec:
           failureThreshold: 54
           # the TE becomes unready if it does not start within 5 minutes = 30s + 5s*54
           successThreshold: 2
-          timeoutSeconds: 1
+          timeoutSeconds: 5
         volumeMounts:
         - name: logdir
           mountPath: /var/log/nuodb
