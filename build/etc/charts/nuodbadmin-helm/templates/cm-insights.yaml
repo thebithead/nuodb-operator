@@ -7,7 +7,7 @@ metadata:
   labels:
     group: nuodb
     subgroup: monitoring
-    insights: hosted
+    insights: client
 data:
   nuoca.local.yml: |
     ---

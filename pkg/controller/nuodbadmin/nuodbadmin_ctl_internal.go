@@ -227,27 +227,16 @@ func reconcileNuodbAdminService(thisClient client.Client, thisScheme *runtime.Sc
 func reconcileNuodbAdminConfigMap(thisClient client.Client, thisScheme *runtime.Scheme, request reconcile.Request, instance *nuodbv2alpha1.NuodbAdmin,
 	nuoResource NuoResource, namespace string) (*corev1.ConfigMap, reconcile.Result, error) {
 	var configMap *corev1.ConfigMap = nil
-	var isInsightsResource = strings.HasSuffix(nuoResource.templateFilename, "-insights.yaml")
 
 	configMap, err := utils.GetConfigMap(thisClient, namespace, nuoResource.name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			if isInsightsResource && !instance.Spec.InsightsEnabled {
-				return nil, reconcile.Result{}, nil
-			}
 			configMap, err = createNuodbAdminConfigMap(thisClient, thisScheme, request, instance, nuoResource)
 			if err != nil {
 				return configMap, reconcile.Result{}, err
 			}
 		} else {
 			return configMap, reconcile.Result{Requeue: true, RequeueAfter: utils.ReconcileRequeueAfterDefault}, err
-		}
-	} else {
-		if isInsightsResource && !instance.Spec.InsightsEnabled {
-			log.Info("Hosted NuoDB Insights disabled - Deleting ConfigMap:",
-				"Namespace", request.Namespace, "Name", nuoResource.name)
-			err = thisClient.Delete(context.TODO(), configMap)
-			return nil, reconcile.Result{}, err
 		}
 	}
 	return configMap, reconcile.Result{}, err
