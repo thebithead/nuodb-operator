@@ -286,15 +286,25 @@ func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Sche
 		if nuoResource.name == "te" {
 			_, _, err = updateTeReadyCount(thisClient, request, deployment.Status.ReadyReplicas)
 			if err != nil {
-				log.Error(err, "Error: Unable to update TE ready count.")
-				return deployment, reconcile.Result{}, trace.Wrap(err)
+				sErr, ok := err.(*apierrors.StatusError)
+				if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+					return deployment, reconcile.Result{}, err
+				} else {
+					log.Error(err, "Error: Unable to update TE ready count.")
+					return deployment, reconcile.Result{}, trace.Wrap(err)
+				}
 			}
 			if *deployment.Spec.Replicas != instance.Spec.TeCount {
 				*deployment.Spec.Replicas = instance.Spec.TeCount
 				err = thisClient.Update(context.TODO(), deployment)
 				if err != nil {
-					log.Error(err, "Error: Unable to update TeCount in TE Deployment.")
-					return deployment, reconcile.Result{}, trace.Wrap(err)
+					sErr, ok := err.(*apierrors.StatusError)
+					if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+						return deployment, reconcile.Result{}, err
+					} else {
+						log.Error(err, "Error: Unable to update TeCount in TE Deployment.")
+						return deployment, reconcile.Result{}, trace.Wrap(err)
+					}
 				}
 			}
 		}
@@ -338,15 +348,25 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 		if nuoResource.name == "sm" {
 			_, _, err = updateSmReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
 			if err != nil {
-				log.Error(err, "Error: Unable to update SM ready count.")
-				return statefulSet, reconcile.Result{}, trace.Wrap(err)
+				sErr, ok := err.(*apierrors.StatusError)
+				if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+					return statefulSet, reconcile.Result{}, err
+				} else {
+					log.Error(err, "Error: Unable to update SM ready count.")
+					return statefulSet, reconcile.Result{}, trace.Wrap(err)
+				}
 			}
 			if *statefulSet.Spec.Replicas != instance.Spec.SmCount {
 				*statefulSet.Spec.Replicas = instance.Spec.SmCount
 				err = thisClient.Update(context.TODO(), statefulSet)
 				if err != nil {
-					log.Error(err, "Error: Unable to update SmCount in SM StatefulSet.")
-					return statefulSet, reconcile.Result{}, trace.Wrap(err)
+					sErr, ok := err.(*apierrors.StatusError)
+					if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+						return statefulSet, reconcile.Result{}, err
+					} else {
+						log.Error(err, "Error: Unable to update SmCount in SM StatefulSet.")
+						return statefulSet, reconcile.Result{}, trace.Wrap(err)
+					}
 				}
 			}
 		}
