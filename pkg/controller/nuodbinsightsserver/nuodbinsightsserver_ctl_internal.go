@@ -716,7 +716,7 @@ func reconcileESCluster(r *ReconcileNuodbInsightsServer, request reconcile.Reque
 				if statusCount > 20 {
 					msg := fmt.Sprintf("Timeout waiting for ES Cluster: %s.", esClusterName)
 					err := errors.NewTimeoutError(msg, 120)
-					log.Error(err, "esClusterName", esClusterName)
+					log.Error(err, msg)
 					return reconcile.Result{}, err
 				}
 				es, err = utils.GetElasticsearch(r.client, request.Namespace, utils.ESClusterName)

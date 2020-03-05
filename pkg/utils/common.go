@@ -1723,7 +1723,8 @@ func ParseK8sYaml(fileR []byte) []runtime.Object {
 			continue
 		}
 		if !acceptedK8sTypes.MatchString(groupVersionKind.Kind) {
-			log.Error(err, "Internal Error YAML contained K8s object types which are not supported! Skipping object with type: %s", groupVersionKind.Kind)
+			msg := fmt.Sprintf("Internal Error YAML contained K8s object types which are not supported! Skipping object with type: %s", groupVersionKind.Kind)
+			log.Error(err, msg)
 		} else {
 			retVal = append(retVal, obj)
 		}
