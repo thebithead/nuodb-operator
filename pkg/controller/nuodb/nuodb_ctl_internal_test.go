@@ -27,7 +27,7 @@ var req = reconcile.Request{}
 
 func init() {
 	var (
-		name                    = "nuodb-operator"
+		name                    = "testdb1"
 		namespace               = "nuodb"
 		storageMode             = "ephemeral"
 		dbName                  = "test1"
@@ -216,7 +216,7 @@ status:
 
 func Test_getDeployment(t *testing.T)  {
 	var deployment *appsv1.Deployment = nil
-	deployment, err := utils.GetDeployment(cl, namespace, "nuodb-operator-te")
+	deployment, err := utils.GetDeployment(cl, namespace, "testdb1-te")
 	assert.NilError(t, err)
 	assert.Equal(t, *deployment.Spec.Replicas, int32(1))
 }
@@ -312,18 +312,17 @@ spec:
 	t.Run("Test With existing Deployment", func(t *testing.T) {
 		_,_, err = reconcileNuodbDeployment(cl, s, req, instance, NuoResource{
 			template: template,
-			name: "nuodb-operator-te",
+			name: "te",
 		}, namespace)
 		assert.NilError(t, err)
 
 		var deployment = &appsv1.Deployment{}
-		err := cl.Get(context.TODO(), types.NamespacedName{Name: "nuodb-operator-te", Namespace: "nuodb"}, deployment)
+		err := cl.Get(context.TODO(), types.NamespacedName{Name: "testdb1-te", Namespace: "nuodb"}, deployment)
 		assert.NilError(t, err)
 		assert.Equal(t, *deployment.Spec.Replicas, int32(1))
 	})
 
 	t.Run("Update-count", func(t *testing.T) {
-		t.Skip("Broken")
 		instance.Spec.TeCount=3
 		defer func() {
 			instance.Spec.TeCount=1
@@ -331,12 +330,12 @@ spec:
 
 		_,_, err = reconcileNuodbDeployment(cl, s, req, instance, NuoResource{
 			template: template,
-			name: "nuodb-operator-te",
+			name: "te",
 		}, namespace)
 		assert.NilError(t, err)
 
 		var deployment = &appsv1.Deployment{}
-		err := cl.Get(context.TODO(), types.NamespacedName{Name: "nuodb-operator-te", Namespace: "nuodb"}, deployment)
+		err := cl.Get(context.TODO(), types.NamespacedName{Name: "testdb1-te", Namespace: "nuodb"}, deployment)
 		assert.NilError(t, err)
 		assert.Equal(t, *deployment.Spec.Replicas, int32(3))
 	})
@@ -455,28 +454,27 @@ spec:
 	t.Run("Default-Statefulset", func(t *testing.T) {
 		_,_, err = reconcileNuodbStatefulSet(cl, s, req, instance, NuoResource{
 			template: template,
-			name: "nuodb-operator-sm",
+			name: "sm",
 		}, namespace)
 		assert.NilError(t, err)
 		var statefulSet = &appsv1.StatefulSet{}
-		err := cl.Get(context.TODO(), types.NamespacedName{Name: "nuodb-operator-sm", Namespace: "nuodb"}, statefulSet)
+		err := cl.Get(context.TODO(), types.NamespacedName{Name: "testdb1-sm", Namespace: "nuodb"}, statefulSet)
 		assert.NilError(t, err)
 		assert.Equal(t, *statefulSet.Spec.Replicas, int32(1))
 	})
 
 	t.Run("Update-Count-sm", func(t *testing.T) {
-		t.Skip("Broken DB-30302")
 		instance.Spec.SmCount=3
 		defer func() {
 			instance.Spec.SmCount=1
 		}()
 
 		_,_, err = reconcileNuodbStatefulSet(cl, s, req, instance, NuoResource{
-			name: "nuodb-operator-sm",
+			name: "sm",
 		}, namespace)
 		assert.NilError(t, err)
 		var statefulSet = &appsv1.StatefulSet{}
-		err := cl.Get(context.TODO(), types.NamespacedName{Name: "nuodb-operator-sm", Namespace: "nuodb"}, statefulSet)
+		err := cl.Get(context.TODO(), types.NamespacedName{Name: "testdb1-sm", Namespace: "nuodb"}, statefulSet)
 		assert.NilError(t, err)
 		assert.Equal(t, *statefulSet.Spec.Replicas, int32(3))
 	})
