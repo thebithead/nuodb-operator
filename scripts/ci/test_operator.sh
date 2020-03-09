@@ -18,7 +18,7 @@ kubectl create namespace $OPERATOR_NAMESPACE
 kubectl create secret docker-registry regcred --namespace=nuodb --docker-server=$DOCKER_SERVER --docker-username=$BOT_U --docker-password=$BOT_P --docker-email=""
 
 echo "Start of Operator GoLang e2e test"
-operator-sdk test local ./test/e2e --namespace $OPERATOR_NAMESPACE --verbose --kubeconfig $HOME/.kube/config --image $NUODB_OP_IMAGE --go-test-flags "-short"
+operator-sdk test local ./test/e2e --namespace $OPERATOR_NAMESPACE --debug --verbose --kubeconfig $HOME/.kube/config --image $NUODB_OP_IMAGE --go-test-flags "-short"
 echo "End of Operator GoLang e2e test"
 
 
