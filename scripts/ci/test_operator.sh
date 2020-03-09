@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# exit when any command fails
+set -e
+
 PROJECT=nuodb
 NODE=minikube
 TESTDIR=$TRAVIS_BUILD_DIR
