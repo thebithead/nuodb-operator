@@ -3,6 +3,7 @@ package util
 import (
 	goctx "context"
 	"flag"
+	"nuodb/nuodb-operator/pkg/trace"
 	"testing"
 	"time"
 	"gotest.tools/assert"
@@ -117,6 +118,9 @@ func DeployNuodbAdmin(t *testing.T, ctx *framework.TestCtx, nuodbAdmin *nuodb.Nu
 	f := framework.Global
 
 	err := f.Client.Create(goctx.TODO(), nuodbAdmin, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
+	if err != nil {
+		t.Log(trace.Wrap(err))
+	}
 	assert.NilError(t, err)
 
 	err = WaitForStatefulSet(t, f.KubeClient, nuodbAdmin.Namespace, "admin", 1, RetryInterval, StatefulSetTimeout)
