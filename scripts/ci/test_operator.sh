@@ -1,8 +1,4 @@
 #!/bin/bash
-
-# exit when any command fails
-set -e
-
 PROJECT=nuodb
 NODE=minikube
 TESTDIR=$TRAVIS_BUILD_DIR
@@ -23,6 +19,8 @@ kubectl create secret docker-registry regcred --namespace=nuodb --docker-server=
 
 echo "Start of Operator GoLang e2e test"
 operator-sdk test local ./test/e2e --namespace $OPERATOR_NAMESPACE --verbose --kubeconfig $HOME/.kube/config --image $NUODB_OP_IMAGE --go-test-flags "-short"
+retval=$?
+if [ $retval -ne 0 ]; then echo "FAIL operator-sdk e2e test: $retval"; exit 1; fi
 echo "End of Operator GoLang e2e test"
 
 
