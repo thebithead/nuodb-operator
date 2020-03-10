@@ -286,8 +286,7 @@ func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Sche
 		if nuoResource.name == "te" {
 			_, _, err = updateTeReadyCount(thisClient, request, deployment.Status.ReadyReplicas)
 			if err != nil {
-				sErr, ok := err.(*apierrors.StatusError)
-				if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+				if apierrors.IsConflict(err) {
 					return deployment, reconcile.Result{}, err
 				} else {
 					log.Error(err, "Error: Unable to update TE ready count.")
@@ -298,8 +297,7 @@ func reconcileNuodbDeployment(thisClient client.Client, thisScheme *runtime.Sche
 				*deployment.Spec.Replicas = instance.Spec.TeCount
 				err = thisClient.Update(context.TODO(), deployment)
 				if err != nil {
-					sErr, ok := err.(*apierrors.StatusError)
-					if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+					if apierrors.IsConflict(err) {
 						return deployment, reconcile.Result{}, err
 					} else {
 						log.Error(err, "Error: Unable to update TeCount in TE Deployment.")
@@ -348,8 +346,7 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 		if nuoResource.name == "sm" {
 			_, _, err = updateSmReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
 			if err != nil {
-				sErr, ok := err.(*apierrors.StatusError)
-				if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+				if apierrors.IsConflict(err) {
 					return statefulSet, reconcile.Result{}, err
 				} else {
 					log.Error(err, "Error: Unable to update SM ready count.")
@@ -360,8 +357,7 @@ func reconcileNuodbStatefulSet(thisClient client.Client, thisScheme *runtime.Sch
 				*statefulSet.Spec.Replicas = instance.Spec.SmCount
 				err = thisClient.Update(context.TODO(), statefulSet)
 				if err != nil {
-					sErr, ok := err.(*apierrors.StatusError)
-					if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+					if apierrors.IsConflict(err) {
 						return statefulSet, reconcile.Result{}, err
 					} else {
 						log.Error(err, "Error: Unable to update SmCount in SM StatefulSet.")
@@ -380,8 +376,7 @@ func reconcileNuodbDaemonSet(thisClient client.Client, thisScheme *runtime.Schem
 	var daemonSet *appsv1.DaemonSet = nil
 	daemonSet, err := utils.GetDaemonSet(thisClient, namespace, nuoResource.name)
 	if err != nil {
-		sErr, ok := err.(*apierrors.StatusError)
-		if ok && sErr.Status().Reason == "NotFound"{
+		if apierrors.IsNotFound(err) {
 			daemonSet, err = createNuodbDaemonSet(thisClient, thisScheme, request, instance, nuoResource)
 			if err != nil {
 				return daemonSet, reconcile.Result{}, err
