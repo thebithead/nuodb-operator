@@ -12,7 +12,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/engine"
@@ -264,8 +263,7 @@ func reconcileNuodbAdminStatefulSet(thisClient client.Client, thisScheme *runtim
 		if nuoResource.name == "admin" {
 			_, _, err = updateAdminReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
 			if err != nil {
-				sErr, ok := err.(*apierrors.StatusError)
-				if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+				if apierrors.IsConflict(err) {
 					return statefulSet, reconcile.Result{}, err
 				} else {
 					log.Error(err, "Error: Unable to update Admin ready count.")
@@ -276,8 +274,7 @@ func reconcileNuodbAdminStatefulSet(thisClient client.Client, thisScheme *runtim
 				*statefulSet.Spec.Replicas = desiredAdminPodCount
 				err = thisClient.Update(context.TODO(), statefulSet)
 				if err != nil {
-					sErr, ok := err.(*apierrors.StatusError)
-					if ok && sErr.Status().Reason == metav1.StatusReasonConflict {
+					if apierrors.IsConflict(err) {
 						return statefulSet, reconcile.Result{}, err
 					} else {
 						log.Error(err, "Error: Unable to update AdminCount in Admin StatefulSet.")
