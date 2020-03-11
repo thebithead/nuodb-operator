@@ -110,6 +110,7 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 
 	err = e2eutil.WaitForDeployment(t, f.KubeClient, namespace, "nuodb-operator", 1, RetryInterval, Timeout)
 	assert.NilError(t, err)
+	time.Sleep(time.Second * 5) // Temporary workaround until the root cause of DB-30412 is found.
 }
 
 // DeployNuodbAdmin creates a custom resource and checks if the
