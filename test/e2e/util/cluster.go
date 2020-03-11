@@ -110,6 +110,7 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 
 	err = e2eutil.WaitForDeployment(t, f.KubeClient, namespace, "nuodb-operator", 1, RetryInterval, Timeout)
 	assert.NilError(t, err)
+	time.Sleep(time.Second * 5)
 }
 
 // DeployNuodbAdmin creates a custom resource and checks if the
@@ -119,7 +120,7 @@ func DeployNuodbAdmin(t *testing.T, ctx *framework.TestCtx, nuodbAdmin *nuodb.Nu
 
 	err := f.Client.Create(goctx.TODO(), nuodbAdmin, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
 	if err != nil {
-		t.Log(trace.Wrap(err))
+		t.Error(trace.Wrap(err))
 	}
 	assert.NilError(t, err)
 
