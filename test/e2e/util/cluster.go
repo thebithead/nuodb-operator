@@ -3,6 +3,7 @@ package util
 import (
 	goctx "context"
 	"flag"
+	"nuodb/nuodb-operator/pkg/trace"
 	"testing"
 	"time"
 	"gotest.tools/assert"
@@ -109,6 +110,7 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 
 	err = e2eutil.WaitForDeployment(t, f.KubeClient, namespace, "nuodb-operator", 1, RetryInterval, Timeout)
 	assert.NilError(t, err)
+	time.Sleep(time.Second * 5) // Temporary workaround until the root cause of DB-30412 is found.
 }
 
 // DeployNuodbAdmin creates a custom resource and checks if the
@@ -117,6 +119,9 @@ func DeployNuodbAdmin(t *testing.T, ctx *framework.TestCtx, nuodbAdmin *nuodb.Nu
 	f := framework.Global
 
 	err := f.Client.Create(goctx.TODO(), nuodbAdmin, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
+	if err != nil {
+		t.Log(trace.Wrap(err))
+	}
 	assert.NilError(t, err)
 
 	err = WaitForStatefulSet(t, f.KubeClient, nuodbAdmin.Namespace, "admin", 1, RetryInterval, StatefulSetTimeout)
