@@ -5,7 +5,7 @@ metadata:
 spec:
   storageMode: ephemeral
   insightsEnabled: false
-  adminCount: 1
+  adminCount: 3
   adminStorageSize: 5Gi
   adminStorageClass: local-disk
   apiServer: https://domain:8888

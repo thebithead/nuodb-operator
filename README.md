@@ -22,6 +22,11 @@ A Kubernetes Operator written in Golang that automates the packaging, provisioni
 
 The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample application (ycsb) to quickly generate a user-configurable SQL workload against the database.
 
+## NuoDB Operator Version support
+For a list of supported NuoDB Operator releases and where to download, click the `Releases` tab above. To enable automated notification of new releases, click the Watch button above and subscribe to the Releases Only selection. 
+
+**Note:** The master branch may contain changes not fully tested and represents a work-in-progress view of the next planned release. 
+
 ## About the NuoDB Community Edition Capability
 The NuoDB Community Edition (CE) capability is a full featured, but limits the database to one Storage Manager (SM) and three Transaction Engine (TE) processes. The Community Edition is free of charge and allows you to self-evaluate NuoDB at your own pace. The NuoDB Community Edition (CE) will allow first time users to experience all the benefits and value points of NuoDB including: 
 
@@ -70,7 +75,7 @@ _**Note:** The instructions on this page use the Kubernetes `kubectl` command (f
 
 Create a Kubernetes cluster and connect to the cluster. 
 In our verification tests, we regularly verify the samples workloads outlined on this page using the following minimal configuration:
-* 5 nodes, each with with 2 CPUs and 16 GB of RAM
+* 4 worker nodes, each with with 4 CPUs and 16 GB of RAM (e.g. AWS m5.xlarge instance type)
 * 5 GB disk for Admin pods
 * 20 GB disk for Storage Manager(SM) pods
 
@@ -82,10 +87,10 @@ Please use this as a guideline for a minimal configuration when you create your 
 export OPERATOR_NAMESPACE=nuodb
 export NUODB_OPERATOR_VERSION=2.0.3           --confirm you set the correction NuoDB Operator version here.
 ```
-### 3. Clone a copy of the NuoDB Operator from Github
-In your home or working directory, run:
+### 3. Clone a copy of the NuoDB Operator release branch or download from the Releases tab a release zip file and unpack 
+For example, in your home or working directory, run:
 
-`git clone https://github.com/nuodb/nuodb-operator`
+`git clone -b "rel-2.0.3" https://github.com/nuodb/nuodb-operator`
 
 ### 4. Create the "nuodb" project/namespace (if not already created)
 
@@ -279,6 +284,7 @@ kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
 
 ## add NuoDB, Insights, and ycsb sample SQL app CRDs
+kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbadmin_crd.yaml
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_crd.yaml
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
 kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
@@ -286,7 +292,7 @@ kubectl create -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
 # create a local copy of the nuodb-csv.yaml file
 sed "s/placeholder/$OPERATOR_NAMESPACE/" nuodb-operator/deploy/olm-catalog/nuodb-operator/$NUODB_OPERATOR_VERSION/nuodb-operator.v$NUODB_OPERATOR_VERSION.clusterserviceversion.yaml > nuodb-csv.yaml
 
-# To replace quay.io as the default location to pull the NuoDB Operator image, follow these examples:
+# You may pull the NuoDB Operator from quay.io which is the default. Optionally, to replace quay.io as the default location to pull the NuoDB Operator image, follow these examples:
 
    # Create a new nuodb-csv.yaml flie that pulls from the Red Hat Container Catalog, run
    #   sed "s/quay.io/registry.connect.redhat.com/" nuodb-csv.yaml > nuodb-csv-rhcc.yaml
@@ -318,31 +324,44 @@ done
 
 The nuodb-operator/deploy/crds directory includes sample Custom Resources yaml files that can be used to deploy a NuoDB database with on-cluster (locally deployed) NuoDB Insights, and a ycsb sample workload. 
 
-`nuodb_v2alpha1_nuodb_cr.yaml`
-`nuodb_v2alpha1_nuodbinsightsserver_cr.yaml`
-`nuodb_v2alpha1_nuodbycsbwl_cr.yaml`
+```
+nuodb_v2alpha1_nuodbadmin_cr.yaml
+nuodb_v2alpha1_nuodb_cr.yaml
+nuodb_v2alpha1_nuodbinsightsserver_cr.yaml
+nuodb_v2alpha1_nuodbycsbwl_cr.yaml`
+```
 
-Optionally, you can add any of the below parameters values to your own customer resource files to customize your deployment. Each parameter is described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample deployment files are provided below. 
+Optionally, you can add or modify any of the below parameters values to your own customer resource files to customize your deployment. Each parameter is described in the &nbsp;[Optional Database Parameters](#Optional-Database-Parameters) section. Sample deployment files are provided below. 
 
-#### nuodb_v2alpha1_nuodb_cr.yaml
+#### nuodb_v2alpha1_nuodbadmin_cr.yaml
 
-This sample file starts a database named *test*,  uses persistent storage, disables *hosted* Insights monitoring, starts three NuoDB Admin pods, and includes various others configurations like controlling the number desired pods, CPU, and memory used per NuoDB process type.
+This sample file uses persistent storage, uses AWS general purpose EBS storage (gp2), disables *hosted* Insights monitoring and starts three NuoDB Admin pods, 
 ```
 spec:
-  replicaCount: 1
   storageMode: persistent
   insightsEnabled: false
   adminCount: 3
-  adminStorageSize: 2G
-  adminStorageClass: <ENTER VALUE>
+  adminStorageSize: 5Gi
+  adminStorageClass: gp2
+  apiServer: https://domain:8888
+  container: nuodb/nuodb-ce:latest
+```
+_**Note:** If your Kubernetes cluster has less than three worker nodes then modify your `adminCount` value to equal the number of worker nodes in your cluster. This will deploy one NuoDB Admin process per worker node._ 
+
+#### nuodb_v2alpha1_nuodb_cr.yaml
+
+This sample file starts a database named *test*, uses persistent storage, uses AWS general purpose EBS storage (gp2), and includes various others configurations like controlling the number of desired TE pods, CPU, and memory used per NuoDB process type. Running multiple nuodb_cr.yaml files will start multiple databases within the same NuoDB domain.
+```
+spec:
+  storageMode: persistent
   dbName: test
   dbUser: dba
-  dbPassword: secret
+  dbPassword: <changeMe>
   smCount: 1
   smMemory: 4Gi
   smCpu: "2"
   smStorageSize: 20G
-  smStorageClass: <ENTER VALUE>
+  smStorageClass: gp2
   engineOptions: ""
   teCount: 1
   teMemory: 4Gi
@@ -350,17 +369,18 @@ spec:
   container: nuodb/nuodb-ce:latest
 ```
 
-We recommend replacing the database password `dbPassword` value 'secret' with one of your choice. Also, it's common to configure the image pull source locations by replacing the default values for the `ycsbContainer` and `container` parameters with values that match your deployment type.
+We recommend replacing the database password `dbPassword` value <changeMe> with one of your choice. 
 
 #### nuodb_v2alpha1_nuodbinsightsserver_cr.yaml
 
+This sample file starts on-cluster NuoDB Insights and uses AWS general purpose EBS storage (gp2) to persist monitoring data.
 ```
 spec:
   elasticVersion: 7.3.0
   elasticNodeCount: 1
   kibanaVersion: 7.3.0
   kibanaNodeCount: 1
-  storageClass: <ENTER VALUE>
+  storageClass: gp2
 ```
 **Note:**  For parameters `adminStorageClass`, `smStorageClass`, and `storageClass` enter the Kubernetes storage class value you wish to use. For example, 
 
@@ -397,18 +417,14 @@ This sample deploys a NuoDB database using "on-cluster" NuoDB Insight visual mon
 # Set the environment context to the namespace you will deploy the NuoDB Operator
 kubectl config set-context --current --namespace=$OPERATOR_NAMESPACE`
 
-# To deploy the NuoDB database into your Kubernetes cluster, first make a local copy of the NuoDB cr yaml files
-cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_cr.yaml                 nuodb-cr.yaml
-cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml   nuodb-insights-cr.yaml
-cp nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_cr.yaml           nuodb-ycsbwl_cr.yaml
-
 # add cluster-admin permissions to the nuodb-operator service account                               
 kubectl create -f nuodb-operator/deploy/cluster-op-admin.yaml
 
 # Modify / customize your NuoDB cr yaml files and run, (see samples below in next section)
-kubectl create -n $OPERATOR_NAMESPACE -f nuodb-cr.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f nuodb-insights-cr.yaml
-kubectl create -n $OPERATOR_NAMESPACE -f nuodb-ycsbwl-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbadmin-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb-cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_cr.yaml
+kubectl create -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb-ycsbwl-cr.yaml
 
 #Wait for nuodb to be logstash instance to be ready
 # Check deployment rollout status every 10 seconds (max 10 minutes) until complete.
@@ -517,9 +533,10 @@ Once your NuoDB database and Insights visual monitor are running, here are a few
 kubectl delete -n $OPERATOR_NAMESPACE configmap nuodb-lic-configmap
 
 kubectl delete pod/insights-client
-kubectl delete -f nuodb-cr.yaml
-kubectl delete -f nuodb-insights-cr.yaml
-kubectl delete -f nuodb-ycsbwl-cr.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbadmin-cr.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb-cr.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb-insights-cr.yaml
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb-ycsbwl-cr.yaml
 
 # Delete the NuoDB persistent storage volumes claims
 kubectl delete -n $OPERATOR_NAMESPACE pvc --all 
@@ -558,6 +575,7 @@ kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/role_binding.yaml
 kubectl delete -n $OPERATOR_NAMESPACE -f nuodb-operator/deploy/service_account.yaml
 
+kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbadmin_crd.yaml
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodb_crd.yaml
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbinsightsserver_crd.yaml
 kubectl delete -f nuodb-operator/deploy/crds/nuodb_v2alpha1_nuodbycsbwl_crd.yaml
@@ -586,9 +604,9 @@ kubectl get role/grafana-operator
 ```
 
 
-## Optional Database Parameters
+## Optional Domain Parameters
 
-**storageMode** - Run NuoDB CE using a persistent, local, disk volume "persistent" or volatile storage "ephemeral". Must be set to one of those values.
+**storageMode** - Run NuoDB using persistent durable storage "persistent" or volatile storage "ephemeral". Must be set to one of those two values.
 
 &ensp; `storageMode: persistent`
 
@@ -598,9 +616,9 @@ kubectl get role/grafana-operator
 &ensp; `insightsEnabled: false`
 
 
-**adminCount** - Number of admin service pods. Requires 1 server node available for each Admin Service
+**adminCount** - Number of admin service pods. Requires 1 cluster node available for each Admin Service
 
-&ensp; `adminCount: 1`
+&ensp; `adminCount: 3`
 
 
 **adminStorageSize** - Admin service log volume size (GB)
@@ -611,6 +629,18 @@ kubectl get role/grafana-operator
 **adminStorageClass** - Admin persistent storage class name
 
 &ensp; `adminStorageClass: glusterfs-storage`
+
+
+**apiServer** - Load balancer service URL. hostname:port (or LB address) for nuocmd and nuodocker process to connect to.
+
+&ensp; `apiServer: https://domain:8888`
+
+
+## Optional Database Parameters
+
+**storageMode** - Run NuoDB using persistent durable storage "persistent" or volatile storage "ephemeral". Must be set to one of those two values.
+
+&ensp; `storageMode: persistent`
 
 
 **dbName** - NuoDB Database name. must consist of lowercase alphanumeric characters '[a-z0-9]+' 
@@ -667,10 +697,6 @@ kubectl get role/grafana-operator
 
 &ensp; `teCpu: "1"`
 
-**apiServer** - Load balancer service URL. hostname:port (or LB address) for nuocmd and nuodocker process to connect to.
-
-&ensp; `apiServer: https://domain:8888`
-
 
 **container** - NuoDB fully qualified image name (FQIN) for the Docker image to use
 
@@ -706,17 +732,17 @@ container: nuodb/nuodb-ce:latest
 &ensp; `ycsbNoOfProcesses: 2`
 
 
-**ycsbNoOfRows** - YCSB number of initial rows in table
+**ycsbNoOfRows** - YCSB number of rows inserted into the ycsb table
 
 &ensp; `ycsbNoOfRows: 10000`
 
 
-**ycsbNoOfIterations** - YCSB number of iterations
+**ycsbNoOfIterations** - YCSB number of iterations. After the last iteration finishes the benchmark will stop. A value of 0 will run the benchmark continuously.
 
 &ensp; `ycsbNoOfIterations: 0`
 
 
-**ycsbOpsPerIteration** - Number of YCSB SQL operations to perform in each iteration. This value controls the number of SQL operations performed in each benchmark iteration. Increasing this value increases the run-time of each iteration, and also reduces the frequency at which new connections are made during the sample workload run period.
+**ycsbOpsPerIteration** - Number of YCSB SQL operations to perform in each iteration. This value controls the number of SQL operations performed in each benchmark iteration. Increasing this value increases the run-time of each iteration, and also reduces the frequency at which new connections are made during the sample workload run period. 
 
 &ensp; `ycsbOpsPerIteration: 10000`
 
