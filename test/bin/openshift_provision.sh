@@ -1,4 +1,5 @@
 #! /bin/bash
+set -e
 #
 # Provision an OpenShift 4.x cluster using the openshift-install tool:
 #
@@ -42,48 +43,118 @@
 # platform:
 #   aws:
 #     region: ca-central-1
-# pullSecret: '{"auths":{"cloud.openshift.com":{"auth":"obscurecredsssslbGffc2UtZGV2K3RvbWdsdsVzbnVvZGIxa2kxMWVjdjIxcTNsa3NjYXQ4aWxvdjR1MXg6Tk5XUVZLNEVKMlBXSENWMlJKVVRQV05OSjNONDZJTVkxUlhZTUlaVstFWVZWTEdMRldPWUlWQk0xRElTV0IzMg==","email":"tgates@nuodb.com"},"quay.io":{"auth":"obscurecredsssslsGVhc2UtZGV2K3RvbWdhdGVzbnVvZGIxa2kxMWVjdjIxcTNsa3NjYXQ4aWxvdjR1MXg6dk5XUVZLNEVKMlBXSENWMlJKVVRQd05OSjNONDZJTVkxUlhZTUlaVUtFWVZWTEdMRldPWUlWQk0xRElTV0IzMg==","email":"tgates@nuodb.com"},"registry.connect.redhat.com":{"auth":"obscure-credsssjLTFLSTExRWN2MjFxM2xrc0NBVdhpsG9dNHUxWDpleUpoYkdjaU9pSlNVelV4TWlKOS5leUp6ZFdJaU9pSmtPRGswTlRnMVlXRmlNemMwWkRRME9HRTNaR1V6WkdJNU5tUXdZafxoWWlKOS5tZ01rVzg2azFNSDVFb1BFVmFRTi1YVEZvRXlSdURNMXY4aElXUk9wZslwfVRfekllM2ZZTXpyY3NoMllOem1VMC1qakZsUm5ib2hLN2FWZ3hNd1ZWM01JM1BQeXR4amloX1lvbUFkRk9GNkVKSkFBOUpnWsBzTDdGf2ZJMXBQNUU4dWxFYVZsMS1nR3pPdXlKY0hvVHItcTJfVG5UR2J2dEx3aFJJdlNvT01XRzFkcDZZRUlfMEdjNFpDT0wwQsd4WnJoa29EU1JTbTdmQ1FyNHNMaExScVUxWndPeEpjT1hyaUlGT0ozNkg1TXhGWnpUR0Y4UDJMTDJxS3llQnN5NnhZOXBBSU50UXJPRTZMV3RUVmNLR2FEb2c0RFItUUVnYkh6VFhMRVlHMEp4M2Nta2pObGlTYVVyLVNfSk94dldTS01WaEdTRkx6SnU3UmVGdHFYOXB1NmpFZUZqRVBWYkREdk5leFJ3X3JiUGdWMmpvN0xBM0J3TWtLR2FuRTNGYXJHUXM4X2tyRzhEZnhNdnFuNWJfUXRVUTJvcnZBOFd3bE5FOFhEV1J5MlU2bjNmNjZkVnhJZzFINEV4YzJBTENCR0J5cjI4RnBjbFFLUWxRRWEwOE5jWHVXWWJtMGlYRDdNbThKYmw4WlFNbF94aS1GeXZqc25GQTFnaENSRk5ITWRXR2l5VERVaFhMeU9JOVdWTEp2LS1mWXBHeXM3emxNdWVOeHI1dGNEb09qR040blNQS1U3M3F6bHBBVkFBek5uQ0RadXdYN1pVaVRwWW9QeUdVSE5zUXNCajk3SDNwUXdwbzBjWkVYaWpIelVnSkNzMVY2WUktMzVITHJEWXNXV2hJbnRRY0R5UDBIU1dpWGJHVXE3SEJOY3F4MTg5M0VELU9vTXpHSQ==","email":"tgates@nuodb.com"},"registry.redhat.io":{"auth":"obscurecredssssjsTgLSTExRWN2MjFxM2xrc0NBVDhpbG9WNHUxWDpleUpoYkdjaU9pSlNVelV4TWlKOS5leUp6ZFdJaU9pSmtPRGswTlRnMVlXRmlNemMwWkRRME9HRTNaR1V6WkdJNU5tUXdZamxoWWlKOS5tZ01rVzg2azFNSDVFb1BFVmFRTi1YVEZvRXlSdURNMXY4aElXUk9wZslwQVRlekllM2ZZTXpyY3NoMllOem1VMC1qakZsUm5ib2hLN2FWZ3hNd1ZWM01JM1BQeXR4amloX1lvbUFkRk9GNkVKSkFBOUjnfXBzTDdGN2ZJMXBQNUU4dWxFYVZsMS1nR3pPYXlKY0hvVHItcTJfVG5UR2J2dEx3aFJJdlNvT01XRzFkcDZZRUlfMEdjNFpkT0wwQzd4WnJoa29EU1JTbTdmQ1FyNHNMaExScVUxWndPeEpjT1hyaUlGT0ozNkg1TXhGWnpUR0Y4UDJMTDJxS3llQnN5NnhZOkBBSU50UXJPRTZMV3RUVmNLR2FEb2c0RFItUUVnYkh6VFhMRVlHMEp4M2Nta2pObGlTYVVyLVNfSk94dldTS01WaEdTRkx6SnU3UmVGdHFYOXB1NmpFZUZqRVBWYkREdk5leFJ3X3JiUGZWMmpvN0xBM0J3TWtLR2FuRTNGYXJHUXM4X2tyRzhEZnhNdnFuNWJfUXRVUTJvcnZBOgd3bE5FOFhEV1J5MlU2bjNmNjZkVnhJZzFINEV4YzJBTENCR0J5cjI4RnBjbFFLUWxRRWEwOE5jWHVXWWJtMGlYRDdNbThKYmw4WlFNbF94aS1GeXZqc25GQTFnaENSRk5ITWRXR2l5VERVaFhMeU9JOVdWTEp2LS1mWXBHeXM3emxNdWVOeHI1dGNEb09qR040blNQd1U3M3F6bHBBVkFBek5uQ0RadXdYN1pVaVRwWW9QeUdVSE5zUXNCajk3SDNwUXdwbzBjWkVYaWpIelVnSkNzMVY2WUktMzVITHJEWXNXV2hJbnRRY0R5UDBIU1dpWGJHVXE3SEJOY3s4MTg5M0VELU9vTXpHSQ==","email":"tgates@nuodb.com"}}}'
+# publish: External
+# pullSecret: <pull secret>
 # sshKey: |
-#   ssh-rsa obscurecredssssAAAfDAffffffffffffffffHHxpqaG1CRSuTxH8+uk/88ZLZGTMtriXz9cz2Prji4d3lpU3fd38OeaT22lRAddaFcBtW9r6X78i3qRSt8PXabqC7X1MqbPqToeeONDnWvsoVXvyQddddddddddddddddddddddlc9xYO3oWv1j+kcmo9augsUYsqMoXYPOcyj/F6pN2RSfo4YkbMhp1d/352ozAdvssssssssssssssqmgKk2eMxfIvg/683hw3dZfgfffffffffffffffff5NM7z+EPf6TKSUiJggggggggggggggggggggggggggggggSgmxw2sjgwTUsyTYlUTwNxDSV6iq5NgO6UoL tom@thebithead.com
+# ssh-rsa <key> <email>
 #
 ################################################################################
 # End of example install-config.yaml for provisioning OpenShift on AWS.
 ################################################################################
 #
-echo "Provision OpenShift"
-if [ ! -f "${1}" ]; then
-    echo "Error: Unable to find '${1}'"
+echo "Provision OpenShift on AWS"
+
+if [ "x${1}" == "x" ]; then
+    echo "  Usage:   openshift_provision <install-yaml-file>"
+    echo "  Example: openshift_provision my-install-config.yaml"
     exit 1
 fi
+
+if [ ! -f "${1}" ]; then
+    echo "  Error: Unable to find '${1}'"
+    echo "  Usage: openshift_provision <install-yaml-file>"
+    exit 1
+fi
+
+# Set operating system
+if [ "$(uname)" == "Darwin" ]; then
+    opsys=mac
+else
+    opsys=linux
+fi
+
+echo "Script running on $opsys"
+
 ocp_version=4.2.12
 echo "OCP Version: $ocp_version"
 current_dir=$(pwd)
 echo "Current Directory: $current_dir"
-timestamp=`date --iso-8601=ns|sed "s/,/./g"|sed "s/:/-/g"`
-echo "Timestamp: $timestamp"
+
+# Do this once, into the current directory
+
+# Get client side tools: kubectl and oc
+CLIENT_GZIP=openshift-client-${opsys}-${ocp_version}.tar.gz
+
+if [ ! -f "${CLIENT_GZIP}" ]; then
+    wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${ocp_version}/${CLIENT_GZIP}
+fi
+tar xvzf ${CLIENT_GZIP}
+
+if [ -f "oc" ]; then
+    echo "Client tools oc and kubectl available"
+else
+    echo "Unable to download client tools"
+    exit 1
+fi
+
+# Get the OpenShift installer
+INSTALLER_GZIP=openshift-install-${opsys}-${ocp_version}.tar.gz
+
+if [ ! -f "${INSTALLER_GZIP}" ]; then
+    wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${ocp_version}/${INSTALLER_GZIP}
+fi
+tar -xvzf ${INSTALLER_GZIP}
+
+if [ -f "openshift-install" ]; then
+    echo "OpenShift installer is available"
+else
+    echo "Unable to download OpenShift installer tools"
+    exit 1
+fi
+
+# Create a unique working directory for all the artefacts created during installation
+if [ "$(uname)" == "Darwin" ]; then
+    timestamp=`date +"%Y-%m-%dT%H:%M:%SZ"|sed "s/:/-/g"`
+else
+    timestamp=`date --iso-8601=ns|sed "s/,/./g"|sed "s/:/-/g"`
+fi
+
 export TEST_DIR=${current_dir}/openshift-install.${timestamp}
-echo "Test Directory: $TEST_DIR"
+
+echo "Working (installation) directory: $TEST_DIR"
 mkdir "${TEST_DIR}"
+
+# The install deletes the YAML file, so we  copy the original
 cp "${1}" "${TEST_DIR}/install-config.yaml"
+
+# Change into the working directory
 cd "${TEST_DIR}"
-wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${ocp_version}/openshift-client-linux-${ocp_version}.tar.gz
-tar xvzf openshift-client-linux-${ocp_version}.tar.gz 
-wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${ocp_version}/openshift-install-linux-${ocp_version}.tar.gz
-tar -xvzf openshift-install-linux-${ocp_version}.tar.gz
+
+# Do the installation - this uses the YAML file
 date
-export PATH="${TEST_DIR}":"${PATH}"
 echo "Creating the OpenShift Cluster"
-openshift-install create cluster
+../openshift-install create cluster
 date
+
+# Success - login to the cluster using oc
 export KUBECONFIG="${TEST_DIR}/auth/kubeconfig"
-export KUBEADMIN_PASSWORD=$(cat "${TEST_DIR}/auth/kubeadmin-password")
+export KUBEADMIN_PASSWORD=`cat "${TEST_DIR}/auth/kubeadmin-password"`
+
+echo KUBECONFIG=$KUBECONFIG
+echo KUBEADMIN_PASSWORD=$KUBEADMIN_PASSWORD
+echo "Logging into your new cluster"
 oc login --username=kubeadmin --password=${KUBEADMIN_PASSWORD}
+
 #
 # Required K8s Node labels.
-kubectl get node -o custom-columns=NODE:.metadata.name|tail -n+2|xargs -i -t kubectl label node {}  nuodb.com/zone=a
-kubectl get node -o custom-columns=NODE:.metadata.name|tail -n+2|xargs -i -t kubectl label node {}  nuodb.com/node-type=storage 
+kubectl get node -o custom-columns=NODE:.metadata.name|tail -n+2|xargs -I "kubectl label node {}  nuodb.com/zone=a"
+kubectl get node -o custom-columns=NODE:.metadata.name|tail -n+2|xargs -I "kubectl label node {}  nuodb.com/node-type=storage"
+
+echo "OpenShift installed. Look in openshift-install.${timestamp} for more details"
+echo "   You will find the kubeadmin password and kubeconfig file in openshift-install.${timestamp}/auth"
+echo "   The installation log is in openshift-install.${timestamp}/.openshift_install.log"
 
 #
 # To deprovision the entire cluster, simply execute:
 #
-#  cd $TEST_DIR; ./openshift-install destroy cluster
+# cd $TEST_DIR; ./openshift-install destroy cluster
