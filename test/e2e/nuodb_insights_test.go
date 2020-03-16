@@ -22,14 +22,14 @@ import (
 )
 
 const (
-	ESClusterName = "insights-escluster"  // must match name in insights-server/escluster.yaml
-	ESClusterUserSecret = ESClusterName + "-es-elastic-user"
+	ESClusterName            = "insights-escluster" // must match name in insights-server/escluster.yaml
+	ESClusterUserSecret      = ESClusterName + "-es-elastic-user"
 	ESClusterHttpCertsPublic = ESClusterName + "-es-http-certs-public"
-	ESClusterServiceHttp = ESClusterName + "-es-http"
+	ESClusterServiceHttp     = ESClusterName + "-es-http"
 )
 
 func verifyAllExpectedPodsExists(t *testing.T, f *framework.Framework, namespace string) {
-	podNames := [] string {
+	podNames := []string{
 		"admin",
 		"sm",
 		"te",
@@ -41,32 +41,33 @@ func verifyAllExpectedPodsExists(t *testing.T, f *framework.Framework, namespace
 		"thp",
 	}
 	//get all running pods in namespace
-	pods:=testutil.FindAllPodsInSchema(t,f,namespace)
-	var countPods =0
-	for _, pod:= range pods{
+	pods := testutil.FindAllPodsInSchema(t, f, namespace)
+	var countPods = 0
+	for _, pod := range pods {
 		for _, item := range podNames {
-			if strings.Contains(pod.Name, item){
+			if strings.Contains(pod.Name, item) {
 				countPods++
 			}
 		}
 	}
 	t.Log("countpods", countPods)
-	assert.Assert(t,countPods>9,)
+	assert.Assert(t, countPods > 9)
 }
 
 func verifyYcsbContainer(t *testing.T, f *framework.Framework, namespace string) {
-	var replicationController  = &corev1.ReplicationController{}
+	var replicationController = &corev1.ReplicationController{}
 	err := f.Client.Get(context.TODO(), types.NamespacedName{Name: "ycsb-load", Namespace: namespace}, replicationController)
 	assert.NilError(t, err)
 	repSize := replicationController.Spec.Replicas
-	assert.Assert(t,*repSize > 0,)
+	assert.Assert(t, *repSize > 0)
 }
 
-func verifyGrafanaDashboards(t *testing.T, f *framework.Framework,namespace string) {
+func verifyGrafanaDashboards(t *testing.T, f *framework.Framework, namespace string) {
 	listOptions := metav1.ListOptions{
 		LabelSelector: "app=grafana",
 	}
-	podList,err := f.KubeClient.CoreV1().Pods(namespace).List(listOptions)
+
+	podList, err := f.KubeClient.CoreV1().Pods(namespace).List(listOptions)
 	assert.NilError(t, err)
 
 	var grafanaPod *corev1.Pod
@@ -74,7 +75,7 @@ func verifyGrafanaDashboards(t *testing.T, f *framework.Framework,namespace stri
 		grafanaPod = &podList.Items[i]
 	}
 
-	if grafanaPod!=nil {
+	if grafanaPod != nil {
 		command := []string{"cat", "-A", "/var/lib/grafana/grafana.db"}
 		testOutput, err := testutil.ExecCommand(f, namespace, grafanaPod.Name, grafanaPod.Spec.Containers[0].Name, command)
 		assert.NilError(t, err)
@@ -83,8 +84,8 @@ func verifyGrafanaDashboards(t *testing.T, f *framework.Framework,namespace stri
 
 }
 
-func verifyElasticData(t *testing.T, f *framework.Framework,namespace string) {
-	esClient, err := GetESClient(t,f,namespace)
+func verifyElasticData(t *testing.T, f *framework.Framework, namespace string) {
+	esClient, err := GetESClient(t, f, namespace)
 	assert.NilError(t, err)
 
 	templateName := "ic_nuoadminagentlog_template"
@@ -95,7 +96,7 @@ func verifyElasticData(t *testing.T, f *framework.Framework,namespace string) {
 	if resp.StatusCode == 404 {
 		t.Fatalf("Nuoadminagentlog Template not found")
 	}
-	if resp.IsError(){
+	if resp.IsError() {
 		var e map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&e); err != nil {
 			t.Fatalf("Error parsing the response body: %s, %v", err, resp.StatusCode)
@@ -109,11 +110,10 @@ func verifyElasticData(t *testing.T, f *framework.Framework,namespace string) {
 		}
 	}
 
-	assert.Equal(t,resp.StatusCode,200)
+	assert.Equal(t, resp.StatusCode, 200)
 }
 
 func TestNuodbInsights(t *testing.T) {
-
 	if testing.Short() {
 		t.Skip("skipping TestNuodbInsights in short mode.")
 	}
@@ -129,15 +129,15 @@ func TestNuodbInsights(t *testing.T) {
 		dbName                  = "test1"
 		dbUser                  = "dba"
 		dbPassword              = "secret"
-		smMemory          	    = "500Mi"
+		smMemory                = "500Mi"
 		smCount           int32 = 1
-		smCpu             		= "100m"
+		smCpu                   = "100m"
 		smStorageSize           = "20G"
 		smStorageClass          = "local-disk"
 		engineOptions           = ""
 		teCount           int32 = 1
-		teMemory          		= "500Mi"
-		teCpu              		= "100m"
+		teMemory                = "500Mi"
+		teCpu                   = "100m"
 		apiServer               = "https://domain:8888"
 		container               = "nuodb/nuodb-ce:latest"
 	)
@@ -156,30 +156,28 @@ func TestNuodbInsights(t *testing.T) {
 	}
 
 	nuodbSpec := operator.NuodbSpec{
-		StorageMode:       storageMode,
-		DbName:            dbName,
-		DbUser:            dbUser,
-		DbPassword:        dbPassword,
-		SmMemory:          smMemory,
-		SmCount:           smCount,
-		SmCpu:             smCpu,
-		SmStorageSize:     smStorageSize,
-		SmStorageClass:    smStorageClass,
-		EngineOptions:     engineOptions,
-		TeCount:           teCount,
-		TeMemory:          teMemory,
-		TeCpu:             teCpu,
-		Container:         container,
+		StorageMode:    storageMode,
+		DbName:         dbName,
+		DbUser:         dbUser,
+		DbPassword:     dbPassword,
+		SmMemory:       smMemory,
+		SmCount:        smCount,
+		SmCpu:          smCpu,
+		SmStorageSize:  smStorageSize,
+		SmStorageClass: smStorageClass,
+		EngineOptions:  engineOptions,
+		TeCount:        teCount,
+		TeMemory:       teMemory,
+		TeCpu:          teCpu,
+		Container:      container,
 	}
 
 	exampleNuodbAdmin := testutil.NewNuodbAdmin(namespace, nuodbAdminSpec)
-	testutil.SetupOperator(t,ctx)
-	err = testutil.DeployNuodbAdmin(t, ctx, exampleNuodbAdmin )
-	assert.NilError(t, err)
+	testutil.SetupOperator(t, ctx)
+	testutil.DeployNuodbAdmin(t, ctx, exampleNuodbAdmin)
 
 	exampleNuodb := testutil.NewNuodbDatabase(namespace, nuodbSpec)
-	err = testutil.DeployNuodb(t, ctx, exampleNuodb )
-	assert.NilError(t, err)
+	testutil.DeployNuodb(t, ctx, exampleNuodb)
 
 	f := framework.Global
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuodb", Namespace: namespace}, exampleNuodb)
@@ -196,50 +194,50 @@ func TestNuodbInsights(t *testing.T) {
 	//NuoDB Insights-Server
 	exampleNuodbInsight := testutil.NewNuodbInsightsCluster(namespace, insightsSpec)
 
-	err = testutil.DeployInsightsServer(t, ctx, exampleNuodbInsight )
+	err = testutil.DeployInsightsServer(t, ctx, exampleNuodbInsight)
 	assert.NilError(t, err)
 
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "insightsserver", Namespace: namespace}, exampleNuodbInsight)
 	assert.NilError(t, err)
 
 	insightClientPod := testutil.GetInsightsClientPod(namespace)
-	err = testutil.CreateInsightsPods(t,ctx,insightClientPod)
+	err = testutil.CreateInsightsPods(t, ctx, insightClientPod)
 	assert.NilError(t, err)
 
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "insights-client", Namespace: namespace}, insightClientPod)
 	assert.NilError(t, err)
 
 	ycsbwSpec := operator.NuodbYcsbWlSpec{
-		DbName: dbName,
-		YcsbWorkloadCount: 1,
-		YcsbLoadName: "ycsb-load",
-		YcsbWorkload: "b",
-		YcsbLbPolicy: "",
-		YcsbNoOfProcesses: 2,
-		YcsbNoOfRows: 10000,
-		YcsbNoOfIterations: 0,
+		DbName:              dbName,
+		YcsbWorkloadCount:   1,
+		YcsbLoadName:        "ycsb-load",
+		YcsbWorkload:        "b",
+		YcsbLbPolicy:        "",
+		YcsbNoOfProcesses:   2,
+		YcsbNoOfRows:        10000,
+		YcsbNoOfIterations:  0,
 		YcsbOpsPerIteration: 10000,
-		YcsbMaxDelay: 240000,
-		YcsbDbSchema: "User1",
-		YcsbContainer: "nuodb/ycsb:latest",
+		YcsbMaxDelay:        240000,
+		YcsbDbSchema:        "User1",
+		YcsbContainer:       "nuodb/ycsb:latest",
 	}
 
 	exampleNuodbYcsbw := testutil.NewNuodbYcsbwCluster(namespace, ycsbwSpec)
 
-	err = testutil.DeployYcsbw(t, ctx, exampleNuodbYcsbw )
+	err = testutil.DeployYcsbw(t, ctx, exampleNuodbYcsbw)
 	assert.NilError(t, err)
 
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuodbycsbwl", Namespace: namespace}, exampleNuodbYcsbw)
 	assert.NilError(t, err)
 
 	t.Run("verifyNuoDbState", func(t *testing.T) { testutil.VerifyAdminState(t, f, namespace, "admin-0", "admin") })
-	t.Run("verifyYcsbContainer", func(t *testing.T) { verifyYcsbContainer(t, f, "nuodb")})
-	t.Run("verifyDataInElastic", func(t *testing.T) { verifyElasticData(t,f,  "nuodb") })
-	t.Run("verifyGrafanaDashboards", func(t *testing.T) { verifyGrafanaDashboards(t, f, "nuodb")})
-	t.Run("verifyAllExpectedPodsExists", func(t *testing.T) { verifyAllExpectedPodsExists(t, f, "nuodb")})
+	t.Run("verifyYcsbContainer", func(t *testing.T) { verifyYcsbContainer(t, f, "nuodb") })
+	t.Run("verifyDataInElastic", func(t *testing.T) { verifyElasticData(t, f, "nuodb") })
+	t.Run("verifyGrafanaDashboards", func(t *testing.T) { verifyGrafanaDashboards(t, f, "nuodb") })
+	t.Run("verifyAllExpectedPodsExists", func(t *testing.T) { verifyAllExpectedPodsExists(t, f, "nuodb") })
 }
 
-func GetESClient(t *testing.T, f *framework.Framework, namespace string) (*elasticsearch.Client, error){
+func GetESClient(t *testing.T, f *framework.Framework, namespace string) (*elasticsearch.Client, error) {
 	var esClient *elasticsearch.Client
 	esClient = nil
 	host, err := f.KubeClient.CoreV1().Services(namespace).Get(ESClusterServiceHttp, metav1.GetOptions{})
@@ -248,7 +246,7 @@ func GetESClient(t *testing.T, f *framework.Framework, namespace string) (*elast
 	assert.NilError(t, err)
 	var esPassword string
 	secretData := secret.Data
-	for k,v := range secretData {
+	for k, v := range secretData {
 		if k == "elastic" {
 			esPassword = string(v)
 		}
@@ -262,14 +260,14 @@ func GetESClient(t *testing.T, f *framework.Framework, namespace string) (*elast
 	certificate.Certificate = append(certificate.Certificate, tlsCrt)
 
 	tlsConfig := tls.Config{
-		MinVersion:tls.VersionTLS11,
+		MinVersion:         tls.VersionTLS11,
 		InsecureSkipVerify: true,
-		Certificates: []tls.Certificate{certificate},
+		Certificates:       []tls.Certificate{certificate},
 	}
 
 	url := "https://" + host.Status.LoadBalancer.Ingress[0].Hostname + ":9200"
-	config := elasticsearch.Config {
-		Addresses: [] string{
+	config := elasticsearch.Config{
+		Addresses: []string{
 			url,
 		},
 		Username: "elastic",
@@ -279,12 +277,12 @@ func GetESClient(t *testing.T, f *framework.Framework, namespace string) (*elast
 			MaxIdleConnsPerHost:   10,
 			ResponseHeaderTimeout: time.Second,
 			DialContext:           (&net.Dialer{Timeout: time.Second * 3}).DialContext,
-			TLSClientConfig: &tlsConfig,
+			TLSClientConfig:       &tlsConfig,
 		},
 	}
 	esClient, err = elasticsearch.NewClient(config)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return esClient,nil
+	return esClient, nil
 }

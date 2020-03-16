@@ -88,9 +88,7 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 	}
 
 	err := framework.AddToFrameworkScheme(apis.AddToScheme, clusterList)
-	if err != nil {
-		t.Fatalf("failed to add custom resource scheme to framework: %v", err)
-	}
+	assert.NilError(t, err, "failed to add custom resource scheme to framework")
 
 	if IsBoolFlagTrue("localOperator") {
 		t.Log("Testing with local Operator.")
@@ -98,9 +96,8 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 	}
 
 	err = ctx.InitializeClusterResources(&framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
-	if err != nil {
-		t.Fatalf("failed to initialize cluster resources: %v", err)
-	}
+	assert.NilError(t, err, "failed to initialize cluster resources")
+
 	t.Log("Initialized cluster resources")
 
 	namespace, err := ctx.GetNamespace()
@@ -115,7 +112,7 @@ func SetupOperator(t *testing.T, ctx *framework.TestCtx) {
 
 // DeployNuodbAdmin creates a custom resource and checks if the
 // admin statefulset is deployed successfully.
-func DeployNuodbAdmin(t *testing.T, ctx *framework.TestCtx, nuodbAdmin *nuodb.NuodbAdmin) error {
+func DeployNuodbAdmin(t *testing.T, ctx *framework.TestCtx, nuodbAdmin *nuodb.NuodbAdmin) {
 	f := framework.Global
 
 	err := f.Client.Create(goctx.TODO(), nuodbAdmin, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
@@ -126,22 +123,21 @@ func DeployNuodbAdmin(t *testing.T, ctx *framework.TestCtx, nuodbAdmin *nuodb.Nu
 
 	err = WaitForStatefulSet(t, f.KubeClient, nuodbAdmin.Namespace, "admin", 1, RetryInterval, StatefulSetTimeout)
 	assert.NilError(t, err)
-
-	return nil
 }
 
 // DeployNuodb creates a custom resource and checks if the
-// admin statefulset is deployed successfully.
-func DeployNuodb(t *testing.T, ctx *framework.TestCtx, nuodb *nuodb.Nuodb) error {
+// TE/SM resources are deployed correctly
+func DeployNuodb(t *testing.T, ctx *framework.TestCtx, nuodb *nuodb.Nuodb) {
 	f := framework.Global
 
 	err := f.Client.Create(goctx.TODO(), nuodb, &framework.CleanupOptions{TestContext: ctx, Timeout: CleanupTimeout, RetryInterval: CleanupRetryInterval})
 	assert.NilError(t, err)
 
-	err = WaitForStatefulSet(t, f.KubeClient, nuodb.Namespace, "admin", 1, RetryInterval, StatefulSetTimeout)
+	err = WaitForStatefulSet(t, f.KubeClient, nuodb.Namespace, "nuodb-sm", 1, RetryInterval, StatefulSetTimeout)
 	assert.NilError(t, err)
 
-	return nil
+	err = WaitForDeployment(t, f.KubeClient, nuodb.Namespace, "nuodb-te", 1, RetryInterval, StatefulSetTimeout)
+	assert.NilError(t, err)
 }
 
 func NewNuodbInsightsCluster(namespace string, insightsSpec nuodb.NuodbInsightsServerSpec) *nuodb.NuodbInsightsServer {
@@ -209,7 +205,12 @@ func WaitForRC(t *testing.T, f *framework.Framework, namespace string) {
 }
 
 // WaitForStatefulSet checks and waits for a given statefulset to be in ready.
-func WaitForStatefulSet(t *testing.T, kubeclient kubernetes.Interface, namespace string, name string, replicas int, retryInterval, timeout time.Duration) error {
+func WaitForDeployment(t *testing.T, kubeclient kubernetes.Interface, namespace, name string, replicas int, retryInterval, timeout time.Duration) error {
+	return e2eutil.WaitForDeployment(t, kubeclient, namespace, name, replicas, retryInterval, timeout)
+}
+
+// WaitForStatefulSet checks and waits for a given statefulset to be in ready.
+func WaitForStatefulSet(t *testing.T, kubeclient kubernetes.Interface, namespace string, name string, replicas int, retryInterval time.Duration, timeout time.Duration) error {
 	err := wait.Poll(retryInterval, timeout, func() (done bool, err error) {
 		statefulset, err := kubeclient.AppsV1().StatefulSets(namespace).Get(name, metav1.GetOptions{IncludeUninitialized: true})
 		if err != nil {
@@ -227,8 +228,10 @@ func WaitForStatefulSet(t *testing.T, kubeclient kubernetes.Interface, namespace
 		t.Logf("Waiting for ready status of %s statefulset (%d)\n", name, statefulset.Status.ReadyReplicas)
 		return false, nil
 	})
-	assert.NilError(t, err)
-	t.Logf("StatefulSet Ready!\n")
+	if err != nil {
+		return err
+	}
+	t.Logf("StatefulSet available (%d/%d)\n", replicas, replicas)
 	return nil
 }
 

@@ -17,6 +17,15 @@ spec:
             - { key: "nuodb.com/zone",      operator: Exists }
 {{- end }}
   initContainers:
+  - name: wait
+    image: {{ .Values.container }}
+    imagePullPolicy: IfNotPresent
+    args:
+    - "/bin/sh"
+    - "-c"
+    - 'nuocmd check servers --check-active --timeout 300'
+    env:
+    - { name: NUOCMD_API_SERVER , value: {{ .Values.apiServer | quote }} }
   - name: optin
     image: {{ .Values.container }}
     imagePullPolicy: IfNotPresent

@@ -15,39 +15,33 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-
-func verifyLoadBalancer(t *testing.T, f *framework.Framework, namespaceName string,balancerName string) {
+func verifyLoadBalancer(t *testing.T, f *framework.Framework, namespaceName string, balancerName string) {
 	var service = &corev1.Service{}
 	err := f.Client.Get(goctx.TODO(), client.ObjectKey{Namespace: namespaceName, Name: balancerName}, service)
-	if err!=nil{
-		t.Fatalf("Couldn't get service %+v", err)
-	}
+	assert.NilError(t, err, "Couldn't get load balancer service")
 	assert.Equal(t, service.Name, balancerName)
 }
 
-func verifyPodKill(t *testing.T, f *framework.Framework, namespaceName string, podName string, expectedName string, expReplicas int) {
+func verifyPodKill(t *testing.T, f *framework.Framework, namespaceName string, podName string, expReplicas int) {
 	testutil.KillAdminPod(t, f, namespaceName, podName)
-	testutil.AwaitNrReplicasScheduled(t, f, namespaceName, expectedName, expReplicas)
-	testutil.AwaitAdminPodUp(t, f, namespaceName, podName, 100 * time.Second)
+	testutil.AwaitNrReplicasScheduled(t, f, namespaceName, podName, expReplicas)
+	testutil.AwaitAdminPodUp(t, f, namespaceName, podName, 100*time.Second)
 }
 
 func verifyKillProcess(t *testing.T, f *framework.Framework, namespaceName string, podName string, containerName string, nrReplicasExpected int) {
 	testutil.KillAdminProcess(t, f, namespaceName, podName)
 	testutil.AwaitNrReplicasScheduled(t, f, namespaceName, containerName, nrReplicasExpected)
-	testutil.AwaitAdminPodUp(t, f, namespaceName, podName, 100 * time.Second)
+	testutil.AwaitAdminPodUp(t, f, namespaceName, podName, 100*time.Second)
 }
 
 func verifyAdminService(t *testing.T, f *framework.Framework, namespaceName string, podName string) {
 	serviceName := "domain"
 	var service = &corev1.Service{}
 	err := f.Client.Get(goctx.TODO(), client.ObjectKey{Namespace: namespaceName, Name: serviceName}, service)
-	if err!=nil{
-		t.Fatalf("Couldn't get service %+v", err)
-	}
+	assert.NilError(t, err, "Couldn't get service")
 
 	testutil.PingService(t, f, namespaceName, serviceName, podName)
 }
-
 
 func TestNuodbAdmin(t *testing.T) {
 	ctx := framework.NewTestCtx(t)
@@ -63,9 +57,7 @@ func TestNuodbAdmin(t *testing.T) {
 	)
 
 	namespace, err := ctx.GetNamespace()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	adminSpec := operator.NuodbAdminSpec{
 		StorageMode:       storageMode,
@@ -78,24 +70,18 @@ func TestNuodbAdmin(t *testing.T) {
 	}
 
 	exampleNuodb := testutil.NewNuodbAdmin(namespace, adminSpec)
-	testutil.SetupOperator(t,ctx)
-	err = testutil.DeployNuodbAdmin(t, ctx, exampleNuodb )
-	if err != nil {
-		t.Fatal(err)
-	}
+	testutil.SetupOperator(t, ctx)
+	testutil.DeployNuodbAdmin(t, ctx, exampleNuodb)
 
 	f := framework.Global
 
 	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: "nuoadmin", Namespace: namespace}, exampleNuodb)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NilError(t, err)
 
 	t.Run("verifyAdminState", func(t *testing.T) { testutil.VerifyAdminState(t, f, namespace, "admin-0", "admin") })
 	t.Run("verifyLoadBalancer", func(t *testing.T) { verifyLoadBalancer(t, f, namespace, "admin") })
-	t.Run("verifyPodKill", func(t *testing.T) { verifyPodKill(t, f, namespace, "admin-0", "admin-0", 1) })
+	t.Run("verifyPodKill", func(t *testing.T) { verifyPodKill(t, f, namespace, "admin-0", 1) })
 	t.Run("verifyProcessKill", func(t *testing.T) { verifyKillProcess(t, f, namespace, "admin-0", "admin-0", 1) })
 	t.Run("verifyAdminService", func(t *testing.T) { verifyAdminService(t, f, namespace, "admin-0") })
 
 }
-

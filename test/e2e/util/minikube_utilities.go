@@ -33,10 +33,7 @@ func FindAllPodsInSchema(t *testing.T, f *framework.Framework, namespace string)
 	}
 
 	podList, err := f.KubeClient.CoreV1().Pods(namespace).List(opts)
-	if err != nil {
-		t.Log("Error in Finding all pods")
-		return nil
-	}
+	assert.NilError(t, err)
 
 	var pods []*corev1.Pod
 	for i := range podList.Items {
@@ -66,23 +63,27 @@ func await(t *testing.T, lmbd func() bool, timeout time.Duration)  {
 }
 
 func AwaitNrReplicasScheduled(t *testing.T, f *framework.Framework, namespace string, expectedName string, nrReplicas int) {
-	var cnt int
-	time.Sleep(60 * time.Second)
-	for _, pod := range FindAllPodsInSchema(t, f, namespace) {
-		if strings.Contains(pod.Name, expectedName) {
-			if arePodConditionsMet(pod, corev1.PodScheduled, corev1.ConditionTrue) {
-				cnt++
+	await(t, func() bool {
+		var cnt int
+		for _, pod := range FindAllPodsInSchema(t, f, namespace) {
+			if strings.Contains(pod.Name, expectedName) {
+				if arePodConditionsMet(pod, corev1.PodScheduled, corev1.ConditionTrue) {
+					cnt++
+				}
 			}
 		}
-	}
-	assert.Equal(t, cnt, nrReplicas)
-	t.Log(fmt.Printf("%d pods SCHEDULED for name '%s'\n", cnt, expectedName))
+
+		t.Logf("%d pods SCHEDULED for name '%s'\n", cnt, expectedName)
+
+		return cnt == nrReplicas
+	}, 30*time.Second)
 }
 
 func awaitPodStatus(t *testing.T, f *framework.Framework, namespace string, podName string, condition corev1.PodConditionType,
 	status corev1.ConditionStatus, timeout time.Duration) {
 	await(t, func() bool {
-		pod, _ :=  f.KubeClient.CoreV1().Pods(namespace).Get(podName,metav1.GetOptions{} ) //k8s.GetPod(t, options, podName)
+		pod, err :=  f.KubeClient.CoreV1().Pods(namespace).Get(podName,metav1.GetOptions{} ) //k8s.GetPod(t, options, podName)
+		assert.NilError(t, err)
 		t.Log("Awaiting pod status", podName, condition, status)
 		return arePodConditionsMet(pod, condition, status)
 	}, timeout)
@@ -92,20 +93,20 @@ func AwaitAdminPodUp(t *testing.T, f *framework.Framework, namespace string, adm
 	awaitPodStatus(t, f, namespace, adminPodName, corev1.PodReady, corev1.ConditionTrue, timeout)
 }
 
-func AwaitBalancerTerminated(t *testing.T,f *framework.Framework, namespace string, expectedName string) {
+func AwaitPodRestartCountGreaterThan(t *testing.T, f *framework.Framework, namespace string, podName string, expectedRestartCount int32) {
 	await(t, func() bool {
-		for _, pod := range FindAllPodsInSchema(t, f, namespace) {
-			if strings.Contains(pod.Name, expectedName) {
-				if pod.Status.Phase == "Succeeded" {
-					fmt.Printf("Pod (%s) TERMINATED\n", expectedName)
-					return true
-				}
-			}
+		pod, err :=  f.KubeClient.CoreV1().Pods(namespace).Get(podName,metav1.GetOptions{} ) //k8s.GetPod(t, options, podName)
+		assert.NilError(t, err)
+
+		var restartCount int32
+		for _, status := range pod.Status.ContainerStatuses {
+			restartCount += status.RestartCount
 		}
-		return false
-	}, 30 * time.Second)
+
+		return restartCount > expectedRestartCount
+	}, 30*time.Second)
 }
-//
+
 func VerifyAdminState(t *testing.T, f *framework.Framework, namespace string, podName string, containerName string) {
 	command := []string{"nuocmd", "show", "domain"}
 	testOutput, err := ExecCommand(f, namespace ,podName , containerName,command)
@@ -118,28 +119,17 @@ func KillAdminPod(t *testing.T, f *framework.Framework, namespace string, podNam
 	podInterface := f.KubeClient.CoreV1().Pods(namespace)
 	err := podInterface.Delete(podName, &metav1.DeleteOptions{})
 	assert.NilError(t, err)
+
+	time.Sleep(10 * time.Second) // wait for the pod to restart, TODO this could be improved to an await
 }
 
 func KillAdminProcess(t *testing.T, f *framework.Framework, namespace string, podName string) {
-	command := []string{"ps", "-ef"}
-	output, err := ExecCommand(f, namespace ,podName , "admin",command)
-	//output, err := k8s.RunKubectlAndGetOutputE(t, options, "exec", podName, "--", "ps")
+	fmt.Printf("Killing pid 1 in pod %s\n", podName)
+	command := []string{"kill", "1"}
+	_, err := ExecCommand(f, namespace ,podName ,"admin", command)
 	assert.NilError(t, err)
-	parts:= strings.Split(output, "\n")
 
-	var pid string
-	for _, part := range parts {
-		if strings.Contains(part, "java") {
-			pid = strings.Fields(part)[1]
-		}
-	}
-	assert.Assert(t, pid != "", "pid not found in :%s\n", output)
-
-	fmt.Printf("Killing pid %s in pod %s\n", pid, podName)
-
-	command = []string{"kill", pid}
-	output, err = ExecCommand(f, namespace ,podName , "admin",command)
-	assert.NilError(t, err)
+	AwaitPodRestartCountGreaterThan(t, f, namespace, podName, 0)
 }
 
 func PingService(t *testing.T, f *framework.Framework, namespace string, serviceName string, podName string) {
