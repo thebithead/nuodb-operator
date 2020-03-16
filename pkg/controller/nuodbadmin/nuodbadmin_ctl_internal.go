@@ -263,15 +263,23 @@ func reconcileNuodbAdminStatefulSet(thisClient client.Client, thisScheme *runtim
 		if nuoResource.name == "admin" {
 			_, _, err = updateAdminReadyCount(thisClient, request, statefulSet.Status.ReadyReplicas)
 			if err != nil {
-				log.Error(err, "Error: Unable to update Admin ready count.")
-				return statefulSet, reconcile.Result{}, trace.Wrap(err)
+				if apierrors.IsConflict(err) {
+					return statefulSet, reconcile.Result{}, err
+				} else {
+					log.Error(err, "Error: Unable to update Admin ready count.")
+					return statefulSet, reconcile.Result{}, trace.Wrap(err)
+				}
 			}
 			if *statefulSet.Spec.Replicas != desiredAdminPodCount {
 				*statefulSet.Spec.Replicas = desiredAdminPodCount
 				err = thisClient.Update(context.TODO(), statefulSet)
 				if err != nil {
-					log.Error(err, "Error: Unable to update AdminCount in Admin StatefulSet.")
-					return statefulSet, reconcile.Result{}, trace.Wrap(err)
+					if apierrors.IsConflict(err) {
+						return statefulSet, reconcile.Result{}, err
+					} else {
+						log.Error(err, "Error: Unable to update AdminCount in Admin StatefulSet.")
+						return statefulSet, reconcile.Result{}, trace.Wrap(err)
+					}
 				}
 			}
 		}
