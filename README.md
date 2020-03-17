@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/nuodb/nuodb-operator.svg?branch=master)](https://travis-ci.org/nuodb/nuodb-operator)
 
-A Kubernetes Operator written in Golang that automates the packaging, provisioning, and managing of operational tasks for Kubernetes containerized applications. By default the NuoDB Kubernetes Operator deploys the NuoDB with Community Edition (CE) capability in the following tested and verified Kubernetes distributions:
+A Kubernetes Operator that automates the packaging, provisioning, and managing of operational tasks for Kubernetes containerized applications. By default the NuoDB Kubernetes Operator deploys the NuoDB with Community Edition (CE) capability in the following tested and verified Kubernetes distributions:
 
 * Red Hat OpenShift 3.11, 4.x
   * On-prem or OpenShift supported public cloud platforms
@@ -63,7 +63,7 @@ This page is organized in the following sections:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Delete the NuoDB Operator](#Delete-the-NuoDB-Operator)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Optional Database Parameters](#Optional-Database-Parameters)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Configuration Parameter Descriptions](#Configuration-Parameter-Descriptions)
 
 
 
@@ -603,8 +603,9 @@ kubectl get rolebindings/grafana-operator
 kubectl get role/grafana-operator
 ```
 
+## Configuration Parameter Descriptions
 
-## Optional Domain Parameters
+### Domain Parameters
 
 **storageMode** - Run NuoDB using persistent durable storage "persistent" or volatile storage "ephemeral". Must be set to one of those two values.
 
@@ -636,7 +637,7 @@ kubectl get role/grafana-operator
 &ensp; `apiServer: https://domain:8888`
 
 
-## Optional Database Parameters
+### Database Parameters
 
 **storageMode** - Run NuoDB using persistent durable storage "persistent" or volatile storage "ephemeral". Must be set to one of those two values.
 
@@ -710,7 +711,31 @@ container: nuodb/nuodb-ce:latest
 ```
 
 
-## Optional YCSB Workload Parameters
+### NuoDB Insights Parameters
+
+**elasticVersion** - Version of ElasticSearch
+
+&ensp; `elasticVersion: 7.3.0`
+
+**elasticNodeCount** - Number of nodes in the ElasticSearch Cluster
+
+&ensp; `elasticNodeCount: 1`
+
+**kibanaVersion** - Version of Kibana
+
+&ensp; `kibanaVersion: 7.3.0`
+
+**kibanaNodeCount** - Version of Kibana
+
+&ensp; `kibanaNodeCount: 1`
+
+**storageClass** - Kubernetes Persistent Storage Class
+
+&ensp; `storageClass: ""`
+
+
+
+### YCSB Sample Application Workload Parameters
 
 **ycsbLoadName** - YCSB workload pod name
 
@@ -763,29 +788,6 @@ container: nuodb/nuodb-ce:latest
 ycsbContainer: nuodb/ycsb:latest
 ycsbContainer: 117940112483.dkr.ecr.us-east-1.amazonaws.com/d893f8e5-fe12-4e43-b792-8cb98ffc11c0/cg-756769224/docker.io/nuodb/ycsb:2.0.3-1-latest
 ```
-
-
-## Optional NuoDB Insights-Server Parameters
-
-**elasticVersion** - Version of ElasticSearch
-
-&ensp; `elasticVersion: 7.3.0`
-
-**elasticNodeCount** - Number of nodes in the ElasticSearch Cluster
-
-&ensp; `elasticNodeCount: 1`
-
-**kibanaVersion** - Version of Kibana
-
-&ensp; `kibanaVersion: 7.3.0`
-
-**kibanaNodeCount** - Version of Kibana
-
-&ensp; `kibanaNodeCount: 1`
-
-**storageClass** - Kubernetes Persistent Storage Class
-
-&ensp; `storageClass: ""`
 
 
 ## Building the NuoDB Operator
