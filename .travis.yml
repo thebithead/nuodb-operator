@@ -22,11 +22,23 @@ env:
     - GO111MODULE=on
 
 before_install:
+  - |
+    set -e
+    # fail loudly when force-pushed
+    MODIFIED_FILES=$(git diff --name-only $TRAVIS_COMMIT_RANGE)
+    # waiting for native solution https://github.com/travis-ci/travis-ci/issues/6301
+    if [ -z "${MODIFIED_FILES}" ]; then
+      # $TRAVIS_COMMIT_RANGE will be empty for builds triggered by the initial commit of a new branch.
+      echo "No changes found, can not determine what to skip"
+    elif ! echo ${MODIFIED_FILES} | grep -qvE '(\.md$)'; then
+      echo "Only docs were updated, stopping build process."
+      exit
+    fi
+
+install:
   - chmod +x scripts/ci/install-deps.sh
   - chmod +x scripts/ci/build_operator.sh
   - chmod +x scripts/ci/test_operator.sh
-
-install:
   - scripts/ci/install-deps.sh
 
 script:
