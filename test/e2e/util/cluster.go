@@ -3,10 +3,10 @@ package util
 import (
 	goctx "context"
 	"flag"
-	"nuodb/nuodb-operator/pkg/trace"
+	"github.com/gravitational/trace"
+	"gotest.tools/assert"
 	"testing"
 	"time"
-	"gotest.tools/assert"
 
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/gravitational/trace"
 	log2 "github.com/sirupsen/logrus"
 	"io"
 	v1 "k8s.io/api/core/v1"
@@ -14,7 +15,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"net/http"
-	"nuodb/nuodb-operator/pkg/trace"
 	"os/exec"
 	"time"
 )
