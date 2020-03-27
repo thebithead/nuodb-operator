@@ -18,7 +18,7 @@ A Kubernetes Operator that automates the packaging, provisioning, and managing o
 * Rancher Kubernetes Manager
   * Rancher RKE and Rancher supported Kubernetes (e.g. EKS, AKS) on Rancher supported cloud platforms
 
-**Note:** The NuoDB Operator is ideal for development, test and for product evaluation purposes in single cluster Kubernetes environments. **The NuoDB Operator is not yet available for production use.** Coming soon in 1H'20 is automated LEVEL 2 (rolling upgrade) and LEVEL 3 (backup and recovery) operational support. Multi-cluster support is also on the roadmap.
+**Note:** The NuoDB Operator is a "work in progress" that can be used for development, test and for product evaluation purposes in single cluster Kubernetes environments. **The NuoDB Operator is not yet available for production use.** There is a Helm based NuoDB Operator that provides a Operator experience for the supported NuoDB Helm Charts. For more information see: [nuodb-helm-operator](https://github.com/nuodb/nuodb-helm-operator). Coming soon in 1H'20 is automated LEVEL 2 (rolling upgrade) and LEVEL 3 (backup and recovery) operational support. Multi-cluster support is also on the roadmap.
 
 The NuoDB Operator also supports deploying NuoDB with either ephemeral or persistent storage options with configurations to run NuoDB Insights, a visual database monitoring Web UI, and start a sample application (ycsb) to quickly generate a user-configurable SQL workload against the database.
 

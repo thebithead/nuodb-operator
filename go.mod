@@ -10,7 +10,6 @@ require (
 	github.com/go-test/deep v1.0.3 // indirect
 	github.com/gravitational/trace v1.1.9
 	github.com/integr8ly/grafana-operator v2.0.0+incompatible
-	github.com/jonboulle/clockwork v0.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/openshift/api v3.9.0+incompatible
 	github.com/openshift/client-go v3.9.0+incompatible
@@ -18,7 +17,6 @@ require (
 	github.com/sirupsen/logrus v1.4.1
 	github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337 // indirect
 	github.com/spf13/pflag v1.0.3
-	golang.org/x/build v0.0.0-20190314133821-5284462c4bec // indirect
 	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	gopkg.in/ini.v1 v1.46.0 // indirect
 	gopkg.in/yaml.v2 v2.2.2
